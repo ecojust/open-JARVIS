@@ -154,7 +154,29 @@ class ModelDownloadRow(QWidget):
         phase = self.snapshot.get("phase", "checking")
         known = phase in _PHASE_NAMES
         busy = phase in _BUSY or not known
+        completed = _number(self.snapshot.get("completed_bytes"))
+        total = _number(self.snapshot.get("total_bytes"))
+        file_verification = (
+            phase == "verifying"
+            and bool(_text(self.snapshot.get("filename")))
+            and completed < total
+        )
+        transfer = phase in {"downloading", "switching"} or file_verification
         self.status_label.setText(_PHASE_NAMES.get(phase, "状态待确认"))
+        # Keep the download row still when a short file verification temporarily
+        # hides its network ETA. Releasing these slots at the end keeps idle
+        # settings compact; an absent estimate must not become a fake countdown.
+        for label in (self.eta_label, self.source_label, self.detail_label):
+            policy = label.sizePolicy()
+            if policy.retainSizeWhenHidden() != busy:
+                policy.setRetainSizeWhenHidden(busy)
+                label.setSizePolicy(policy)
+            # Chinese fallback glyphs can be taller than the base font metrics.
+            # The visible status label measures the actual styled line height.
+            label.setMinimumHeight(
+                max(label.fontMetrics().height(), self.status_label.sizeHint().height())
+                if busy else 0
+            )
         name = _text(self.snapshot.get("display_name"), 100)
         if name:
             self.model_field.setText(name)
@@ -167,16 +189,14 @@ class ModelDownloadRow(QWidget):
         transfer_size = _number(self.snapshot.get("total_bytes"))
         size = _size(
             transfer_size
-            if phase in {"downloading", "switching"} and transfer_size
+            if transfer and transfer_size
             else self.snapshot.get("size_bytes")
         )
         if size:
             metadata.append("下载大小 " + size)
         self.version_label.setText(" · ".join(metadata))
         self.version_label.setVisible(bool(metadata))
-        completed = _number(self.snapshot.get("completed_bytes"))
-        total = _number(self.snapshot.get("total_bytes"))
-        if busy and phase in {"downloading", "switching"} and total:
+        if busy and transfer and total:
             self.progress.setRange(0, 1000)
             self.progress.setValue(round(1000 * min(completed, total) / total))
             self.progress.setFormat(

@@ -146,6 +146,70 @@ class ModelManagerTests(unittest.TestCase):
         self.app.processEvents()
         self.assertEqual(self.dialog.model_rows["tts"].progress.value(), 400)
 
+    def test_small_file_verifications_keep_progress_and_layout_stable(self):
+        row = self.dialog.model_rows["tts"]
+        heights = []
+        positions = []
+        for phase, completed, filename in (
+            ("downloading", 200, "first.bin"),
+            ("verifying", 200, "first.bin"),
+            ("downloading", 200, "second.bin"),
+            ("verifying", 400, "second.bin"),
+            ("downloading", 400, "third.bin"),
+        ):
+            with self.subTest(phase=phase, filename=filename):
+                self.dialog.update_model(
+                    "tts",
+                    {
+                        "phase": phase,
+                        "completed_bytes": completed,
+                        "total_bytes": 1000,
+                        "size_bytes": 1000,
+                        "source": "HF Mirror",
+                        "source_index": 2,
+                        "source_count": 2,
+                        "filename": filename,
+                        "eta_seconds": 15 if phase == "downloading" else None,
+                        "message": "正在处理 " + filename,
+                    },
+                )
+                self.app.processEvents()
+                self.assertEqual(
+                    (row.progress.minimum(), row.progress.maximum()), (0, 1000)
+                )
+                self.assertEqual(row.progress.value(), completed)
+                self.assertEqual(row.source_label.text(), "下载来源：HF Mirror（2/2）")
+                if phase == "verifying":
+                    self.assertTrue(row.eta_label.isHidden())
+                    self.assertEqual(row.eta_label.text(), "")
+                heights.append(row.height())
+                positions.append((row.source_label.y(), row.detail_label.y()))
+        self.assertEqual(len(set(heights)), 1)
+        self.assertEqual(len(set(positions)), 1)
+
+        # Whole-model hashing has its own counter; it must not masquerade as
+        # a resumed file transfer or keep displaying a stale network estimate.
+        self.dialog.update_model(
+            "tts",
+            {
+                "phase": "verifying",
+                "filename": "",
+                "completed_bytes": 100,
+                "total_bytes": 1000,
+                "eta_seconds": None,
+                "message": "正在生成模型完整性清单",
+            },
+        )
+        self.app.processEvents()
+        self.assertEqual((row.progress.minimum(), row.progress.maximum()), (0, 0))
+        self.assertTrue(row.eta_label.isHidden())
+        self.assertEqual(row.eta_label.text(), "")
+        self.assertEqual(row.height(), heights[-1])
+        self.assertEqual((row.source_label.y(), row.detail_label.y()), positions[-1])
+        self.dialog.update_model("tts", {"phase": "ready"})
+        self.app.processEvents()
+        self.assertLess(row.height(), heights[-1])
+
     def test_incompatibility_failure_and_untrusted_messages_are_visible_plain_text(
         self,
     ):

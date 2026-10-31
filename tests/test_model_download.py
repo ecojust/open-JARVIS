@@ -363,6 +363,67 @@ class DownloadFallbackTests(unittest.TestCase):
         self.assertEqual(self.events[-1]["phase"], "failed")
         self.assertFalse(list(self.root.glob(".jarvis-tts-*")))
 
+    def test_many_small_files_share_stable_throttled_download_phase(self):
+        # Match Kokoro's complete multi-file layout, using tiny synthetic bytes.
+        names = tuple(tts.KOKORO_FILES)
+        files = {name: ("small pinned file " + name).encode() for name in names}
+        pinned = {
+            name: (len(body), hashlib.sha256(body).hexdigest())
+            for name, body in files.items()
+        }
+        paths = {
+            name: httpx.URL("/steady/" + name).raw_path.decode("ascii")
+            for name in files
+        }
+        self.routes.update(
+            {paths[name]: {"body": body} for name, body in files.items()}
+        )
+        timed = []
+        destination = self.root / "many-files"
+        real_progress = catalog.Progress
+        with (
+            patch.object(tts, "KOKORO_FILES", pinned),
+            patch.object(
+                tts,
+                "FILE_SOURCES",
+                (DownloadSource("Steady", self.base + "/steady", 1),),
+            ),
+            # Keep all file boundaries in one UI update interval without
+            # changing HTTP/socket clocks or relying on CI machine speed.
+            patch.object(
+                catalog,
+                "Progress",
+                side_effect=lambda kind, directory, callback: real_progress(
+                    kind, directory, callback, clock=lambda: 1234.0
+                ),
+            ),
+        ):
+            tts.download(
+                destination,
+                progress=lambda event, data: timed.append((time.monotonic(), data)),
+            )
+        self.assertTrue(catalog.verify_installed("tts", destination))
+        self.assertEqual(self.requests, [paths[name] for name in files])
+        phases = [data["phase"] for _, data in timed]
+        first_verification = phases.index("verifying")
+        self.assertNotIn("downloading", phases[first_verification:])
+        self.assertNotIn("switching", phases)
+        transfers = [
+            (when, data)
+            for when, data in timed
+            if data["phase"] == "downloading"
+            and data["completed_bytes"] < data["total_bytes"]
+        ]
+        self.assertEqual(len(transfers), 1)
+        self.assertTrue(all(data["source"] == "Steady" for _, data in transfers))
+        manifest_events = [
+            data
+            for _, data in timed
+            if data["phase"] == "verifying" and not data["filename"]
+        ]
+        self.assertTrue(manifest_events)
+        self.assertEqual(phases[-1], "ready")
+
     def test_cancellation_does_not_switch_and_staging_is_removed(self):
         expected = {
             "model.int8.onnx": (len(self.body), hashlib.sha256(self.body).hexdigest())

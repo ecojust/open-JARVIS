@@ -319,8 +319,9 @@ def emit_progress(kind, phase, *, progress=None, **data):
 
 
 class Progress:
-    def __init__(self, kind, directory, callback=None):
+    def __init__(self, kind, directory, callback=None, *, clock=None):
         self.kind, self.directory, self.callback = kind, str(directory), callback
+        self.clock = clock or time.monotonic
         self.last_time, self.last_phase = 0.0, None
 
     def __call__(
@@ -333,7 +334,7 @@ class Progress:
         force=False,
         **extra,
     ):
-        now = time.monotonic()
+        now = self.clock()
         if (
             not force
             and phase == self.last_phase

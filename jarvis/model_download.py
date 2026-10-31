@@ -79,7 +79,14 @@ class TransferProgress:
             phase,
             completed_bytes=completed_bytes,
             total_bytes=total_bytes,
-            **{**data, "eta_seconds": eta, "bytes_per_second": speed},
+            **{
+                **data,
+                # Controller snapshots merge fields. Whole-model verification
+                # must not inherit the last transferred file's identity.
+                "filename": data.get("filename", ""),
+                "eta_seconds": eta,
+                "bytes_per_second": speed,
+            },
         )
 
 
@@ -239,15 +246,16 @@ def download_verified(
                 **details,
             )
         download_message = (
-            (f"{restart_reason}；" if restart_reason else "")
-            + f"正在从 {source.name} {'续传' if offset else '下载'} {target.name}"
-        )
+            f"{restart_reason}；" if restart_reason else ""
+        ) + f"正在从 {source.name} {'续传' if offset else '下载'} {target.name}"
         report(
             "downloading",
             completed_bytes=completed_bytes + size,
             total_bytes=total,
             message=download_message,
-            force=True,
+            # Small-file boundaries share the aggregate transfer's throttle.
+            # A real failure/restart remains an immediate, visible transition.
+            force=bool(failures),
             **details,
         )
         headers = {"Accept-Encoding": "identity"}
@@ -279,12 +287,18 @@ def download_verified(
                     raise _SourceFailure("单个来源下载超时")
                 if size != expected_size:
                     raise _SourceFailure("文件未下载完整，已保留下载进度")
+                # The rolling digest comparison below is instantaneous. Do not
+                # bounce the whole UI into verification for every small file.
+                # The final manifest pass still verifies the complete model.
+                transfer_complete = completed_bytes + size >= total
                 report(
-                    "verifying",
+                    "verifying" if transfer_complete else "downloading",
                     completed_bytes=completed_bytes + size,
                     total_bytes=total,
-                    message=f"正在校验 {target.name}",
-                    force=True,
+                    message=f"正在校验 {target.name}"
+                    if transfer_complete
+                    else download_message,
+                    force=transfer_complete,
                     **details,
                 )
                 if digest.hexdigest() != expected_digest:
@@ -299,12 +313,15 @@ def download_verified(
                 and size == expected_size
                 and digest.hexdigest() == expected_digest
             ):
+                transfer_complete = completed_bytes + size >= total
                 report(
-                    "verifying",
+                    "verifying" if transfer_complete else "downloading",
                     completed_bytes=completed_bytes + size,
                     total_bytes=total,
-                    message=f"已收到完整文件，正在确认 {target.name}",
-                    force=True,
+                    message=f"已收到完整文件，正在确认 {target.name}"
+                    if transfer_complete
+                    else download_message,
+                    force=transfer_complete,
                     **details,
                 )
                 return source
