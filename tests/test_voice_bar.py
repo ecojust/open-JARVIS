@@ -57,21 +57,63 @@ class VoiceBarTests(unittest.TestCase):
         self.app.processEvents()
 
     def test_compact_bar_has_logo_and_real_expand_button(self):
-        self.assertGreaterEqual(self.tile.width(), 280)
-        self.assertLessEqual(self.tile.width(), 360)
-        self.assertLessEqual(self.tile.height(), 84)
+        self.assertGreaterEqual(self.tile.width(), 240)
+        self.assertLessEqual(self.tile.width(), 280)
+        self.assertLessEqual(self.tile.height(), 60)
         self.assertGreater(self.tile.width(), self.tile.height() * 3)
         self.assertFalse(self.tile.logo.isNull())
+        self.assertLessEqual(self.tile.logo.deviceIndependentSize().width(), 40)
         self.assertIsInstance(self.tile.expand_button, QPushButton)
         self.assertTrue(self.tile.expand_button.isVisible())
         self.assertTrue(self.tile.expand_button.accessibleName())
-        QTest.mouseClick(self.tile, Qt.MouseButton.LeftButton, pos=QPoint(110, 36))
+        QTest.mouseClick(self.tile, Qt.MouseButton.LeftButton, pos=QPoint(28, 28))
         self.controller.show_results.assert_called_once_with()
         QTest.mouseClick(self.tile.expand_button, Qt.MouseButton.LeftButton)
         self.assertEqual(self.controller.show_results.call_count, 2)
+        self.controller.toggle_pause.assert_not_called()
+
+    def test_capsule_and_circular_logo_have_transparent_corners(self):
+        for image in (self.tile.grab().toImage(), self.tile.logo.toImage()):
+            for x, y in (
+                (0, 0),
+                (image.width() - 1, 0),
+                (0, image.height() - 1),
+                (image.width() - 1, image.height() - 1),
+            ):
+                self.assertEqual(image.pixelColor(x, y).alpha(), 0)
+            self.assertGreater(
+                image.pixelColor(image.width() // 2, image.height() // 2).alpha(), 0
+            )
+
+    def test_waveform_click_and_keyboard_pause_resume_without_expanding(self):
+        button = self.tile.wave_button
+        self.assertIsInstance(button, QPushButton)
+        self.assertTrue(button.isVisible())
+        self.assertIn("暂停", button.accessibleName())
+
+        def toggle():
+            self.controller.user_paused = not self.controller.user_paused
+            paused = self.controller.user_paused
+            self.tile.set_state("已暂停" if paused else "正在聆听", "真实状态测试")
+            self.tile.set_listening(not paused)
+
+        self.controller.toggle_pause.side_effect = toggle
+        self.tile.set_listening(True)
+        self.tile.set_audio_level(0.75)
+        QTest.mouseClick(button, Qt.MouseButton.LeftButton)
+        self.assertTrue(self.controller.user_paused)
+        self.assertEqual(self.tile.audio_level, 0)
+        self.assertIn("继续", button.accessibleName())
+        button.setFocus()
+        QTest.keyClick(button, Qt.Key.Key_Space)
+        self.assertFalse(self.controller.user_paused)
+        self.assertTrue(self.tile.listening)
+        self.assertIn("暂停", button.accessibleName())
+        self.assertEqual(self.controller.toggle_pause.call_count, 2)
+        self.controller.show_results.assert_not_called()
 
     def test_drag_moves_and_persists_position_without_opening_results(self):
-        local = QPoint(110, 36)
+        local = QPoint(28, 28)
         origin = self.tile.pos()
         start = self.tile.mapToGlobal(local)
         delta = QPoint(QApplication.startDragDistance() + 25, 18)
@@ -115,13 +157,13 @@ class VoiceBarTests(unittest.TestCase):
             self.tile.x(), self.tile.y()
         )
         self.controller.show_results.assert_not_called()
+        self.controller.toggle_pause.assert_not_called()
 
-    def test_dragging_expand_button_does_not_trigger_a_click(self):
-        button = self.tile.expand_button
+    def _drag_button(self, button):
         local = button.rect().center()
         origin = self.tile.pos()
         start = button.mapToGlobal(local)
-        delta = QPoint(QApplication.startDragDistance() + 25, 18)
+        delta = QPoint(-QApplication.startDragDistance() - 25, -18)
         events = (
             (
                 QEvent.Type.MouseButtonPress,
@@ -162,12 +204,22 @@ class VoiceBarTests(unittest.TestCase):
             self.tile.x(), self.tile.y()
         )
         self.controller.show_results.assert_not_called()
+        self.controller.toggle_pause.assert_not_called()
         self.assertFalse(button.isDown())
-        QTest.mouseClick(button, Qt.MouseButton.LeftButton)
+
+    def test_dragging_expand_button_does_not_trigger_a_click(self):
+        self._drag_button(self.tile.expand_button)
+        QTest.mouseClick(self.tile.expand_button, Qt.MouseButton.LeftButton)
         self.controller.show_results.assert_called_once_with()
 
-    def test_context_menu_preserves_pause_speech_settings_models_and_quit(self):
-        point = QPoint(110, 36)
+    def test_dragging_waveform_does_not_toggle_or_expand(self):
+        self._drag_button(self.tile.wave_button)
+        QTest.mouseClick(self.tile.wave_button, Qt.MouseButton.LeftButton)
+        self.controller.toggle_pause.assert_called_once_with()
+        self.controller.show_results.assert_not_called()
+
+    def test_context_menu_preserves_settings_without_separate_model_window(self):
+        point = QPoint(28, 28)
         executed = []
 
         class NonBlockingMenu(QMenu):
@@ -193,8 +245,6 @@ class VoiceBarTests(unittest.TestCase):
             "停止播报",
             "查看任务与结果",
             "设置",
-            "语音模型管理",
-            "下载语音模型",
             "退出 JARVIS",
         ):
             self.assertIn(label, actions)
@@ -206,15 +256,8 @@ class VoiceBarTests(unittest.TestCase):
         self.controller.show_results.assert_called_once_with()
         actions["设置"].trigger()
         self.controller.show_settings.assert_called_once_with()
-        actions["语音模型管理"].trigger()
-        self.controller.show_models.assert_called_once_with()
-        models = actions["下载语音模型"].menu()
-        model_actions = models.actions()
-        self.assertEqual(len(model_actions), 2)
-        model_actions[0].trigger()
-        self.controller.download_model.assert_called_with("stt")
-        model_actions[1].trigger()
-        self.controller.download_model.assert_called_with("tts")
+        self.assertNotIn("语音模型管理", actions)
+        self.assertNotIn("下载语音模型", actions)
         actions["退出 JARVIS"].trigger()
         self.controller.request_quit.assert_called_once_with()
 

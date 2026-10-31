@@ -80,7 +80,7 @@ def build_tts_engine(directory: Path | str | None = None):
     directory = Path(directory)
     if not model_ready(directory):
         raise ValueError(
-            "Kokoro 语音模型缺失或不兼容。请打开客户端「设置 → 下载与管理语音模型」下载或校验。"
+            "Kokoro 语音模型缺失或不兼容。请在客户端设置的语音合成模型一行点击下载或校验。"
         )
     import sherpa_onnx
 

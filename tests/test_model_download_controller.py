@@ -8,8 +8,8 @@ from unittest.mock import Mock, patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QByteArray, QProcess
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QByteArray, QCoreApplication, QEvent, QProcess
+from PySide6.QtWidgets import QApplication, QDialog
 
 from jarvis.desktop_client import DesktopController
 
@@ -99,10 +99,9 @@ class ModelDownloadControllerTests(unittest.TestCase):
         self,
     ):
         self.controller.show_settings()
-        self.controller.settings_dialog.models_button.click()
-        dialog = self.controller.model_dialog
+        dialog = self.controller.settings_dialog
         self.assertTrue(dialog.isVisible())
-        dialog.cards["stt"].download_button.click()
+        dialog.model_rows["stt"].download_button.click()
         worker = self.controller._downloads["stt"]
         self.assertEqual(worker.launches[0][1][-1], "download-stt")
         self.controller.download_model("stt")
@@ -114,17 +113,19 @@ class ModelDownloadControllerTests(unittest.TestCase):
             completed_bytes=40,
             total_bytes=100,
         )
-        self.assertEqual(dialog.cards["stt"].progress.value(), 400)
+        self.assertEqual(dialog.model_rows["stt"].progress.value(), 400)
         dialog.close()
-        self.assertIsNone(self.controller.model_dialog)
+        self.assertIsNone(self.controller.settings_dialog)
         self.assertTrue(worker.running)
-        self.controller.show_models()
+        self.controller.show_settings()
         self.assertEqual(
-            self.controller.model_dialog.cards["stt"].progress.value(), 400
+            self.controller.settings_dialog.model_rows["stt"].progress.value(), 400
         )
         worker.send("download.completed", kind="stt", phase="ready")
         self.assertFalse(
-            self.controller.model_dialog.cards["stt"].download_button.isEnabled()
+            self.controller.settings_dialog.model_rows[
+                "stt"
+            ].download_button.isEnabled()
         )
         self.statuses["stt"] = "ready"
         worker.finish()
@@ -140,6 +141,73 @@ class ModelDownloadControllerTests(unittest.TestCase):
         self.assertEqual(self.controller._model_states["tts"]["phase"], "failed")
         self.assertFalse(self.controller.pending_settings)
 
+    def test_inline_download_keeps_unsaved_form_and_opens_no_additional_window(self):
+        self.controller.show_settings()
+        dialog = self.controller.settings_dialog
+        dialog.fields["OPENAI_MODEL"].setText("unsaved-model-name")
+        visible = {w for w in self.app.topLevelWidgets() if w.isVisible()}
+        with patch("jarvis.config.save_preferences") as save:
+            dialog.model_rows["stt"].download_button.click()
+            self.app.processEvents()
+            self.assertIs(self.controller.settings_dialog, dialog)
+            self.assertEqual(
+                {w for w in self.app.topLevelWidgets() if w.isVisible()}, visible
+            )
+            self.assertEqual(dialog.fields["OPENAI_MODEL"].text(), "unsaved-model-name")
+            self.assertEqual([w for w in visible if isinstance(w, QDialog)], [dialog])
+            dialog.reject()
+            save.assert_not_called()
+        self.assertTrue(self.controller._downloads["stt"].running)
+
+    def test_inline_progress_survives_results_disposal_and_eta_reset(self):
+        self.controller.show_results()
+        self.controller.show_settings()
+        dialog = self.controller.settings_dialog
+        self.assertIs(dialog.parent(), self.controller.tile)
+        dialog.model_rows["stt"].download_button.click()
+        worker = self.controller._downloads["stt"]
+        self.controller.results.hide()
+        self.controller._discard_hidden_results()
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        worker.send(
+            "download.progress",
+            kind="stt",
+            phase="downloading",
+            completed_bytes=40,
+            total_bytes=100,
+            eta_seconds=90,
+            bytes_per_second=10,
+        )
+        row = dialog.model_rows["stt"]
+        self.assertEqual(row.progress.value(), 400)
+        self.assertIn("1 分", row.eta_label.text())
+        worker.send(
+            "download.progress",
+            kind="stt",
+            phase="switching",
+            completed_bytes=0,
+            eta_seconds=None,
+            bytes_per_second=None,
+        )
+        self.assertNotIn("1 分", row.eta_label.text())
+        worker.send("download.progress", kind="stt", phase="verifying")
+        self.assertTrue(row.eta_label.isHidden())
+
+    def test_reopening_settings_preserves_failed_download_and_retry(self):
+        self.controller.download_model("stt")
+        worker = self.controller._downloads["stt"]
+        worker.send(
+            "download.error", kind="stt", phase="failed", message="全部来源校验失败"
+        )
+        worker.finish(1)
+        self.controller.settings_dialog.reject()
+        self.controller.show_settings()
+        row = self.controller.settings_dialog.model_rows["stt"]
+        self.assertIn("全部来源校验失败", row.detail_label.text())
+        self.assertTrue(row.download_button.isEnabled())
+        row.download_button.click()
+        self.assertIsNot(self.controller._downloads["stt"], worker)
+
     def test_source_switch_survives_reopening_and_cancel_blocks_late_progress(self):
         self.controller.download_model("stt")
         worker = self.controller._downloads["stt"]
@@ -154,9 +222,9 @@ class ModelDownloadControllerTests(unittest.TestCase):
             total_bytes=100,
             message="连接超时，正在切换到备用来源",
         )
-        self.controller.model_dialog.close()
-        self.controller.show_models()
-        card = self.controller.model_dialog.cards["stt"]
+        self.controller.settings_dialog.close()
+        self.controller.show_settings()
+        card = self.controller.settings_dialog.model_rows["stt"]
         self.assertEqual(card.status_label.text(), "正在切换来源")
         self.assertIn("HF Mirror（2/2）", card.source_label.text())
         self.assertEqual(card.progress.value(), 100)
@@ -184,29 +252,35 @@ class ModelDownloadControllerTests(unittest.TestCase):
     def test_cancel_blocks_late_success_and_keeps_retry_available(self):
         self.controller.download_model("stt")
         worker = self.controller._downloads["stt"]
-        self.controller.model_dialog.cards["stt"].cancel_button.click()
+        self.controller.settings_dialog.model_rows["stt"].cancel_button.click()
         self.assertTrue(worker.terminated)
         worker.send("download.completed", kind="stt", phase="ready")
         worker.finish()
         self.assertEqual(self.controller._model_states["stt"]["phase"], "cancelled")
         self.assertFalse(self.controller.pending_settings)
         self.assertTrue(
-            self.controller.model_dialog.cards["stt"].download_button.isEnabled()
+            self.controller.settings_dialog.model_rows[
+                "stt"
+            ].download_button.isEnabled()
         )
-        self.controller.model_dialog.cards["stt"].download_button.click()
+        self.controller.settings_dialog.model_rows["stt"].download_button.click()
         self.assertIsNot(self.controller._downloads["stt"], worker)
 
     def test_start_failure_has_visible_retry_and_independent_model_buttons(self):
         self.controller.download_model("stt")
         self.assertTrue(
-            self.controller.model_dialog.cards["tts"].download_button.isEnabled()
+            self.controller.settings_dialog.model_rows[
+                "tts"
+            ].download_button.isEnabled()
         )
         worker = self.controller._downloads["stt"]
         worker.errorOccurred.emit(QProcess.ProcessError.FailedToStart)
         self.assertNotIn("stt", self.controller._downloads)
         self.assertEqual(self.controller._model_states["stt"]["phase"], "failed")
         self.assertTrue(
-            self.controller.model_dialog.cards["stt"].download_button.isEnabled()
+            self.controller.settings_dialog.model_rows[
+                "stt"
+            ].download_button.isEnabled()
         )
 
     def test_audio_levels_only_update_live_microphone_without_task_refresh(self):

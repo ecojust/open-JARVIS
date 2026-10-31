@@ -1,7 +1,9 @@
 """Bounded, sequential failover for pinned model files in private staging."""
 
+from collections import deque
 from dataclasses import dataclass
 import hashlib
+import math
 from pathlib import Path
 import time
 
@@ -10,6 +12,74 @@ import httpx
 
 DOWNLOAD_TIMEOUT = httpx.Timeout(15, connect=10)
 SOURCE_DEADLINE_SECONDS = 30 * 60
+
+
+class TransferProgress:
+    """Measure aggregate download throughput without timers or extra I/O.
+
+    Each worker owns one estimator. A short rolling window includes connection
+    gaps between small files, so Kokoro's file fallback does not restart its ETA
+    377 times. Source changes and byte-counter rollbacks discard old samples.
+    The underlying ``Progress`` continues to throttle IPC output.
+    """
+
+    WINDOW_SECONDS = 12.0
+    SAMPLE_SECONDS = 0.2
+    WARMUP_SECONDS = 1.0
+
+    def __init__(self, report, *, clock=None):
+        self.report = report
+        self.clock = clock or time.monotonic
+        # At most 5 samples/second plus a boundary sample. maxlen also bounds
+        # memory if a caller supplies an unusual test clock or timing pattern.
+        self.samples = deque(maxlen=64)
+        self.source = None
+        self.last_completed = 0
+
+    def _reset(self):
+        self.samples.clear()
+        self.source = None
+        self.last_completed = 0
+
+    def __call__(self, phase, *, completed_bytes=0, total_bytes=0, **data):
+        eta, speed = None, None
+        if phase == "downloading":
+            now = self.clock()
+            source = (data.get("source"), data.get("source_index"), total_bytes)
+            if source != self.source or completed_bytes < self.last_completed:
+                self._reset()
+                self.source = source
+            self.last_completed = completed_bytes
+            if not self.samples:
+                self.samples.append((now, completed_bytes))
+            elif now - self.samples[-1][0] >= self.SAMPLE_SECONDS:
+                self.samples.append((now, completed_bytes))
+            # Retain one sample just before the rolling boundary, avoiding a
+            # near-zero denominator after a long connection gap.
+            while (
+                len(self.samples) > 2
+                and now - self.samples[1][0] >= self.WINDOW_SECONDS
+            ):
+                self.samples.popleft()
+            started, baseline = self.samples[0]
+            elapsed, transferred = now - started, completed_bytes - baseline
+            if (
+                elapsed >= self.WARMUP_SECONDS
+                and transferred > 0
+                and 0 <= completed_bytes < total_bytes
+            ):
+                speed = transferred / elapsed
+                eta = math.ceil((total_bytes - completed_bytes) / speed)
+        elif phase != "verifying":
+            self._reset()
+        # Verifying may be between two files. Preserve measurement history but
+        # never claim a network ETA for hashing, installation or completion.
+        self.report(
+            phase,
+            completed_bytes=completed_bytes,
+            total_bytes=total_bytes,
+            **{**data, "eta_seconds": eta, "bytes_per_second": speed},
+        )
 
 
 @dataclass(frozen=True)

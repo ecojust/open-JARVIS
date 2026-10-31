@@ -416,7 +416,6 @@ class DesktopController(QObject):
         self.errors = {}
         self.results = None
         self.settings_dialog = None
-        self.model_dialog = None
         self.client = None
         self.token = ""
         self.instance_id = ""
@@ -1392,6 +1391,8 @@ class DesktopController(QObject):
         from .config import read_preferences
         from .desktop_ui import SettingsDialog
 
+        if self.closing:
+            return
         if self.settings_dialog:
             self.settings_dialog.raise_()
             self.settings_dialog.activateWindow()
@@ -1416,19 +1417,20 @@ class DesktopController(QObject):
                 values[key] = os.environ[key]
         values["UI_SPEECH_ENABLED"] = self.speech_enabled
         values["UI_AUTO_FULLSCREEN"] = self.auto_fullscreen
-        dialog = SettingsDialog(
-            values,
-            self.results if self.results and self.results.isVisible() else self.tile,
-        )
+        # Settings and inline downloads outlive the disposable results window.
+        dialog = SettingsDialog(values, self.tile)
         self.settings_dialog = dialog
-        dialog.models_requested.connect(self.show_models)
+        dialog.model_download_requested.connect(self.download_model)
+        dialog.model_cancel_requested.connect(self.cancel_model_download)
         dialog.finished.connect(lambda result: self._settings_finished(dialog, result))
+        self._refresh_model_states()
         dialog.open()
 
     def _settings_finished(self, dialog, result):
         from .config import save_preferences
 
-        self.settings_dialog = None
+        if self.settings_dialog is dialog:
+            self.settings_dialog = None
         if result != QDialog.DialogCode.Accepted:
             dialog.deleteLater()
             return
@@ -1507,35 +1509,25 @@ class DesktopController(QObject):
 
     def _set_model_state(self, model_kind, **values):
         self._model_states.setdefault(model_kind, {}).update(values)
-        if self.model_dialog:
-            self.model_dialog.update_model(model_kind, self._model_states[model_kind])
+        if self.settings_dialog:
+            self.settings_dialog.update_model(
+                model_kind, self._model_states[model_kind]
+            )
 
-    def show_models(self):
-        from .model_manager_ui import ModelManagerDialog
-
-        if self.closing:
-            return
-        if not self.model_dialog:
-            # The bar lives for the whole application; a settings/results
-            # window may be discarded while a download is still running.
-            self.model_dialog = ModelManagerDialog(self.tile)
-            self.model_dialog.download_requested.connect(self.download_model)
-            self.model_dialog.cancel_requested.connect(self.cancel_model_download)
-            self.model_dialog.finished.connect(self._models_closed)
+    def _refresh_model_states(self):
         for kind in ("stt", "tts"):
             if kind not in self._downloads:
                 # Metadata and file sizes only; expensive verification belongs
                 # to the separate installer process, never the GUI thread.
-                self._set_model_state(kind, **self._model_status(kind))
-            self.model_dialog.update_model(kind, self._model_states[kind])
-        self.model_dialog.show()
-        self.model_dialog.raise_()
-        self.model_dialog.activateWindow()
-
-    def _models_closed(self, result):
-        dialog, self.model_dialog = self.model_dialog, None
-        if dialog:
-            dialog.deleteLater()
+                values = self._model_status(kind)
+                cached = self._model_states.get(kind, {})
+                if cached.get("phase") in {"failed", "cancelled"}:
+                    # Reopening settings must not hide an integrity failure or
+                    # discard the inline retry action after a cancelled worker.
+                    values.update(cached)
+                self._set_model_state(kind, **values)
+            elif self.settings_dialog:
+                self.settings_dialog.update_model(kind, self._model_states[kind])
 
     def cancel_model_download(self, kind):
         process = self._downloads.get(kind)
@@ -1557,7 +1549,9 @@ class DesktopController(QObject):
     def download_model(self, kind):
         if kind not in {"stt", "tts"} or self.closing:
             return
-        self.show_models()
+        self.show_settings()
+        if self.settings_dialog is None:
+            return
         if kind in self._downloads:
             return
         process = self._process_factory(self)
@@ -1575,6 +1569,8 @@ class DesktopController(QObject):
             source="",
             source_index=0,
             source_count=0,
+            eta_seconds=None,
+            bytes_per_second=None,
         )
 
         def progress():
@@ -1699,8 +1695,8 @@ class DesktopController(QObject):
                 process.waitForFinished(300)
         if self.results:
             self.results.hide()
-        if self.model_dialog:
-            self.model_dialog.close()
+        if self.settings_dialog:
+            self.settings_dialog.close()
         self.tile.hide()
         if self._media_directory is not None:
             self._media_directory.cleanup()

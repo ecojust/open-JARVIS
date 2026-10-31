@@ -13,6 +13,7 @@ from .model_download import (
     DOWNLOAD_TIMEOUT,
     DownloadSource,
     ModelDownloadError,
+    TransferProgress,
     download_verified,
 )
 
@@ -171,7 +172,7 @@ def download(directory: Path, archive: Path | None = None, *, progress=None) -> 
     )
 
     directory = Path(directory).resolve()
-    report = Progress("tts", directory, progress)
+    report = TransferProgress(Progress("tts", directory, progress))
     try:
         with installation_lock(directory):
             report("checking", message="正在检查中文播报模型", force=True)
@@ -273,7 +274,7 @@ def main() -> None:
         download(directory, args.archive)
     except (httpx.HTTPError, OSError, ValueError, tarfile.TarError) as exc:
         raise SystemExit(
-            f"语音模型安装失败：{exc}。请在客户端模型管理中重试。"
+            f"语音模型安装失败：{exc}。请在客户端设置中重试下载。"
         ) from exc
 
 

@@ -129,7 +129,7 @@ def _manifest_spec(kind, manifest):
         or manifest["schema_version"] != MANIFEST_SCHEMA
     ):
         raise ValueError(
-            "模型清单版本不受当前应用支持；原模型已保留，请选择兼容模型或升级应用。"
+            "模型清单版本不受当前应用支持；原模型已保留，请升级客户端以支持此模型版本。"
         )
     spec = next(
         (
@@ -144,7 +144,7 @@ def _manifest_spec(kind, manifest):
     )
     if spec is None:
         raise ValueError(
-            "模型格式或版本不受当前应用支持；原模型已保留，请在模型管理中选择兼容模型。"
+            "模型格式或版本不受当前应用支持；原模型已保留，请升级客户端以支持此模型版本。"
         )
     files = manifest.get("files")
     if not isinstance(files, dict) or not 1 <= len(files) <= 4096:
@@ -219,13 +219,13 @@ def inspect_directory(kind: str, directory: Path) -> dict:
                 not _regular_file(directory, name)
                 or (directory / name).stat().st_size <= 0
             ):
-                result["message"] = "模型文件不完整，请在模型管理中下载或重试。"
+                result["message"] = "模型文件不完整，请在设置中点击下载或重试。"
                 return result
             if (
                 manifest
                 and (directory / name).stat().st_size != manifest["files"][name]["size"]
             ):
-                result["message"] = "模型文件尺寸已改变，请在模型管理中重新下载。"
+                result["message"] = "模型文件尺寸已改变，请在设置中重新下载。"
                 return result
         result.update(state="ready", message="模型已就绪")
         if manifest is None:
@@ -418,9 +418,7 @@ def _recover_publication(directory):
         raise ValueError("模型恢复目录不能使用符号链接")
     if not directory.exists():
         if not backup.is_dir():
-            raise ValueError(
-                "模型安装尚未完成且找不到旧目录，请在模型管理中选择新的目录。"
-            )
+            raise ValueError("模型安装尚未完成且缺少恢复文件，暂时无法继续下载。")
         backup.rename(directory)
     journal.unlink()
 
@@ -530,7 +528,7 @@ def write_manifest(
         raise ValueError("模型文件数量异常")
     total = sum(path.stat().st_size for path in paths)
     if total > 1_500_000_000:
-        raise ValueError("模型目录超过 1.5 GB 安装预算，请选择仅包含语音模型的目录。")
+        raise ValueError("模型目录超过 1.5 GB 安装预算，原文件已保留。")
     completed, files = 0, {}
     for path in paths:
         name = path.relative_to(directory).as_posix()

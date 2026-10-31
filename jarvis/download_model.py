@@ -5,7 +5,12 @@ from pathlib import Path
 
 import httpx
 
-from .model_download import DOWNLOAD_TIMEOUT, DownloadSource, download_verified
+from .model_download import (
+    DOWNLOAD_TIMEOUT,
+    DownloadSource,
+    TransferProgress,
+    download_verified,
+)
 
 
 MODEL_REPO = "https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/2365baeacb507f821a0c8120fcee3d484dba7a07"
@@ -47,7 +52,7 @@ def download(directory: Path, *, progress=None) -> None:
     )
 
     directory = Path(directory).resolve()
-    report = Progress("stt", directory, progress)
+    report = TransferProgress(Progress("stt", directory, progress))
     try:
         with installation_lock(directory):
             report("checking", message="正在检查语音识别模型", force=True)
@@ -64,7 +69,7 @@ def download(directory: Path, *, progress=None) -> None:
                     "stt", directory, report
                 ):
                     raise ValueError(
-                        "已安装模型校验失败，原文件已保留，请在设置中选择新的模型目录后下载。"
+                        "已安装模型校验失败，原文件已保留。请升级客户端后在设置中重试下载。"
                     )
                 if not (directory / MANIFEST_NAME).is_file():
                     write_manifest(
@@ -145,7 +150,7 @@ def main():
     try:
         download(download_directory("stt"))
     except (httpx.HTTPError, OSError, ValueError) as exc:
-        raise SystemExit(f"模型下载失败：{exc}。请在客户端模型管理中重试。") from exc
+        raise SystemExit(f"模型下载失败：{exc}。请在客户端设置中重试下载。") from exc
 
 
 if __name__ == "__main__":

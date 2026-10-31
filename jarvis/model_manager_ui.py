@@ -6,15 +6,12 @@ import math
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
-    QDialog,
-    QDialogButtonBox,
-    QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QProgressBar,
     QPushButton,
-    QScrollArea,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -65,7 +62,7 @@ def _size(value):
     return f"{value / 1024:.1f} KiB"
 
 
-class ModelCard(QFrame):
+class ModelDownloadRow(QWidget):
     """Render one controller-owned snapshot; actions never run downloads here."""
 
     download_requested = Signal(str)
@@ -75,36 +72,53 @@ class ModelCard(QFrame):
         super().__init__(parent)
         self.kind = kind
         self.snapshot = {"phase": "checking"}
-        self.setObjectName("modelCard")
-        name, description = _MODEL_NAMES[kind]
+        self.setObjectName("modelDownloadRow")
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+        name, _ = _MODEL_NAMES[kind]
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 13, 16, 13)
-        layout.setSpacing(8)
-        title_row = QHBoxLayout()
-        self.name_label = QLabel(name)
-        self.name_label.setTextFormat(Qt.TextFormat.PlainText)
-        self.name_label.setWordWrap(True)
-        self.name_label.setObjectName("modelName")
-        title_row.addWidget(self.name_label, 1)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(5)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        row = QHBoxLayout()
+        row.setSpacing(6)
+        self.model_field = QLineEdit(name)
+        self.model_field.setReadOnly(True)
+        self.model_field.setAcceptDrops(False)
+        self.model_field.setAccessibleName(name + " 模型")
+        row.addWidget(self.model_field, 1)
+        self.download_button = QPushButton("下载")
+        self.download_button.setObjectName("primary")
+        self.download_button.setAutoDefault(False)
+        self.download_button.setAccessibleName("下载或校验 " + name)
+        self.download_button.clicked.connect(self._download)
+        row.addWidget(self.download_button)
+        self.cancel_button = QPushButton("取消下载")
+        self.cancel_button.setAutoDefault(False)
+        self.cancel_button.setAccessibleName("取消 " + name + " 下载")
+        self.cancel_button.clicked.connect(self._cancel)
+        row.addWidget(self.cancel_button)
+        layout.addLayout(row)
+        state_row = QHBoxLayout()
         self.status_label = QLabel()
         self.status_label.setTextFormat(Qt.TextFormat.PlainText)
         self.status_label.setObjectName("modelStatus")
-        title_row.addWidget(self.status_label)
-        layout.addLayout(title_row)
-        purpose = QLabel(description)
-        purpose.setWordWrap(True)
-        purpose.setObjectName("muted")
-        layout.addWidget(purpose)
+        state_row.addWidget(self.status_label)
         self.version_label = QLabel()
         self.version_label.setTextFormat(Qt.TextFormat.PlainText)
         self.version_label.setWordWrap(True)
         self.version_label.setObjectName("muted")
-        layout.addWidget(self.version_label)
+        state_row.addWidget(self.version_label, 1)
+        layout.addLayout(state_row)
         self.progress = QProgressBar()
         self.progress.setAccessibleName(name + " 下载进度")
         self.progress.setRange(0, 1000)
         self.progress.setFormat("%p%")
         layout.addWidget(self.progress)
+        self.eta_label = QLabel()
+        self.eta_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.eta_label.setObjectName("muted")
+        self.eta_label.setWordWrap(True)
+        layout.addWidget(self.eta_label)
         self.source_label = QLabel()
         self.source_label.setTextFormat(Qt.TextFormat.PlainText)
         self.source_label.setWordWrap(True)
@@ -115,24 +129,6 @@ class ModelCard(QFrame):
         self.detail_label.setWordWrap(True)
         self.detail_label.setObjectName("muted")
         layout.addWidget(self.detail_label)
-        self.path_field = QLineEdit()
-        self.path_field.setReadOnly(True)
-        self.path_field.setAccessibleName(name + " 模型保存位置")
-        self.path_field.setPlaceholderText("下载完成后显示本机保存位置")
-        self.path_field.setToolTip("模型保存位置，可选择复制")
-        layout.addWidget(self.path_field)
-        actions = QHBoxLayout()
-        actions.addStretch(1)
-        self.cancel_button = QPushButton("取消下载")
-        self.cancel_button.setAccessibleName("取消 " + name + " 下载")
-        self.cancel_button.clicked.connect(self._cancel)
-        actions.addWidget(self.cancel_button)
-        self.download_button = QPushButton("下载模型")
-        self.download_button.setObjectName("primary")
-        self.download_button.setAccessibleName("下载或校验 " + name)
-        self.download_button.clicked.connect(self._download)
-        actions.addWidget(self.download_button)
-        layout.addLayout(actions)
         self.update_snapshot({})
 
     def _download(self):
@@ -152,6 +148,8 @@ class ModelCard(QFrame):
             and "message" not in values
         ):
             self.snapshot.pop("message", None)
+        if values.get("phase") == "switching":
+            self.snapshot.pop("eta_seconds", None)
         self.snapshot.update(values)
         phase = self.snapshot.get("phase", "checking")
         known = phase in _PHASE_NAMES
@@ -159,22 +157,23 @@ class ModelCard(QFrame):
         self.status_label.setText(_PHASE_NAMES.get(phase, "状态待确认"))
         name = _text(self.snapshot.get("display_name"), 100)
         if name:
-            self.name_label.setText(name)
+            self.model_field.setText(name)
         metadata = []
         version = _text(
             self.snapshot.get("display_version") or self.snapshot.get("version"), 100
         )
         if version:
             metadata.append("版本 " + version)
-        size = _size(self.snapshot.get("size_bytes"))
+        transfer_size = _number(self.snapshot.get("total_bytes"))
+        size = _size(
+            transfer_size
+            if phase in {"downloading", "switching"} and transfer_size
+            else self.snapshot.get("size_bytes")
+        )
         if size:
             metadata.append("下载大小 " + size)
         self.version_label.setText(" · ".join(metadata))
         self.version_label.setVisible(bool(metadata))
-        directory = _text(self.snapshot.get("directory"), 2000)
-        self.path_field.setText(directory)
-        self.path_field.setCursorPosition(0)
-        self.path_field.setVisible(bool(directory))
         completed = _number(self.snapshot.get("completed_bytes"))
         total = _number(self.snapshot.get("total_bytes"))
         if busy and phase in {"downloading", "switching"} and total:
@@ -189,7 +188,31 @@ class ModelCard(QFrame):
             self.progress.setRange(0, 1000)
             self.progress.setValue(1000 if phase == "ready" else 0)
             self.progress.setFormat("已完成" if phase == "ready" else "%p%")
-        self.progress.setVisible(busy or phase == "ready")
+        self.progress.setVisible(busy)
+        eta = self.snapshot.get("eta_seconds")
+        if phase in {"downloading", "switching"}:
+            if (
+                phase == "downloading"
+                and type(eta) in (int, float)
+                and math.isfinite(eta)
+                and eta >= 0
+            ):
+                seconds = min(math.ceil(eta), 7 * 24 * 3600)
+                hours, remainder = divmod(seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                duration = (
+                    f"{hours} 小时 {minutes} 分"
+                    if hours
+                    else f"{minutes} 分 {seconds} 秒"
+                    if minutes
+                    else f"{seconds} 秒"
+                )
+                self.eta_label.setText("预计剩余 " + duration)
+            else:
+                self.eta_label.setText("正在估算剩余时间…")
+        else:
+            self.eta_label.clear()
+        self.eta_label.setVisible(phase in {"downloading", "switching"})
         source = _text(self.snapshot.get("source"), 100)
         source_index = int(_number(self.snapshot.get("source_index")))
         source_count = int(_number(self.snapshot.get("source_count")))
@@ -217,85 +240,14 @@ class ModelCard(QFrame):
             _text(self.snapshot.get("message"), 800)
             or fallback.get(phase, "模型状态暂不可用，请稍后重试。")
         )
+        self.detail_label.setVisible(phase not in {"ready", "missing"})
         label = {
-            "ready": "校验模型",
-            "incompatible": "下载兼容版本",
-            "failed": "重试下载",
-            "cancelled": "重试下载",
-        }.get(phase, "下载模型")
+            "ready": "校验",
+            "incompatible": "下载",
+            "failed": "重试",
+            "cancelled": "重试",
+        }.get(phase, "下载")
         self.download_button.setText(label)
         self.download_button.setEnabled(not busy)
         self.cancel_button.setVisible(busy)
         self.cancel_button.setEnabled(known and phase != "cancelling")
-
-
-class ModelManagerDialog(QDialog):
-    """A lazy view. Closing it keeps controller-owned downloads running."""
-
-    download_requested = Signal(str)
-    cancel_requested = Signal(str)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        from .desktop_ui import STYLE
-
-        self.setWindowTitle("JARVIS 语音模型")
-        self.setStyleSheet(
-            STYLE
-            + """
-            QFrame#modelCard { background: #111e30; border: 1px solid #2c415e; border-radius: 10px; }
-            QFrame#modelCard QLabel { background: transparent; }
-            QLabel#modelName { font-size: 19px; font-weight: 600; }
-            QLabel#modelStatus { color: #8bb9ff; }
-            QPushButton#primary:disabled { background: #1b2b40; border-color: #2c4059; color: #708198; }
-            QProgressBar { border: 1px solid #314963; border-radius: 5px; text-align: center; min-height: 22px; background: #0b1726; }
-            QProgressBar::chunk { background: #285b9d; border-radius: 4px; }
-            QScrollArea { border: none; }
-            """
-        )
-        self.resize(610, 690)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 18, 20, 16)
-        heading = QLabel("下载语音模型")
-        heading.setObjectName("heading")
-        layout.addWidget(heading)
-        introduction = QLabel(
-            "分别下载语音识别与中文播报模型，完成后自动加载。来源不可用时自动切换。"
-        )
-        introduction.setWordWrap(True)
-        introduction.setObjectName("muted")
-        layout.addWidget(introduction)
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        body = QWidget()
-        body_layout = QVBoxLayout(body)
-        body_layout.setContentsMargins(0, 4, 0, 4)
-        body_layout.setSpacing(12)
-        self.cards = {}
-        for kind in ("stt", "tts"):
-            card = ModelCard(kind, body)
-            card.download_requested.connect(self.download_requested.emit)
-            card.cancel_requested.connect(self.cancel_requested.emit)
-            self.cards[kind] = card
-            body_layout.addWidget(card)
-        body_layout.addStretch(1)
-        scroll.setWidget(body)
-        layout.addWidget(scroll, 1)
-        self.persistence_note = QLabel(
-            "已下载模型保存在用户目录，升级客户端后会检查兼容性并复用；"
-            "不同模型版本独立保存。关闭此窗口不会中断下载。"
-        )
-        self.persistence_note.setObjectName("muted")
-        self.persistence_note.setWordWrap(True)
-        layout.addWidget(self.persistence_note)
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
-        buttons.button(QDialogButtonBox.StandardButton.Close).setText("关闭")
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
-
-    def update_model(self, kind: str, status: dict):
-        if kind not in self.cards:
-            raise ValueError("Unknown speech model")
-        if not isinstance(status, dict):
-            raise TypeError("Model status must be a mapping")
-        self.cards[kind].update_snapshot(status)

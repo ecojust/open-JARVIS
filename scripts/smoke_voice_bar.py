@@ -131,6 +131,14 @@ def main():
                             str(output / "02-real-pcm-wave.png")
                         )
             assert best > 0
+            controller.tile.wave_button.click()
+            assert controller.user_paused
+            assert controller.tile.audio_level == 0
+            assert not controller.results.isVisible()
+            controller.tile.wave_button.click()
+            assert not controller.user_paused
+            assert not controller.results.isVisible()
+            report["checks"]["center_wave_pause_resume_without_expanding"] = True
             controller.handle_audio_event(
                 "audio.level",
                 {
@@ -145,14 +153,17 @@ def main():
             # Keep current work intact while verification processes run.
             controller.tasks["acceptance-hold"] = {"status": "running"}
             controller.show_settings()
-            controller.settings_dialog.models_button.click()
-            report["checks"]["settings_model_button"] = (
-                controller.model_dialog.isVisible()
+            report["checks"]["settings_inline_model_buttons"] = (
+                controller.settings_dialog.isVisible()
+                and set(controller.settings_dialog.model_rows) == {"stt", "tts"}
+            )
+            report["checks"]["no_model_directory_import_fields"] = not any(
+                name.endswith("MODEL_DIR") for name in controller.settings_dialog.fields
             )
             if args.verify_installed_models:
                 workers = []
                 for kind in ("stt", "tts"):
-                    controller.model_dialog.cards[kind].download_button.click()
+                    controller.settings_dialog.model_rows[kind].download_button.click()
                     workers.append(controller._downloads[kind])
                 until(lambda: not controller._downloads)
                 assert all(
@@ -164,8 +175,12 @@ def main():
                     "real GUI buttons / real worker processes / existing weight hashes; no new network download"
                 )
                 report["checks"]["verified_models_defer_reload_until_idle"] = True
-            controller.model_dialog.grab().save(str(output / "03-model-manager.png"))
-            controller.model_dialog.close()
+            # Let nested row/form layouts settle after busy widgets disappear.
+            app.processEvents()
+            app.processEvents()
+            controller.settings_dialog.grab().save(
+                str(output / "03-inline-model-settings.png")
+            )
             controller.settings_dialog.reject()
             controller.tasks.clear()
             if args.verify_installed_models:

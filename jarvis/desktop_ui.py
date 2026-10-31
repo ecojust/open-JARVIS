@@ -27,7 +27,6 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QFileDialog,
     QFormLayout,
     QHBoxLayout,
     QLabel,
@@ -37,6 +36,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMenu,
     QPlainTextEdit,
+    QScrollArea,
     QPushButton,
     QSplitter,
     QSizePolicy,
@@ -129,7 +129,7 @@ class VoiceTile(QWidget):
         )
         self.controller = controller
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(320, 72)
+        self.setFixedSize(264, 56)
         self.setAccessibleName("JARVIS 生肖羊语音条")
         self.setCursor(Qt.CursorShape.OpenHandCursor)
         self.setStyleSheet(STYLE)
@@ -144,33 +144,74 @@ class VoiceTile(QWidget):
         self._dragged = False
         ratio = max(1.0, self.devicePixelRatioF())
         pixmap = QPixmap(str(_asset("assets/branding/open-jarvis-sheep.png")))
-        self.logo = pixmap.scaled(
-            QSize(round(56 * ratio), round(56 * ratio)),
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation,
+        self.logo = QPixmap()
+        if not pixmap.isNull():
+            from PySide6.QtGui import QPainterPath
+
+            # Clip once at construction; painting a live waveform never needs
+            # to rescale or re-mask the branding asset.
+            self.logo = QPixmap(round(40 * ratio), round(40 * ratio))
+            self.logo.fill(Qt.GlobalColor.transparent)
+            self.logo.setDevicePixelRatio(ratio)
+            logo_painter = QPainter(self.logo)
+            logo_painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            logo_painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            circle = QPainterPath()
+            circle.addEllipse(0, 0, 40, 40)
+            logo_painter.setClipPath(circle)
+            logo_painter.drawPixmap(QRect(0, 0, 40, 40), pixmap)
+            logo_painter.end()
+        self.wave_button = QPushButton(self)
+        self.wave_button.setGeometry(54, 6, 158, 44)
+        self.wave_button.setCheckable(True)
+        self.wave_button.setAutoDefault(False)
+        self.wave_button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.wave_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.wave_button.setAccessibleDescription(
+            "声浪显示实际收音音量；按空格或点击可暂停和继续接听。"
         )
-        self.logo.setDevicePixelRatio(ratio)
+        self.wave_button.setStyleSheet(
+            "QPushButton { background: transparent; border: 1px solid transparent; "
+            "border-radius: 12px; padding: 0; }"
+            "QPushButton:hover { background: rgba(88, 139, 204, 20); }"
+            "QPushButton:pressed { background: rgba(88, 139, 204, 35); }"
+            "QPushButton:focus { border-color: #719fd5; }"
+        )
+        self.wave_button.clicked.connect(self._toggle_listening)
+        self.wave_button.installEventFilter(self)
         self.expand_button = QPushButton(self)
-        icon = QPixmap(round(20 * ratio), round(20 * ratio))
+        icon = QPixmap(round(16 * ratio), round(16 * ratio))
         icon.fill(Qt.GlobalColor.transparent)
         icon.setDevicePixelRatio(ratio)
         arrow = QPainter(icon)
         arrow.setRenderHint(QPainter.RenderHint.Antialiasing)
-        arrow.setPen(QPen(QColor("#dce9fa"), 1.8))
-        arrow.drawLine(4, 16, 16, 4)
-        arrow.drawLine(8, 4, 16, 4)
-        arrow.drawLine(16, 4, 16, 12)
+        pen = QPen(QColor("#dce9fa"), 1.7)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        arrow.setPen(pen)
+        arrow.drawLine(3, 13, 13, 3)
+        arrow.drawLine(6, 3, 13, 3)
+        arrow.drawLine(13, 3, 13, 10)
         arrow.end()
         self.expand_button.setIcon(QIcon(icon))
-        self.expand_button.setIconSize(QSize(20, 20))
-        self.expand_button.setGeometry(260, 14, 48, 44)
+        self.expand_button.setIconSize(QSize(16, 16))
+        self.expand_button.setGeometry(220, 10, 36, 36)
+        self.expand_button.setAutoDefault(False)
         self.expand_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.expand_button.setAccessibleName("展开 JARVIS 任务与结果")
         self.expand_button.setToolTip("查看任务与结果")
-        self.expand_button.setStyleSheet("QPushButton { padding: 0; }")
+        self.expand_button.setStyleSheet(
+            "QPushButton { background: #1b304b; border: 1px solid #385779; "
+            "border-radius: 18px; padding: 0; }"
+            "QPushButton:hover { background: #294969; border-color: #6a94c2; }"
+            "QPushButton:pressed { background: #32597e; }"
+            "QPushButton:focus { border-color: #8bb9ec; }"
+        )
         self.expand_button.clicked.connect(controller.show_results)
         self.expand_button.installEventFilter(self)
-        self.setToolTip(self.detail + "\n点击查看结果 · 拖动移动 · 右键更多操作")
+        self._sync_listening_action()
+        self.setToolTip(
+            self.detail + "\n点击声浪暂停/继续 · 展开查看结果 · 拖动移动 · 右键更多操作"
+        )
         screen = QApplication.primaryScreen()
         if screen:
             area = screen.availableGeometry()
@@ -182,18 +223,36 @@ class VoiceTile(QWidget):
         if self.isVisible():
             self.update()
 
+    def _sync_listening_action(self):
+        # A half-duplex TTS pause is different from the user's explicit pause.
+        paused = bool(self.controller.user_paused)
+        action = "继续聆听" if paused else "暂停聆听"
+        if self.wave_button.isChecked() == paused:
+            self.wave_button.setChecked(not paused)
+        if self.wave_button.accessibleName() != action:
+            self.wave_button.setAccessibleName(action)
+            self.wave_button.setToolTip(action + " · 拖动移动语音条")
+
+    def _toggle_listening(self):
+        self.controller.toggle_pause()
+        self._sync_listening_action()
+
     def set_state(self, caption: str, detail: str, *, error: bool = False):
+        self._sync_listening_action()
         current = (caption, detail, error)
         if current == (self.caption, self.detail, self.error):
             return
         self.caption, self.detail, self.error = current
         if error:
             self.reset_audio_level()
-        self.setToolTip(detail + "\n点击查看结果 · 拖动移动 · 右键更多操作")
+        self.setToolTip(
+            detail + "\n点击声浪暂停/继续 · 展开查看结果 · 拖动移动 · 右键更多操作"
+        )
         self._redraw_if_visible()
 
     def set_listening(self, listening: bool):
         """The controller supplies the real microphone state, not task status."""
+        self._sync_listening_action()
         listening = bool(listening)
         if self.listening == listening:
             return
@@ -244,29 +303,29 @@ class VoiceTile(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setPen(QPen(QColor("#d99c4e" if self.error else "#335887"), 1))
         painter.setBrush(QColor(11, 20, 34, 246))
-        painter.drawRoundedRect(1, 1, 318, 70, 16, 16)
+        painter.drawRoundedRect(1, 1, 262, 54, 27, 27)
         if not self.logo.isNull():
-            painter.drawPixmap(QRect(8, 8, 56, 56), self.logo)
+            painter.drawPixmap(QRect(8, 8, 40, 40), self.logo)
         else:
             painter.setPen(QColor("#b4cfff"))
-            painter.drawText(QRect(8, 8, 56, 56), Qt.AlignmentFlag.AlignCenter, "J")
+            painter.drawText(QRect(8, 8, 40, 40), Qt.AlignmentFlag.AlignCenter, "J")
         painter.setPen(Qt.PenStyle.NoPen)
         color = "#edb263" if self.error else "#5fa0ff" if self.listening else "#69809c"
         painter.setBrush(QColor(color))
-        painter.drawEllipse(77, 17, 5, 5)
+        painter.drawEllipse(61, 13, 4, 4)
         painter.setPen(QColor("#dce9fa"))
         font = painter.font()
         font.setPointSize(9)
         painter.setFont(font)
         text = painter.fontMetrics().elidedText(
-            self.caption, Qt.TextElideMode.ElideRight, 158
+            self.caption, Qt.TextElideMode.ElideRight, 136
         )
-        painter.drawText(QRect(89, 9, 158, 22), Qt.AlignmentFlag.AlignVCenter, text)
+        painter.drawText(QRect(72, 6, 136, 20), Qt.AlignmentFlag.AlignVCenter, text)
         painter.setPen(Qt.PenStyle.NoPen)
         for index, level in enumerate(self._levels):
-            height = 2 + round(20 * level)
+            height = 2 + round(16 * level)
             painter.setBrush(QColor("#72b4ff" if level else "#3c526e"))
-            painter.drawRoundedRect(77 + index * 7, 49 - height // 2, 3, height, 1, 1)
+            painter.drawRoundedRect(61 + index * 6, 38 - height // 2, 3, height, 1, 1)
 
     def _begin_drag(self, event):
         self._drag_start = event.globalPosition().toPoint()
@@ -300,7 +359,7 @@ class VoiceTile(QWidget):
         return click, moved
 
     def eventFilter(self, watched, event):
-        if watched is self.expand_button:
+        if watched in (self.expand_button, self.wave_button):
             kind = event.type()
             if (
                 kind == QEvent.Type.MouseButtonPress
@@ -308,7 +367,7 @@ class VoiceTile(QWidget):
             ):
                 self._begin_drag(event)
             elif kind == QEvent.Type.MouseMove and self._move_drag(event):
-                self.expand_button.setDown(False)
+                watched.setDown(False)
                 return True
             elif (
                 kind == QEvent.Type.MouseButtonRelease
@@ -316,7 +375,7 @@ class VoiceTile(QWidget):
             ):
                 _, moved = self._finish_drag()
                 if moved:
-                    self.expand_button.setDown(False)
+                    watched.setDown(False)
                     return True
         return super().eventFilter(watched, event)
 
@@ -332,7 +391,10 @@ class VoiceTile(QWidget):
             return
         click, _ = self._finish_drag()
         if click:
-            self.controller.show_results()
+            if self.wave_button.geometry().contains(event.position().toPoint()):
+                self._toggle_listening()
+            else:
+                self.controller.show_results()
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
@@ -349,14 +411,6 @@ class VoiceTile(QWidget):
         menu.addSeparator()
         menu.addAction("查看任务与结果", self.controller.show_results)
         menu.addAction("设置", self.controller.show_settings)
-        menu.addAction("语音模型管理", self.controller.show_models)
-        models = menu.addMenu("下载语音模型")
-        models.addAction(
-            "SenseVoice 语音识别", lambda: self.controller.download_model("stt")
-        )
-        models.addAction(
-            "Kokoro 中文播报", lambda: self.controller.download_model("tts")
-        )
         menu.addSeparator()
         menu.addAction("退出 JARVIS", self.controller.request_quit)
         menu.exec(event.globalPos())
@@ -842,13 +896,24 @@ class ResultsWindow(QMainWindow):
 class SettingsDialog(QDialog):
     """Settings are passed back to controller; this widget does not save secrets."""
 
-    models_requested = Signal()
+    model_download_requested = Signal(str)
+    model_cancel_requested = Signal(str)
 
     def __init__(self, preferences: dict, parent=None):
         super().__init__(parent)
         self.setWindowTitle("JARVIS 设置")
         self.setStyleSheet(STYLE)
-        self.resize(650, 640)
+        self.resize(650, 700)
+        self.setStyleSheet(
+            STYLE
+            + """
+            QLabel#modelStatus { color: #8bb9ff; }
+            QPushButton#primary:disabled { background: #1b2b40; border-color: #2c4059; color: #708198; }
+            QProgressBar { border: 1px solid #314963; border-radius: 5px; text-align: center; min-height: 21px; background: #0b1726; }
+            QProgressBar::chunk { background: #285b9d; border-radius: 4px; }
+            QScrollArea { border: none; }
+            """
+        )
         self._preferences = dict(preferences)
         self.fields = {}
         layout = QVBoxLayout(self)
@@ -861,18 +926,36 @@ class SettingsDialog(QDialog):
         description.setWordWrap(True)
         description.setObjectName("muted")
         layout.addWidget(description)
+        from .model_manager_ui import ModelDownloadRow
+
+        self.model_rows = {}
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        content = QWidget()
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(0, 0, 10, 0)
         form = QFormLayout()
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
         form.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
         specs = [
             ("OPENAI_BASE_URL", "模型接口", "https://api.openai.com/v1"),
             ("OPENAI_MODEL", "模型名称", "gpt-4o-mini"),
             ("OPENAI_API_KEY", "模型 API Key", ""),
-            ("JARVIS_STT_MODEL_DIR", "语音识别模型目录", ""),
-            ("JARVIS_TTS_MODEL_DIR", "语音合成模型目录", ""),
+            ("JARVIS_STT_MODEL_DIR", "语音识别模型", ""),
+            ("JARVIS_TTS_MODEL_DIR", "语音合成模型", ""),
             ("JARVIS_WAKE_WORD", "指令前缀", "贾维斯"),
             ("JARVIS_MIC_DEVICE", "麦克风设备", ""),
         ]
         for key, label, default in specs:
+            if key.endswith("MODEL_DIR"):
+                kind = "stt" if key == "JARVIS_STT_MODEL_DIR" else "tts"
+                row = ModelDownloadRow(kind)
+                row.download_requested.connect(self.model_download_requested.emit)
+                row.cancel_requested.connect(self.model_cancel_requested.emit)
+                self.model_rows[kind] = row
+                form.addRow(label, row)
+                continue
             field = QLineEdit(str(preferences.get(key, default) or ""))
             field.setAccessibleName(label)
             if key == "OPENAI_API_KEY":
@@ -882,37 +965,24 @@ class SettingsDialog(QDialog):
                 field.setPlaceholderText("留空则直接执行每段有效语音")
             elif key == "JARVIS_MIC_DEVICE":
                 field.setPlaceholderText("留空使用系统默认设备，或输入设备索引")
-            elif key.endswith("MODEL_DIR"):
-                field.setPlaceholderText("留空使用默认模型目录")
             self.fields[key] = field
-            if key.endswith("MODEL_DIR"):
-                row = QHBoxLayout()
-                row.addWidget(field, 1)
-                choose = QPushButton("选择")
-                choose.clicked.connect(
-                    lambda checked=False, target=field: self._choose_directory(target)
-                )
-                row.addWidget(choose)
-                form.addRow(label, row)
-            else:
-                form.addRow(label, field)
+            form.addRow(label, field)
         self.speech = QCheckBox("朗读任务结果")
         self.speech.setChecked(bool(preferences.get("UI_SPEECH_ENABLED", True)))
         form.addRow("语音反馈", self.speech)
         self.fullscreen = QCheckBox("任务结束后自动最大化展示结果")
         self.fullscreen.setChecked(bool(preferences.get("UI_AUTO_FULLSCREEN", True)))
         form.addRow("结果窗口", self.fullscreen)
-        layout.addLayout(form)
-        self.models_button = QPushButton("下载与管理语音模型")
-        self.models_button.clicked.connect(self.models_requested.emit)
-        layout.addWidget(self.models_button)
-        layout.addStretch(1)
+        content_layout.addLayout(form)
+        content_layout.addStretch(1)
         hint = QLabel(
-            "本地识别使用 SenseVoice，中文播报使用 Kokoro。点击上方按钮下载安装，完成后自动加载。"
+            "语音模型由应用下载和保存，来源不可用时自动切换。关闭设置不会中断下载，完成后自动加载。"
         )
         hint.setWordWrap(True)
         hint.setObjectName("muted")
-        layout.addWidget(hint)
+        content_layout.addWidget(hint)
+        self.scroll.setWidget(content)
+        layout.addWidget(self.scroll, 1)
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save
             | QDialogButtonBox.StandardButton.Cancel
@@ -923,12 +993,12 @@ class SettingsDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
-    def _choose_directory(self, target):
-        directory = QFileDialog.getExistingDirectory(
-            self, "选择模型目录", target.text()
-        )
-        if directory:
-            target.setText(directory)
+    def update_model(self, kind: str, status: dict):
+        if kind not in self.model_rows:
+            raise ValueError("Unknown speech model")
+        if not isinstance(status, dict):
+            raise TypeError("Model status must be a mapping")
+        self.model_rows[kind].update_snapshot(status)
 
     def values(self) -> dict:
         result = dict(self._preferences)

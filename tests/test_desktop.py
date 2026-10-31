@@ -235,6 +235,29 @@ assert time.monotonic()-started<1, time.monotonic()-started
         self.assertEqual(self.controller.results.input.toPlainText(), "保存一份报告")
         self.assertFalse(self.controller.client.calls)
 
+    def test_center_wave_toggles_audio_pause_resume_without_opening_results(self):
+        self.ready()
+        self.controller.tasks["running-work"] = {"status": "running"}
+        self.controller.handle_audio_event("audio.ready", {"listening": True})
+        self.controller.handle_audio_event(
+            "audio.level", {"listening": True, "speech": True, "level": 0.75}
+        )
+        button = self.controller.tile.wave_button
+        button.click()
+        self.assertTrue(self.controller.user_paused)
+        self.assertEqual(self.controller.audio.commands[-1]["command"], "pause")
+        self.assertEqual(self.controller.tile.audio_level, 0)
+        self.assertIsNone(self.controller.results)
+        self.assertEqual(self.controller.tasks["running-work"]["status"], "running")
+        button.click()
+        self.assertFalse(self.controller.user_paused)
+        self.assertEqual(self.controller.audio.commands[-1]["command"], "resume")
+        self.assertIsNone(self.controller.results)
+        self.controller.handle_audio_event(
+            "audio.level", {"listening": True, "speech": True, "level": 0.5}
+        )
+        self.assertEqual(self.controller.tile.audio_level, 0.5)
+
     def test_question_answer_routes_to_same_task_and_new_task_resets_it(self):
         self.ready()
         self.controller.awaiting_task = "waiting-1"

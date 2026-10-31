@@ -185,7 +185,7 @@ class VoiceService:
                 self._emit(
                     "error",
                     message=compatibility.get("message")
-                    or "语音识别模型未就绪。请打开客户端的模型管理，点击下载 SenseVoice。",
+                    or "语音识别模型未就绪。请在客户端设置的语音识别模型一行点击下载。",
                 )
                 return
             self._emit("status", message="正在加载本地语音模型…", listening=False)

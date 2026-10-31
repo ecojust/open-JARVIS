@@ -1,0 +1,389 @@
+{
+  "scope": "actual Qt / QProcess / localhost HTTP; synthetic pinned files",
+  "production_model_weights_downloaded": false,
+  "speech_inference_started": false,
+  "existing_models_modified": false,
+  "checks": {
+    "same_settings_no_extra_dialog": true,
+    "unsaved_form_preserved": true,
+    "no_model_import_fields": true,
+    "close_reopen_keeps_worker_progress_eta": true,
+    "verified_fixture_installed_without_inference": true,
+    "ready_clears_eta": true,
+    "source_fallback_observed": true,
+    "real_eta_events_observed": true
+  },
+  "visible_eta": "预计剩余 4 秒",
+  "visible_source": "下载来源：本机限速 HTTP 测试源（2/2）",
+  "requests": [
+    "/blocked/tokens.txt",
+    "/slow/tokens.txt",
+    "/slow/model.int8.onnx"
+  ],
+  "events": [
+    {
+      "phase": "missing"
+    },
+    {
+      "phase": "checking",
+      "source": "",
+      "source_index": 0,
+      "source_count": 0,
+      "completed_bytes": 0,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "checking",
+      "completed_bytes": 0,
+      "total_bytes": 0,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "downloading",
+      "source": "本机 HTTP 503 测试源",
+      "source_index": 1,
+      "source_count": 2,
+      "completed_bytes": 0,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "switching",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 0,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 0,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "verifying",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 51,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 51,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 196659,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 327731,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 458803,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 589875,
+      "total_bytes": 3450051,
+      "eta_seconds": 5,
+      "bytes_per_second": 587485.064346497
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 720947,
+      "total_bytes": 3450051,
+      "eta_seconds": 5,
+      "bytes_per_second": 574669.0013738661
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 852019,
+      "total_bytes": 3450051,
+      "eta_seconds": 5,
+      "bytes_per_second": 566107.9669739576
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 983091,
+      "total_bytes": 3450051,
+      "eta_seconds": 5,
+      "bytes_per_second": 560033.6845425934
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 1114163,
+      "total_bytes": 3450051,
+      "eta_seconds": 5,
+      "bytes_per_second": 555395.0374148677
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 1245235,
+      "total_bytes": 3450051,
+      "eta_seconds": 4,
+      "bytes_per_second": 551834.8432423663
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 1376307,
+      "total_bytes": 3450051,
+      "eta_seconds": 4,
+      "bytes_per_second": 549016.51258634
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 1507379,
+      "total_bytes": 3450051,
+      "eta_seconds": 4,
+      "bytes_per_second": 546566.7381296236
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 1638451,
+      "total_bytes": 3450051,
+      "eta_seconds": 4,
+      "bytes_per_second": 544567.0203325183
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 1769523,
+      "total_bytes": 3450051,
+      "eta_seconds": 4,
+      "bytes_per_second": 542888.9768411075
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 1900595,
+      "total_bytes": 3450051,
+      "eta_seconds": 3,
+      "bytes_per_second": 541495.4797276418
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 2031667,
+      "total_bytes": 3450051,
+      "eta_seconds": 3,
+      "bytes_per_second": 540292.183467091
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 2162739,
+      "total_bytes": 3450051,
+      "eta_seconds": 3,
+      "bytes_per_second": 539212.056323351
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 2293811,
+      "total_bytes": 3450051,
+      "eta_seconds": 3,
+      "bytes_per_second": 538266.7769468109
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 2424883,
+      "total_bytes": 3450051,
+      "eta_seconds": 2,
+      "bytes_per_second": 537449.7760145409
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 2555955,
+      "total_bytes": 3450051,
+      "eta_seconds": 2,
+      "bytes_per_second": 536706.6781308721
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 2687027,
+      "total_bytes": 3450051,
+      "eta_seconds": 2,
+      "bytes_per_second": 535982.5658874837
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 2818099,
+      "total_bytes": 3450051,
+      "eta_seconds": 2,
+      "bytes_per_second": 535432.9603681505
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 2949171,
+      "total_bytes": 3450051,
+      "eta_seconds": 1,
+      "bytes_per_second": 534885.5170606341
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 3080243,
+      "total_bytes": 3450051,
+      "eta_seconds": 1,
+      "bytes_per_second": 534387.9878440348
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 3211315,
+      "total_bytes": 3450051,
+      "eta_seconds": 1,
+      "bytes_per_second": 533826.1118393126
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 3342387,
+      "total_bytes": 3450051,
+      "eta_seconds": 1,
+      "bytes_per_second": 533370.0797554656
+    },
+    {
+      "phase": "downloading",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 3450051,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "verifying",
+      "source": "本机限速 HTTP 测试源",
+      "source_index": 2,
+      "source_count": 2,
+      "completed_bytes": 3450051,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "verifying",
+      "completed_bytes": 3450051,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "installing",
+      "completed_bytes": 0,
+      "total_bytes": 0,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "installing",
+      "completed_bytes": 3450051,
+      "total_bytes": 3450051,
+      "eta_seconds": null,
+      "bytes_per_second": null
+    },
+    {
+      "phase": "ready"
+    }
+  ],
+  "passed": true
+}
