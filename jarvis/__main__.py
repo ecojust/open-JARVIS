@@ -160,6 +160,7 @@ def _font_self_test() -> dict:
 
 
 def self_test() -> int:
+    from .agent_self_test import run_agent_self_test
     from .paths import asset_path, model_dir
 
     assets = {
@@ -215,6 +216,7 @@ def self_test() -> int:
         "webrtcvad",
         "numpy",
         "agent_framework.openai",
+        "agent_framework_openai",
     ):
         try:
             importlib.import_module(name)
@@ -228,13 +230,15 @@ def self_test() -> int:
     office_roundtrip = _office_roundtrip_checks()
     ffmpeg = _ffmpeg_self_test()
     font_render = _font_self_test()
+    agent_roundtrip = run_agent_self_test()
     result = {
         "ok": all(assets.values())
         and all(modules.values())
         and all(item["ok"] for item in native_imports.values())
         and all(item["ok"] for item in office_roundtrip.values())
         and ffmpeg["ok"]
-        and font_render["ok"],
+        and font_render["ok"]
+        and agent_roundtrip["ok"],
         "platform": sys.platform,
         "architecture": platform.machine(),
         "python": platform.python_version(),
@@ -246,6 +250,7 @@ def self_test() -> int:
         "office_roundtrip": office_roundtrip,
         "ffmpeg": ffmpeg,
         "font_render": font_render,
+        "agent_roundtrip": agent_roundtrip,
         "models": {name: model_dir(name).is_dir() for name in ("sensevoice", "kokoro")},
         "hardware_tested": False,
     }

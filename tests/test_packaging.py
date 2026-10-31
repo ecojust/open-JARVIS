@@ -153,6 +153,42 @@ class PackagingTests(unittest.TestCase):
             self.assertIn("missing native library", report["stderr"])
             self.assertIn("sherpa_onnx", annotate.call_args.args[0])
 
+    def test_frozen_namespace_imports_are_not_enough_without_agent_roundtrip(self):
+        for agent_result in (None, {"ok": False}, {"ok": True}):
+            with (
+                self.subTest(agent_result=agent_result),
+                tempfile.TemporaryDirectory() as temporary,
+            ):
+                payload = {
+                    "ok": True,
+                    "native_imports": {"agent_framework.openai": {"ok": True}},
+                }
+                if agent_result is not None:
+                    payload["agent_roundtrip"] = agent_result
+                result = subprocess.CompletedProcess(
+                    ["worker"], 0, json.dumps(payload), ""
+                )
+                evidence = Path(temporary) / "frozen-self-test.json"
+                with (
+                    patch.object(build_release.subprocess, "run", return_value=result),
+                    patch.object(build_release, "annotate_failure"),
+                    patch("sys.stdout", new_callable=io.StringIO),
+                ):
+                    if agent_result == {"ok": True}:
+                        self.assertEqual(
+                            build_release.frozen_self_test(Path("worker"), evidence),
+                            payload,
+                        )
+                    else:
+                        with self.assertRaisesRegex(
+                            ValueError, "installer will not be created"
+                        ):
+                            build_release.frozen_self_test(Path("worker"), evidence)
+                report = json.loads(evidence.read_text())
+                self.assertEqual(
+                    report["agent_roundtrip_passed"], agent_result == {"ok": True}
+                )
+
     def test_pyinstaller_failure_annotation_retains_error_tail(self):
         process = MagicMock()
         process.__enter__.return_value = process

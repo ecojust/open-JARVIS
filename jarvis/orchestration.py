@@ -270,11 +270,11 @@ async def run_maf(settings, store, registry, message: str):
             Message,
             MiddlewareFailure,
         )
-        from agent_framework.openai import OpenAIChatCompletionClient
+        from agent_framework_openai import OpenAIChatCompletionClient
         from openai import AsyncOpenAI
     except ImportError as exc:
         raise OrchestrationError(
-            "MAF 组件未安装，请运行 python -m pip install -r requirements-agent.txt。"
+            "应用内置任务组件加载失败，请更新或重新安装 JARVIS。"
         ) from exc
 
     events: asyncio.Queue = asyncio.Queue(maxsize=64)

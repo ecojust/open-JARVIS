@@ -10,7 +10,7 @@ import unittest
 from scripts.promote_release import verify_candidates
 
 
-VERSION = "0.1.0-alpha.8"
+VERSION = "0.1.0-alpha.9"
 TARGETS = {
     "macos-x64": ("darwin", "x86_64", ".dmg"),
     "macos-arm64": ("darwin", "arm64", ".dmg"),
@@ -45,6 +45,7 @@ def candidates(root):
                         "platform": platform,
                         "architecture": architecture,
                         "hardware_tested": False,
+                        "agent_roundtrip": {"ok": True},
                     },
                 }
             ),
@@ -145,6 +146,8 @@ class ReleasePromotionTests(unittest.TestCase):
             ("frozen", False),
             ("platform", "win32"),
             ("architecture", "arm64"),
+            ("agent_roundtrip", None),
+            ("agent_roundtrip", {"ok": False}),
         )
         for key, value in changes:
             with (

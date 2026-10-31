@@ -154,10 +154,16 @@ def frozen_self_test(worker: Path, evidence: Path) -> dict:
         payload = json.loads(completed.stdout)
     except json.JSONDecodeError:
         payload = {"ok": False, "error": "Frozen self-test returned invalid JSON."}
+    agent_ok = (
+        isinstance(payload, dict)
+        and isinstance(payload.get("agent_roundtrip"), dict)
+        and payload["agent_roundtrip"].get("ok") is True
+    )
     report = {
         "returncode": completed.returncode,
         "self_test": payload,
         "stderr": completed.stderr[-12000:],
+        "agent_roundtrip_passed": agent_ok,
     }
     if not isinstance(payload, dict) or payload.get("ok") is not True:
         report["stdout"] = completed.stdout[-12000:]
@@ -169,6 +175,7 @@ def frozen_self_test(worker: Path, evidence: Path) -> dict:
         completed.returncode != 0
         or not isinstance(payload, dict)
         or payload.get("ok") is not True
+        or not agent_ok
     ):
         annotate_failure(
             "Frozen runtime self-test failed:\n"

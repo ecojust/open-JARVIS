@@ -1,6 +1,7 @@
 """Real MAF agents talking to a local OpenAI-compatible test HTTP server."""
 
 import asyncio
+import builtins
 from contextlib import contextmanager, nullcontext
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -15,7 +16,7 @@ import httpx
 
 from jarvis.agent import Agent as NativeAgent
 from jarvis.config import Settings
-from jarvis.orchestration import run_maf, _Budget, _parse_final
+from jarvis.orchestration import OrchestrationError, run_maf, _Budget, _parse_final
 from jarvis.storage import Store
 from jarvis.tools import ToolRegistry
 from jarvis.tasks import TaskManager
@@ -203,6 +204,22 @@ class MAFIntegrationTests(unittest.IsolatedAsyncioTestCase):
         )
         values.update(overrides)
         return server, SimpleNamespace(**values)
+
+    async def test_missing_bundled_provider_reports_app_repair_not_pip_commands(self):
+        original_import = builtins.__import__
+
+        def missing_provider(name, *args, **kwargs):
+            if name == "agent_framework_openai":
+                raise ModuleNotFoundError("provider missing", name=name)
+            return original_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=missing_provider):
+            with self.assertRaises(OrchestrationError) as raised:
+                _ = [event async for event in run_maf(None, None, None, "你好")]
+        self.assertIn("应用内置任务组件加载失败", str(raised.exception))
+        self.assertNotIn("pip", str(raised.exception))
+        self.assertNotIn("requirements", str(raised.exception))
+        self.assertEqual(raised.exception.__cause__.name, "agent_framework_openai")
 
     async def test_real_maf_delegates_writer_and_persists_actual_document(self):
         server, settings = self.setup_model(

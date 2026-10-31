@@ -76,6 +76,11 @@ def verify_candidates(root: Path, version: str) -> list[Path]:
             checks.get("ok") is True and checks.get("frozen") is True,
             "Frozen self-test did not pass",
         )
+        require(
+            isinstance(checks.get("agent_roundtrip"), dict)
+            and checks["agent_roundtrip"].get("ok") is True,
+            "Frozen agent task was not verified; rebuild with the current packaging checks",
+        )
         actual_arch = str(checks.get("architecture", "")).lower()
         actual_arch = {"amd64": "x86_64", "aarch64": "arm64"}.get(
             actual_arch, actual_arch

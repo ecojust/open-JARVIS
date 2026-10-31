@@ -38,6 +38,9 @@ for package in ("sherpa_onnx",):
 # The local sounddevice hook selects only the target architecture's PortAudio.
 hiddenimports += ["_sounddevice_data"]
 hiddenimports += collect_submodules("agent_framework")
+# agent_framework.openai is only a lazy namespace proxy. Its actual provider
+# lives in a separate distribution; copying dist-info does not bundle its code.
+hiddenimports += collect_submodules("agent_framework_openai")
 hiddenimports += collect_submodules("jarvis")
 for distribution in ("agent-framework-core", "agent-framework-openai", "openai", "sherpa-onnx", "sherpa-onnx-core", "PySide6-Essentials", "shiboken6", "python-docx", "openpyxl", "python-pptx", "Pillow", "imageio-ffmpeg"):
     datas += copy_metadata(distribution)
