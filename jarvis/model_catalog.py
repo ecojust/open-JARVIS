@@ -72,7 +72,7 @@ SUPPORTED_MODELS = (
         "v1.1-b78e1ac42b85",
         "sherpa-kokoro-multilingual-v1",
         "Kokoro 中文播报",
-        364855331,
+        426584734,
         TTS_REQUIRED_FILES,
         "v1.1 · 多语言",
     ),

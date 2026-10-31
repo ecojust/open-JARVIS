@@ -20,4 +20,6 @@
 - [下载验收报告](download-report.json)：实际 HTTP/QProcess/Qt、来源切换、实际 ETA、关闭重开、无导入字段和无额外窗口。
 - 本地完整 **281 项测试通过**，ruff 通过。验收使用 Linux offscreen Qt；真机麦克风、扬声器、macOS Spaces 和干净系统安装仍待验收。
 
+[30 次胶囊语音条启动复测](performance.json)：P95 **268.4 ms**，单进程 RSS P95 **75.6 MiB**。只测 Linux offscreen 的桌面入口，不包含后端、语音模型或真实设备；未添加常驻动画和倒计时线程。
+
 开发复现：`python scripts/smoke_inline_download.py`；已有两个语音模型时运行 `python scripts/smoke_voice_bar.py --verify-installed-models`。这些是开发验证工具，最终用户直接点击设置中的下载按钮。

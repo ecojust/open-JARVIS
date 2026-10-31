@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFormLayout,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -40,7 +41,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QSplitter,
     QSizePolicy,
-    QTabWidget,
+    QStackedWidget,
     QTextBrowser,
     QVBoxLayout,
     QWidget,
@@ -83,6 +84,50 @@ QComboBox { background: #182538; border: 1px solid #304259; border-radius: 5px; 
 QComboBox QAbstractItemView { background: #142236; color: #e4eaf3; selection-background-color: #286de0; }
 QCheckBox { spacing: 8px; }
 QToolTip { color: #eef4ff; background: #17283f; border: 1px solid #3b5270; }
+"""
+
+
+LIGHT_STYLE = """
+QWidget { background: #f5f5f7; color: #1d1d1f; font-size: 13px; }
+QMainWindow, QDialog { background: #f5f5f7; }
+QLabel { background: transparent; }
+QLabel#heading { font-size: 25px; font-weight: 600; color: #1d1d1f; }
+QLabel#brand { font-size: 19px; font-weight: 600; color: #1d1d1f; }
+QLabel#eyebrow { color: #86868b; font-size: 11px; font-weight: 600; }
+QLabel#muted, QLabel#status { color: #6e6e73; }
+QWidget#sidebar { background: #eeeeF1; border-radius: 14px; }
+QFrame#contentSurface, QFrame#composerSurface { background: #ffffff; border: 1px solid #e4e4e8; border-radius: 16px; }
+QWidget#reportPanel, QWidget#artifactList, QStackedWidget { background: transparent; }
+QPushButton { background: #ffffff; color: #343438; border: 1px solid #dcdce1; padding: 8px 13px; border-radius: 8px; }
+QPushButton:hover { background: #f0f4fa; border-color: #becddd; }
+QPushButton:pressed { background: #e5edf8; }
+QPushButton:disabled { background: #f2f2f4; color: #a0a0a6; border-color: #e3e3e7; }
+QPushButton#primary { background: #007aff; border-color: #007aff; color: #ffffff; font-weight: 600; }
+QPushButton#primary:hover { background: #006ee6; border-color: #006ee6; }
+QPushButton#primary:disabled { background: #e4ebf4; border-color: #dce4ef; color: #9ba9bc; }
+QPushButton#quiet { background: transparent; border-color: transparent; color: #6e6e73; }
+QPushButton#quiet:hover { background: #e8e8ed; color: #1d1d1f; }
+QPushButton#replyToggle { background: #f5f5f7; border-color: #e4e4e8; color: #59616d; }
+QPushButton#replyToggle:checked { background: #e8f1ff; border-color: #bdd6fb; color: #0068d8; }
+QPlainTextEdit, QTextBrowser, QLineEdit { background: #ffffff; color: #1d1d1f; border: 1px solid #dcdce1; border-radius: 8px; padding: 9px; selection-background-color: #c9e1ff; selection-color: #173554; }
+QPlainTextEdit#taskInput { border: none; background: transparent; font-size: 14px; }
+QTextBrowser { border: none; padding: 16px; }
+QListWidget { background: transparent; border: none; outline: none; }
+QListWidget::item { padding: 12px 10px; margin: 2px 0; border-radius: 9px; }
+QListWidget::item:selected { background: #dce9fb; color: #1b4f8d; }
+QListWidget::item:hover { background: #e3e5eb; }
+QSplitter::handle { background: transparent; width: 12px; }
+QScrollArea { background: transparent; border: none; }
+QScrollBar:vertical { width: 8px; background: transparent; }
+QScrollBar::handle:vertical { background: #c4c5cb; min-height: 24px; border-radius: 4px; }
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
+QMenu { background: #ffffff; color: #1d1d1f; border: 1px solid #dcdce1; padding: 5px; }
+QMenu::item { padding: 7px 22px; }
+QMenu::item:selected { background: #e7f0ff; color: #0068d8; }
+QComboBox { background: #ffffff; color: #1d1d1f; border: 1px solid #dcdce1; border-radius: 7px; padding: 7px; }
+QComboBox QAbstractItemView { background: #ffffff; color: #1d1d1f; selection-background-color: #e1edff; selection-color: #174c88; }
+QCheckBox { spacing: 8px; }
+QToolTip { color: #343438; background: #ffffff; border: 1px solid #d6d6dc; padding: 4px; }
 """
 
 STATUS_NAMES = {
@@ -461,43 +506,52 @@ class ResultsWindow(QMainWindow):
         self._event_ids = set()
         self._event_lines = deque(maxlen=100)
         self._body_signature = None
+        self._reply_content = ""
+        self.reply_visible = False
         self._artifacts_signature = None
         self._events_snapshot_signature = None
         self._events_rendered_text = ""
         self._auto_preview_task = None
-        self.setWindowTitle("Open JARVIS · 工作结果")
-        self.resize(1280, 840)
-        self.setStyleSheet(STYLE)
+        self.setWindowTitle("JARVIS · 工作空间")
+        self.resize(1180, 800)
+        self.setStyleSheet(LIGHT_STYLE)
         outer = QWidget()
         layout = QVBoxLayout(outer)
-        layout.setContentsMargins(20, 16, 20, 16)
-        layout.setSpacing(12)
+        layout.setContentsMargins(22, 18, 22, 18)
+        layout.setSpacing(16)
         top = QHBoxLayout()
-        heading = QLabel("JARVIS  /  工作结果")
-        heading.setObjectName("heading")
-        top.addWidget(heading, 1)
+        heading = QLabel("JARVIS")
+        heading.setObjectName("brand")
+        top.addWidget(heading)
+        subtitle = QLabel("工作空间")
+        subtitle.setObjectName("muted")
+        top.addWidget(subtitle)
+        top.addStretch(1)
         for label, callback in [
-            ("导入文件", controller.upload_file),
-            ("刷新任务", controller.refresh_tasks),
             ("设置", controller.show_settings),
-            ("收起  Esc", self.hide),
+            ("收起", self.hide),
         ]:
             button = QPushButton(label)
+            button.setObjectName("quiet")
             button.clicked.connect(callback)
             top.addWidget(button)
         layout.addLayout(top)
-        self.status = QLabel("从常驻方块说出任务，或在下方输入文字。")
-        self.status.setObjectName("status")
-        self.status.setTextFormat(Qt.TextFormat.PlainText)
-        self.status.setWordWrap(True)
-        layout.addWidget(self.status)
         splitter = QSplitter(Qt.Orientation.Horizontal)
         sidebar = QWidget()
+        sidebar.setObjectName("sidebar")
         side_layout = QVBoxLayout(sidebar)
-        side_layout.setContentsMargins(0, 0, 12, 0)
+        side_layout.setContentsMargins(12, 18, 12, 12)
+        side_layout.setSpacing(10)
+        side_heading = QHBoxLayout()
         label = QLabel("最近任务")
         label.setObjectName("eyebrow")
-        side_layout.addWidget(label)
+        side_heading.addWidget(label, 1)
+        refresh = QPushButton("刷新")
+        refresh.setObjectName("quiet")
+        refresh.setAccessibleName("刷新任务")
+        refresh.clicked.connect(controller.refresh_tasks)
+        side_heading.addWidget(refresh)
+        side_layout.addLayout(side_heading)
         self.tasks = QListWidget()
         self.tasks.setAccessibleName("最近任务列表")
         self.tasks.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -505,12 +559,18 @@ class ResultsWindow(QMainWindow):
         self.tasks.setWordWrap(False)
         self.tasks.currentItemChanged.connect(self._selected_task)
         side_layout.addWidget(self.tasks, 1)
-        self.tasks.setMinimumWidth(200)
-        self.tasks.setMaximumWidth(340)
+        sidebar.setMinimumWidth(176)
+        sidebar.setMaximumWidth(280)
+        side_note = QLabel("收起窗口，任务也会继续。")
+        side_note.setObjectName("muted")
+        side_note.setWordWrap(True)
+        side_layout.addWidget(side_note)
         splitter.addWidget(sidebar)
         report = QWidget()
+        report.setObjectName("reportPanel")
         report_layout = QVBoxLayout(report)
-        report_layout.setContentsMargins(12, 0, 0, 0)
+        report_layout.setContentsMargins(8, 4, 0, 0)
+        report_layout.setSpacing(12)
         self.title = QLabel("把下一件事交给 JARVIS")
         self.title.setObjectName("heading")
         self.title.setTextFormat(Qt.TextFormat.PlainText)
@@ -520,8 +580,13 @@ class ResultsWindow(QMainWindow):
             QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
         )
         report_layout.addWidget(self.title)
+        self.status = QLabel("说出你的想法，或在下方安排一项任务。")
+        self.status.setObjectName("status")
+        self.status.setTextFormat(Qt.TextFormat.PlainText)
+        self.status.setWordWrap(True)
+        report_layout.addWidget(self.status)
         action_row = QHBoxLayout()
-        self.task_state = QLabel("尚未选择任务")
+        self.task_state = QLabel("等待新任务")
         self.task_state.setObjectName("muted")
         action_row.addWidget(self.task_state, 1)
         self.cancel_button = QPushButton("取消任务")
@@ -529,6 +594,7 @@ class ResultsWindow(QMainWindow):
             lambda: self.controller.cancel_task(self.task_id) if self.task_id else None
         )
         self.cancel_button.setEnabled(False)
+        self.cancel_button.setVisible(False)
         self.resume_button = QPushButton("恢复任务")
         self.resume_button.clicked.connect(
             lambda: self.controller.resume_task(self.task_id) if self.task_id else None
@@ -537,61 +603,101 @@ class ResultsWindow(QMainWindow):
         action_row.addWidget(self.resume_button)
         action_row.addWidget(self.cancel_button)
         report_layout.addLayout(action_row)
+        surface = QFrame()
+        surface.setObjectName("contentSurface")
+        surface_layout = QVBoxLayout(surface)
+        surface_layout.setContentsMargins(16, 14, 16, 14)
+        surface_layout.setSpacing(10)
+        content_heading = QHBoxLayout()
+        files_label = QLabel("文件")
+        files_label.setObjectName("eyebrow")
+        content_heading.addWidget(files_label, 1)
+        self.reply_button = QPushButton("查看回复")
+        self.reply_button.setObjectName("replyToggle")
+        self.reply_button.setCheckable(True)
+        self.reply_button.setEnabled(False)
+        self.reply_button.setAccessibleName("查看或收起 JARVIS 文字回复")
+        self.reply_button.clicked.connect(self._toggle_reply)
+        content_heading.addWidget(self.reply_button)
+        surface_layout.addLayout(content_heading)
         self.body = SafeTextBrowser()
-        self.body.setAccessibleName("任务结果正文")
-        self.body.setMarkdown(
-            "## 你好，我是 JARVIS\n\n检索资料、分析 CSV、撰写工作文档。\n\n任务会在后台执行，完成后在这里展示实际结果与可下载的文件。"
+        self.body.setAccessibleName("JARVIS 文字回复")
+        self.content_tabs = QStackedWidget()
+        self.content_tabs.setMinimumSize(0, 0)
+        self.content_tabs.setSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored
         )
-        self.content_tabs = QTabWidget()
-        self.content_tabs.addTab(self.body, "任务结果")
         from .preview_ui import ArtifactPreviewWidget
 
         self.preview = ArtifactPreviewWidget()
         self.preview.download_requested.connect(controller.download_artifact)
         self.preview.play_requested.connect(controller.play_artifact)
-        self.preview_tab = self.content_tabs.addTab(self.preview, "产物预览")
-        report_layout.addWidget(self.content_tabs, 1)
+        self.preview_tab = self.content_tabs.addWidget(self.preview)
+        self.content_tabs.addWidget(self.body)
+        self.preview.loading(None, "文件预览")
+        self.preview.notice.setText("任务完成后，在这里查看和保存文件。")
+        self.preview.placeholder.setText(
+            "文件会出现在这里\n\n让 JARVIS 检索资料、分析数据，或帮你写一份文档。"
+        )
+        self.content_tabs.setCurrentWidget(self.preview)
+        surface_layout.addWidget(self.content_tabs, 1)
         self.artifacts_area = QWidget()
+        self.artifacts_area.setObjectName("artifactList")
         self.artifacts_layout = QHBoxLayout(self.artifacts_area)
         self.artifacts_layout.setContentsMargins(0, 0, 0, 0)
         self.artifacts_layout.addStretch(1)
         self.artifacts_area.hide()
-        report_layout.addWidget(self.artifacts_area)
+        surface_layout.addWidget(self.artifacts_area)
+        report_layout.addWidget(surface, 1)
         self.events_toggle = QPushButton("查看执行记录")
+        self.events_toggle.setObjectName("quiet")
         self.events_toggle.setAccessibleName("展开或收起执行记录")
         self.events_toggle.clicked.connect(self._toggle_events)
-        report_layout.addWidget(self.events_toggle)
+        self.events_toggle.setVisible(False)
+        report_layout.addWidget(self.events_toggle, 0, Qt.AlignmentFlag.AlignLeft)
         self.events = QPlainTextEdit()
         self.events.setReadOnly(True)
         self.events.setMaximumBlockCount(100)
-        self.events.setMaximumHeight(150)
+        self.events.setMaximumHeight(130)
         self.events.setAccessibleName("任务执行记录")
         self.events.hide()
         report_layout.addWidget(self.events)
         splitter.addWidget(report)
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
-        splitter.setSizes([260, 900])
+        splitter.setSizes([220, 900])
         layout.addWidget(splitter, 1)
-        composer = QHBoxLayout()
+        composer = QFrame()
+        composer.setObjectName("composerSurface")
+        composer_layout = QVBoxLayout(composer)
+        composer_layout.setContentsMargins(12, 10, 12, 10)
+        composer_layout.setSpacing(4)
         self.input = MessageInput()
-        self.input.setPlaceholderText(
-            "告诉 JARVIS 你要完成什么；Enter 发送，Shift + Enter 换行"
-        )
+        self.input.setObjectName("taskInput")
+        self.input.setPlaceholderText("想完成什么？告诉 JARVIS。")
         self.input.setAccessibleName("任务或补充说明")
-        self.input.setMaximumHeight(100)
-        self.input.setMinimumHeight(68)
+        self.input.setMaximumHeight(74)
+        self.input.setMinimumHeight(52)
         self.input.submitted.connect(self._submit)
-        composer.addWidget(self.input, 1)
+        composer_layout.addWidget(self.input)
+        composer_actions = QHBoxLayout()
+        self.attach_button = QPushButton("＋ 添加资料")
+        self.attach_button.setObjectName("quiet")
+        self.attach_button.setToolTip(
+            "添加 CSV、TXT、Markdown 或 JSON 文件（最大 2 MB），供任务读取和分析。"
+        )
+        self.attach_button.setAccessibleName("添加任务资料文件")
+        self.attach_button.clicked.connect(controller.upload_file)
+        composer_actions.addWidget(self.attach_button)
+        hint = QLabel("Enter 发送 · Shift + Enter 换行")
+        hint.setObjectName("muted")
+        composer_actions.addWidget(hint, 1)
         self.send_button = QPushButton("发送任务")
         self.send_button.setObjectName("primary")
-        self.send_button.setMinimumHeight(50)
         self.send_button.clicked.connect(self._submit)
-        composer.addWidget(self.send_button)
-        layout.addLayout(composer)
-        hint = QLabel("文字和文件在本机保存；是否使用云端任务模型由你的设置决定。")
-        hint.setObjectName("muted")
-        layout.addWidget(hint)
+        composer_actions.addWidget(self.send_button)
+        composer_layout.addLayout(composer_actions)
+        layout.addWidget(composer)
         self.setCentralWidget(outer)
         self.escape = QShortcut(QKeySequence("Escape"), self)
         self.escape.activated.connect(self.hide)
@@ -612,6 +718,32 @@ class ResultsWindow(QMainWindow):
 
     def set_status(self, text: str):
         self.status.setText(str(text)[:2000])
+
+    def _render_reply(self):
+        if self._reply_content != self._body_signature:
+            scroll = self.body.verticalScrollBar().value()
+            self.body.setMarkdown(self._reply_content)
+            self._body_signature = self._reply_content
+            self.body.verticalScrollBar().setValue(scroll)
+
+    def _toggle_reply(self):
+        if not self._reply_content:
+            self.reply_button.setChecked(False)
+            return
+        if self.reply_visible:
+            self.show_files()
+            return
+        self.reply_visible = True
+        self.reply_button.setChecked(True)
+        self.reply_button.setText("收起回复")
+        self._render_reply()
+        self.content_tabs.setCurrentWidget(self.body)
+
+    def show_files(self):
+        self.reply_visible = False
+        self.reply_button.setChecked(False)
+        self.reply_button.setText("查看回复")
+        self.content_tabs.setCurrentWidget(self.preview)
 
     def render_tasks(self, tasks: list[dict]):
         selected = self.task_id
@@ -656,6 +788,8 @@ class ResultsWindow(QMainWindow):
         self.cancel_button.setEnabled(
             status in {"queued", "planning", "running", "awaiting_input"}
         )
+        self.cancel_button.setVisible(self.cancel_button.isEnabled())
+        self.events_toggle.setVisible(bool(self.task_id))
         self.resume_button.setVisible(bool(task.get("held")) and status == "queued")
         self.send_button.setText(
             "补充说明" if status == "awaiting_input" else "发送任务"
@@ -680,21 +814,39 @@ class ResultsWindow(QMainWindow):
                 content[:100000]
                 + "\n\n---\n正文较长，当前仅展示前 100,000 个字符。完整内容请下载产物。"
             )
-        if content != self._body_signature:
-            previous_scroll = self.body.verticalScrollBar().value()
-            self.body.setMarkdown(content)
-            self._body_signature = content
-            self.body.verticalScrollBar().setValue(0 if changed else previous_scroll)
         if changed:
+            self.show_files()
+            self.body.clear()
+            self._body_signature = None
+            self._reply_content = ""
             self._auto_preview_task = None
-            self.content_tabs.setCurrentIndex(0)
-            self.preview.loading(None, "产物内容预览")
-            self.preview.placeholder.setText("选择产物查看实际文件内容。")
+            self.preview.loading(None, "文件预览")
+            self.preview.notice.setText("任务生成的文件可在这里查看和保存。")
+            self.preview.placeholder.setText("这项任务的文件会显示在这里。")
             self.body.verticalScrollBar().setValue(0)
+            self.events.hide()
+            self.events_toggle.setText("查看执行记录")
             self._event_lines.clear()
             self._event_ids.clear()
             self._events_snapshot_signature = None
+        self._reply_content = content
+        self.reply_button.setEnabled(bool(content))
+        if self.reply_visible:
+            self._render_reply()
         artifacts = self._set_artifacts(task.get("artifacts") or [])
+        if not artifacts:
+            message = {
+                "queued": "任务已加入队列。你可以继续安排其他事情。",
+                "planning": "正在准备这项任务，生成的文件会显示在这里。",
+                "running": "任务正在后台进行，完成的文件会显示在这里。",
+                "awaiting_input": "需要你补充信息。点击「查看回复」了解详情，再在下方回答。",
+                "succeeded": "任务已完成。可点击「查看回复」阅读文字答复。",
+                "partially_succeeded": "任务已部分完成。可点击「查看回复」了解详情。",
+                "failed": "任务未能完成。可点击「查看回复」了解详情。",
+                "cancelled": "任务已取消。",
+                "interrupted": "任务已中断。可点击「查看回复」了解详情。",
+            }.get(status, "这项任务还没有生成文件。")
+            self.preview.placeholder.setText(message)
         if (
             status in {"succeeded", "partially_succeeded", "cancelled", "failed"}
             and artifacts
@@ -741,11 +893,13 @@ class ResultsWindow(QMainWindow):
 
     def show_preview_loading(self, artifact_id, name):
         self.preview.loading(artifact_id, name)
-        self.content_tabs.setCurrentIndex(self.preview_tab)
+        if not self.reply_visible:
+            self.content_tabs.setCurrentIndex(self.preview_tab)
 
     def show_preview(self, payload):
         self.preview.render(payload)
-        self.content_tabs.setCurrentIndex(self.preview_tab)
+        if not self.reply_visible:
+            self.content_tabs.setCurrentIndex(self.preview_tab)
 
     def _set_artifacts(self, artifacts):
         artifacts = [
@@ -902,15 +1056,15 @@ class SettingsDialog(QDialog):
     def __init__(self, preferences: dict, parent=None):
         super().__init__(parent)
         self.setWindowTitle("JARVIS 设置")
-        self.setStyleSheet(STYLE)
+        self.setStyleSheet(LIGHT_STYLE)
         self.resize(650, 700)
         self.setStyleSheet(
-            STYLE
+            LIGHT_STYLE
             + """
-            QLabel#modelStatus { color: #8bb9ff; }
-            QPushButton#primary:disabled { background: #1b2b40; border-color: #2c4059; color: #708198; }
-            QProgressBar { border: 1px solid #314963; border-radius: 5px; text-align: center; min-height: 21px; background: #0b1726; }
-            QProgressBar::chunk { background: #285b9d; border-radius: 4px; }
+            QLabel#modelStatus { color: #0070d9; }
+            QPushButton#primary:disabled { background: #e4ebf4; border-color: #dce4ef; color: #9ba9bc; }
+            QProgressBar { border: 1px solid #d6dce5; border-radius: 5px; text-align: center; min-height: 21px; background: #edf1f6; }
+            QProgressBar::chunk { background: #007aff; border-radius: 4px; }
             QScrollArea { border: none; }
             """
         )

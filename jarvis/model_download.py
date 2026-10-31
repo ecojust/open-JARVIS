@@ -4,6 +4,7 @@ from collections import deque
 from dataclasses import dataclass
 import hashlib
 import math
+import re
 from pathlib import Path
 import time
 
@@ -93,10 +94,12 @@ class ModelDownloadError(ValueError):
     """All configured sources failed; the installed model was not changed."""
 
     def __init__(self, failures):
-        self.failures = tuple(failures)
-        detail = "；".join(f"{name}：{reason}" for name, reason in failures)
+        # A source may get one explicit clean retry after incompatible Range
+        # support or a poisoned prefix. Count distinct sources, not attempts.
+        self.failures = tuple(dict(failures).items())
+        detail = "；".join(f"{name}：{reason}" for name, reason in self.failures)
         super().__init__(
-            f"所有 {len(failures)} 个下载来源均失败（{detail}）。请稍后重试。"
+            f"所有 {len(self.failures)} 个下载来源均失败（{detail}）。请稍后重试。"
         )
 
 
@@ -117,6 +120,40 @@ def _reason(error):
     return "网络连接中断或响应无效"
 
 
+class _RangeUnavailable(_SourceFailure):
+    pass
+
+
+class _IntegrityFailure(_SourceFailure):
+    pass
+
+
+def _check_response(response, offset, expected_size):
+    """Validate byte identity before appending any response data to a prefix."""
+    if offset and response.status_code in {200, 416}:
+        raise _RangeUnavailable("来源不支持当前文件的断点续传")
+    response.raise_for_status()
+    if response.status_code not in {200, 206}:
+        raise _SourceFailure("响应状态不适用于模型下载")
+    if "text/html" in response.headers.get("content-type", "").lower():
+        raise _SourceFailure("返回了网页而非模型文件")
+    if response.headers.get("content-encoding", "identity").lower() != "identity":
+        raise _SourceFailure("来源返回了不同编码的文件，不能安全续传")
+    if response.status_code == 206:
+        value = response.headers.get("content-range", "")
+        expected = f"bytes {offset}-{expected_size - 1}/{expected_size}"
+        if value != expected:
+            raise _RangeUnavailable("来源返回的续传范围与固定文件不一致")
+    elif offset:
+        raise _RangeUnavailable("来源未返回有效的续传范围")
+    length = response.headers.get("content-length")
+    if length is not None and (
+        re.fullmatch(r"[0-9]+", length) is None
+        or (length.lstrip("0") or "0") != str(expected_size - offset)
+    ):
+        raise _SourceFailure("文件大小与固定版本不一致")
+
+
 def download_verified(
     client,
     target: Path,
@@ -129,12 +166,14 @@ def download_verified(
     total_bytes=None,
     source_count=None,
 ):
-    """Try each source once; only publish bytes matching the pinned contract.
+    """Resume a pinned file across mirrors, then verify its complete SHA-256.
 
-    ``target`` must be a new private staging path. An unsuccessful attempt is
-    removed before switching, so bytes from different servers never mix. Local
-    disk failures and cancellation propagate immediately instead of wasting
-    another full model transfer. The caller owns the installation transaction.
+    The caller owns a private staging transaction. Network failures retain the
+    received prefix and its rolling hash; another source must honor the exact
+    Range before bytes may be appended. A source gets at most one initial
+    attempt and one explicit clean retry. A restart is only needed after an
+    integrity failure or when no remaining source supports the saved range.
+    Local I/O errors and cancellation never trigger another network attempt.
     """
     if not sources or len(sources) > 16:
         raise ValueError("模型下载来源配置无效")
@@ -142,74 +181,104 @@ def download_verified(
     total = total_bytes if total_bytes is not None else expected_size
     failures = []
     previous_source = ""
-    for index, source in enumerate(sources, start=1):
+    size, digest, created = 0, hashlib.sha256(), False
+    pending = deque((source, index, None) for index, source in enumerate(sources, 1))
+    deferred_fresh = {}
+    fresh_attempted = set()
+    discarded_reason = None
+
+    def discard_prefix():
+        nonlocal size, digest, created
+        if created:
+            target.unlink(missing_ok=True)
+        size, digest, created = 0, hashlib.sha256(), False
+
+    while pending or deferred_fresh:
+        if not pending:
+            # Try all viable Range candidates before discarding any bytes.
+            pending.extend(
+                (source, index, "可用来源不支持断点续传，正在重新下载当前文件")
+                for index, source in deferred_fresh.items()
+                if index not in fresh_attempted
+            )
+            deferred_fresh.clear()
+            if not pending:
+                break
+        source, index, restart_reason = pending.popleft()
+        if restart_reason:
+            fresh_attempted.add(index)
+            discard_prefix()
+        # An integrity failure may have already discarded the whole file.
+        # Explain that reset even when the next mirror is its initial attempt.
+        restart_reason = restart_reason or discarded_reason
+        discarded_reason = None
+        offset = size
         details = {
             "source": source.name,
             "source_index": source.index or index,
             "source_count": source_count or len(sources),
             "filename": target.name,
+            "resumed_bytes": offset,
         }
         if failures:
+            reason = failures[-1][1]
+            message = (
+                f"{restart_reason}：{source.name}"
+                if restart_reason
+                else f"{previous_source} {reason}，切换到 {source.name}继续下载"
+            )
             report(
                 "switching",
-                completed_bytes=completed_bytes,
+                completed_bytes=completed_bytes + size,
                 total_bytes=total,
-                message=f"{previous_source} {failures[-1][1]}，正在切换到 {source.name}",
+                message=message,
                 previous_source=previous_source,
-                reason=failures[-1][1],
+                reason=reason,
+                restart_reason=restart_reason,
                 force=True,
                 **details,
             )
+        download_message = (
+            (f"{restart_reason}；" if restart_reason else "")
+            + f"正在从 {source.name} {'续传' if offset else '下载'} {target.name}"
+        )
         report(
             "downloading",
-            completed_bytes=completed_bytes,
+            completed_bytes=completed_bytes + size,
             total_bytes=total,
-            message=f"正在从 {source.name} 下载 {target.name}",
+            message=download_message,
             force=True,
             **details,
         )
-        created = False
+        headers = {"Accept-Encoding": "identity"}
+        if offset:
+            headers["Range"] = f"bytes={offset}-"
         started = time.monotonic()
         try:
-            with client.stream(
-                "GET", source.url, headers={"Accept-Encoding": "identity"}
-            ) as response:
-                response.raise_for_status()
-                if "text/html" in response.headers.get("content-type", "").lower():
-                    raise _SourceFailure("返回了网页而非模型文件")
-                content_length = response.headers.get("content-length")
-                if (
-                    content_length is not None
-                    and response.headers.get("content-encoding", "identity")
-                    == "identity"
-                    and (
-                        not content_length.isdecimal()
-                        or (content_length.lstrip("0") or "0") != str(expected_size)
-                    )
-                ):
-                    raise _SourceFailure("文件大小与固定版本不一致")
-                size, digest = 0, hashlib.sha256()
-                with target.open("xb") as output:
+            with client.stream("GET", source.url, headers=headers) as response:
+                _check_response(response, offset, expected_size)
+                mode = "ab" if offset else "wb" if created else "xb"
+                with target.open(mode) as output:
                     created = True
-                    # Keep the transport's small chunks: buffering until a
-                    # megabyte is full could hide a slow trickle indefinitely.
                     for chunk in response.iter_bytes():
                         if time.monotonic() - started > SOURCE_DEADLINE_SECONDS:
                             raise _SourceFailure("单个来源下载超时")
-                        size += len(chunk)
-                        if size > expected_size:
-                            raise _SourceFailure("文件大小超过固定版本")
+                        if size + len(chunk) > expected_size:
+                            raise _IntegrityFailure("文件大小超过固定版本")
                         output.write(chunk)
+                        size += len(chunk)
                         digest.update(chunk)
                         report(
                             "downloading",
                             completed_bytes=completed_bytes + size,
                             total_bytes=total,
-                            message=f"正在从 {source.name} 下载 {target.name}",
+                            message=download_message,
                             **details,
                         )
                 if time.monotonic() - started > SOURCE_DEADLINE_SECONDS:
                     raise _SourceFailure("单个来源下载超时")
+                if size != expected_size:
+                    raise _SourceFailure("文件未下载完整，已保留下载进度")
                 report(
                     "verifying",
                     completed_bytes=completed_bytes + size,
@@ -218,19 +287,40 @@ def download_verified(
                     force=True,
                     **details,
                 )
-                if size != expected_size:
-                    raise _SourceFailure("文件未下载完整")
                 if digest.hexdigest() != expected_digest:
-                    raise _SourceFailure("SHA-256 校验失败")
+                    raise _IntegrityFailure("SHA-256 校验失败")
             return source
         except (httpx.HTTPError, _SourceFailure) as error:
-            if created:
-                target.unlink(missing_ok=True)
+            # A transport can fail after sending the entire pinned file. Its
+            # complete size/hash are authoritative even if the socket closes.
+            if (
+                created
+                and not isinstance(error, _IntegrityFailure)
+                and size == expected_size
+                and digest.hexdigest() == expected_digest
+            ):
+                report(
+                    "verifying",
+                    completed_bytes=completed_bytes + size,
+                    total_bytes=total,
+                    message=f"已收到完整文件，正在确认 {target.name}",
+                    force=True,
+                    **details,
+                )
+                return source
             failures.append((source.name, _reason(error)))
             previous_source = source.name
+            if isinstance(error, _RangeUnavailable) and offset:
+                deferred_fresh[index] = source
+            elif isinstance(error, _IntegrityFailure):
+                # A corrupt earlier prefix can poison a perfectly good mirror.
+                # Give the current source one clean, explicitly reported retry.
+                discard_prefix()
+                discarded_reason = f"{_reason(error)}，正在从头重新下载当前文件"
+                if offset and index not in fresh_attempted:
+                    pending.appendleft((source, index, discarded_reason))
         except OSError:
-            # Storage/permission errors do not improve by changing the server.
-            if created:
-                target.unlink(missing_ok=True)
+            discard_prefix()
             raise
+    discard_prefix()
     raise ModelDownloadError(failures)

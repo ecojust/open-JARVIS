@@ -373,6 +373,7 @@ assert time.monotonic()-started<1, time.monotonic()-started
             "artifacts": [{"artifact_id": "a", "path": "report.md"}],
         }
         window.render_task(report)
+        window.reply_button.click()
         self.app.processEvents()
         window.body.verticalScrollBar().setValue(100)
         with patch.object(
@@ -381,6 +382,124 @@ assert time.monotonic()-started<1, time.monotonic()-started
             window.render_task(dict(report))
             self.assertEqual(render.call_count, 0)
         self.assertEqual(window.body.verticalScrollBar().value(), 100)
+
+    def test_background_speech_does_not_create_or_reveal_a_reply_window(self):
+        self.ready()
+        self.controller.handle_task_event(self.event(1, "background"))
+        self.assertIsNone(self.controller.results)
+        self.assertTrue(self.controller.speaking)
+        speech = [
+            item
+            for item in self.controller.audio.commands
+            if item["command"] == "speak"
+        ]
+        self.assertEqual(speech[0]["task_id"], "background")
+        self.controller.show_results()
+        window = self.controller.results
+        self.assertFalse(window.reply_visible)
+        self.assertEqual(window.body.toPlainText(), "")
+        self.assertNotEqual(window.content_tabs.currentWidget(), window.body)
+        window.reply_button.click()
+        self.assertTrue(window.reply_visible)
+        self.assertIn("结果 background", window.body.toPlainText())
+        self.assertTrue(self.controller.speaking)
+
+    def test_browsing_another_reply_preserves_speech_and_queued_notifications(self):
+        self.ready()
+        self.controller.tasks["history"] = {
+            "task_id": "history",
+            "status": "succeeded",
+            "display_text": "用户主动查看的历史回复",
+        }
+        self.controller.handle_task_event(self.event(1, "first"))
+        first_id = self.controller._playback_id
+        self.controller.handle_task_event(self.event(2, "second"))
+        self.controller.show_results()
+        self.controller.select_task("history")
+        window = self.controller.results
+        window.reply_button.click()
+        self.assertEqual(window.task_id, "history")
+        self.assertIn("历史回复", window.body.toPlainText())
+        self.assertEqual(self.controller._playback_id, first_id)
+        self.assertEqual(len(self.controller.notifications), 1)
+        self.assertFalse(
+            any(
+                command["command"] == "stop_speaking"
+                for command in self.controller.audio.commands
+            )
+        )
+        self.controller.handle_audio_event("tts.finished", {"playback_id": first_id})
+        self.controller._drain_notifications()
+        self.assertEqual(self.controller._playback_task, "second")
+        self.assertEqual(self.controller.selected_task, "history")
+        self.assertEqual(window.task_id, "history")
+        self.assertTrue(window.reply_visible)
+        self.assertIn("历史回复", window.body.toPlainText())
+        self.controller._update_task(
+            {
+                "task_id": "history",
+                "status": "succeeded",
+                "display_text": "历史回复更新",
+            }
+        )
+        self.assertIn("历史回复更新", window.body.toPlainText())
+        self.assertEqual(self.controller._playback_task, "second")
+
+    def test_hiding_or_submitting_releases_explicit_history_browsing_hold(self):
+        self.ready()
+        self.controller.speech_enabled = False
+        self.controller.auto_fullscreen = True
+        self.controller.tasks["history"] = {
+            "task_id": "history",
+            "status": "succeeded",
+            "display_text": "历史回复",
+        }
+        self.controller.show_results()
+        self.controller.select_task("history")
+        self.controller.results.reply_button.click()
+        self.controller.results.hide()
+        self.controller.handle_task_event(self.event(1, "latest"))
+        window = self.controller.results
+        self.assertTrue(window.isVisible())
+        self.assertTrue(window.isMaximized())
+        self.assertEqual(window.task_id, "latest")
+        self.assertFalse(window.reply_visible)
+        self.assertEqual(window.body.toPlainText(), "")
+        self.controller.select_task("history")
+        self.controller._task_submitted({"task_id": "new-user-task"}, None)
+        self.assertIsNone(self.controller._browsing_task)
+        self.controller.handle_task_event(self.event(2, "new-user-task"))
+        self.assertEqual(window.task_id, "new-user-task")
+
+    def test_spoken_question_followup_stays_with_audio_task_while_browsing(self):
+        self.ready()
+        self.controller.tasks["other-question"] = {
+            "task_id": "other-question",
+            "status": "awaiting_input",
+            "question": "另一项问题",
+        }
+        self.controller.handle_task_event(
+            self.event(1, "spoken-question", "awaiting_input", "哪一天？")
+        )
+        playback_id = self.controller._playback_id
+        self.controller.show_results()
+        self.controller.select_task("other-question")
+        self.assertEqual(self.controller.awaiting_task, "other-question")
+        self.assertEqual(self.controller._voice_awaiting_task, "spoken-question")
+        self.controller.submit("文字回答给当前任务")
+        self.assertEqual(
+            self.controller.client.calls[-1][1], "/api/tasks/other-question/input"
+        )
+        self.controller.handle_audio_event("tts.finished", {"playback_id": playback_id})
+        self.controller.handle_audio_event("stt.final", {"text": "明天"})
+        self.assertEqual(
+            self.controller.client.calls[-1][1], "/api/tasks/spoken-question/input"
+        )
+        self.controller._task_submitted(
+            {"task_id": "spoken-question"}, "spoken-question"
+        )
+        self.assertIsNone(self.controller._voice_awaiting_task)
+        self.assertIsNone(self.controller.awaiting_task)
 
     def test_task_detail_cache_releases_large_nonselected_history(self):
         self.controller.selected_task = "current"

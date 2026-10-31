@@ -1,0 +1,27 @@
+{
+  "scope": "actual mirror response headers plus a small first chunk; not full model download",
+  "probes": [
+    {
+      "kind": "stt",
+      "url": "https://hf-mirror.com/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/2365baeacb507f821a0c8120fcee3d484dba7a07/model.int8.onnx",
+      "requested_range": "bytes=119616920-",
+      "http_status": 206,
+      "content_range": "bytes 119616920-239233840/239233841",
+      "content_length": "119616921",
+      "sampled_bytes": 14451,
+      "expected_size": 239233841,
+      "matching_resume_response": true
+    },
+    {
+      "kind": "tts",
+      "url": "https://hf-mirror.com/csukuangfj/kokoro-multi-lang-v1_1/resolve/423bfb9ccd6a66115a76602a9630ffea265ae176/model.onnx",
+      "requested_range": "bytes=162780738-",
+      "http_status": 206,
+      "content_range": "bytes 162780738-325561475/325561476",
+      "content_length": "162780738",
+      "sampled_bytes": 14461,
+      "expected_size": 325561476,
+      "matching_resume_response": true
+    }
+  ]
+}

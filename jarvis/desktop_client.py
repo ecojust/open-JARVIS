@@ -405,8 +405,9 @@ class DesktopController(QObject):
         self.speaking = False
         self._playback_id = None
         self._playback_task = None
-        self._presented_task = None
         self.awaiting_task = None
+        self._voice_awaiting_task = None
+        self._browsing_task = None
         self.tasks = {}
         self.task_order = []
         self.selected_task = None
@@ -744,7 +745,7 @@ class DesktopController(QObject):
         elif event == "stt.final":
             text = str(data.get("text", "")).strip()
             if text and not self.user_paused and not self.speaking:
-                self.submit(text)
+                self.submit(text, voice=True)
         elif event == "tts.started":
             if data.get("playback_id") != self._playback_id:
                 return
@@ -785,7 +786,7 @@ class DesktopController(QObject):
             if task.get("status") in self.ACTIVE_STATUSES and not task.get("held")
         ]
 
-    def submit(self, text):
+    def submit(self, text, *, voice=False):
         text = str(text).strip()
         if not text or len(text) > 12000:
             self.notify("请输入 1–12,000 个字符的任务。")
@@ -800,11 +801,19 @@ class DesktopController(QObject):
             self._force_new_task = True
             text = re.sub(r"^新任务[，,。:：\s]*", "", text).strip()
             self.awaiting_task = None
+            self._voice_awaiting_task = None
+            self._browsing_task = None
             self._send_audio("expect_input", enabled=False)
             if not text:
                 self.notify("已切换到新任务。请继续说出或输入任务内容。")
                 return True
-        waiting = self.awaiting_task
+        # A spoken follow-up belongs to the question JARVIS just read, even
+        # when the user is browsing another task. Typed replies follow the view.
+        waiting = (
+            self._voice_awaiting_task or self.awaiting_task
+            if voice
+            else self.awaiting_task
+        )
         path = (
             f"/api/tasks/{quote(str(waiting), safe='')}/input"
             if waiting
@@ -883,13 +892,20 @@ class DesktopController(QObject):
         task_id = data.get("task_id")
         if waiting and self.awaiting_task == waiting:
             self.awaiting_task = None
+        if waiting and self._voice_awaiting_task == waiting:
+            self._voice_awaiting_task = None
+        if waiting and self._voice_awaiting_task is None:
             self._send_audio("expect_input", enabled=False)
         if self.speech_enabled:
             self._send_audio("prewarm")
         self.last_status = "任务已提交，正在后台处理。可以继续安排下一项任务。"
         if task_id:
-            if not self.speaking:
-                self.selected_task = task_id
+            # A new user submission ends the explicit history-browsing hold.
+            self._browsing_task = None
+            self.selected_task = task_id
+            self.awaiting_task = (
+                task_id if data.get("status") == "awaiting_input" else None
+            )
             self._fetch_task(task_id, callback=self._update_task)
         self.refresh_tasks()
         self.update_tile()
@@ -914,6 +930,7 @@ class DesktopController(QObject):
         keep = set(self.task_order) | {
             self.selected_task,
             self.awaiting_task,
+            self._voice_awaiting_task,
             self._playback_task,
         }
         self.tasks = {key: value for key, value in self.tasks.items() if key in keep}
@@ -937,18 +954,20 @@ class DesktopController(QObject):
         if task_id is None:
             return
         self.tasks[task_id] = {**self.tasks.get(task_id, {}), **task}
-        if (
-            self.results
-            and self.results.isVisible()
-            and self.selected_task == task_id
-            and not self.speaking
-        ):
+        if self.selected_task == task_id and "status" in task:
+            self.awaiting_task = task_id if task["status"] == "awaiting_input" else None
+        if self.results and self.results.isVisible() and self.selected_task == task_id:
             self.results.render_task(self.tasks[task_id])
         self.update_tile()
 
     def _trim_task_details(self):
         """The database owns history; retain heavy details only for active views."""
-        keep = {self.selected_task, self._playback_task, self.awaiting_task}
+        keep = {
+            self.selected_task,
+            self._playback_task,
+            self.awaiting_task,
+            self._voice_awaiting_task,
+        }
         for task_id, task in self.tasks.items():
             if task_id not in keep:
                 for key in ("events", "messages", "steps", "plan"):
@@ -958,11 +977,11 @@ class DesktopController(QObject):
                 if len(str(task.get("display_text", ""))) > 1000:
                     task.pop("display_text", None)
 
-    def select_task(self, task_id):
+    def select_task(self, task_id, *, user_selected=True):
         if task_id is None:
             return
-        if self.speaking and task_id != self._playback_task:
-            self.stop_speaking()
+        if user_selected:
+            self._browsing_task = task_id
         self.selected_task = task_id
         self._trim_task_details()
         task = self.tasks.get(task_id)
@@ -970,12 +989,8 @@ class DesktopController(QObject):
             self.awaiting_task = (
                 task_id if task.get("status") == "awaiting_input" else None
             )
-            self._send_audio(
-                "expect_input", enabled=bool(self.awaiting_task), timeout=30
-            )
-            self._ensure_results().render_task(
-                self._presented_task if self.speaking and self._presented_task else task
-            )
+            self._arm_view_followup()
+            self._ensure_results().render_task(task)
         self._fetch_task(
             task_id, callback=lambda data: self._selected_ready(task_id, data)
         )
@@ -988,8 +1003,15 @@ class DesktopController(QObject):
             self.awaiting_task = (
                 requested_id if task.get("status") == "awaiting_input" else None
             )
+            self._arm_view_followup()
+
+    def _arm_view_followup(self):
+        # Browsing must not replace the context of a question being spoken or
+        # awaiting a spoken answer. The composer still targets its visible task.
+        if not self.speaking and self._voice_awaiting_task is None:
+            self._voice_awaiting_task = self.awaiting_task
             self._send_audio(
-                "expect_input", enabled=bool(self.awaiting_task), timeout=30
+                "expect_input", enabled=bool(self._voice_awaiting_task), timeout=30
             )
 
     def handle_task_event(self, envelope):
@@ -1061,22 +1083,30 @@ class DesktopController(QObject):
         if self.closing or self.speaking or self._restarting or not self.notifications:
             return
         task = self.notifications.popleft()
-        self._presented_task = dict(task)
         task_id = task.get("task_id", task.get("id"))
-        self.selected_task = task_id
-        self.awaiting_task = task_id if task.get("status") == "awaiting_input" else None
-        self._send_audio("expect_input", enabled=False)
-        self.last_status = (
-            "请补充任务信息。" if self.awaiting_task else "任务已返回结果。"
+        awaiting = task_id if task.get("status") == "awaiting_input" else None
+        self._voice_awaiting_task = awaiting
+        preserve_view = bool(
+            self.results
+            and self.results.isVisible()
+            and self.selected_task is not None
+            and self._browsing_task == self.selected_task
         )
+        if not preserve_view:
+            self._browsing_task = None
+            self.selected_task = task_id
+            self.awaiting_task = awaiting
+        self._send_audio("expect_input", enabled=False)
+        self.last_status = "请补充任务信息。" if awaiting else "任务已返回结果。"
         if self.auto_fullscreen or (self.results and self.results.isVisible()):
             window = self._ensure_results()
             window.render_tasks(
                 [self.tasks[key] for key in self.task_order if key in self.tasks]
             )
-            window.render_task(task)
+            if not preserve_view:
+                window.render_task(task)
             window.set_status(self.last_status)
-            if self.auto_fullscreen:
+            if self.auto_fullscreen and not preserve_view:
                 window.show_result()
         speech = str(task.get("speech_text") or "").strip()
         if (
@@ -1093,11 +1123,11 @@ class DesktopController(QObject):
                 task_id=task_id,
                 playback_id=playback_id,
                 text=speech,
-                awaiting_input=bool(self.awaiting_task),
+                awaiting_input=bool(awaiting),
             ):
                 self._finish_playback()
         else:
-            if self.awaiting_task:
+            if awaiting:
                 self._send_audio("expect_input", enabled=True, timeout=30)
             QTimer.singleShot(0, self._drain_notifications)
         self.update_tile()
@@ -1144,14 +1174,13 @@ class DesktopController(QObject):
         )
         window.show_result()
         self.refresh_tasks()
-        if self.speaking and self._presented_task:
-            window.render_task(self._presented_task)
-        elif self.selected_task:
-            self.select_task(self.selected_task)
+        if self.selected_task:
+            self.select_task(self.selected_task, user_selected=False)
 
     def eventFilter(self, watched, event):
         if watched is self.results:
             if event.type() == QEvent.Type.Hide and not self.closing:
+                self._browsing_task = None
                 self._release_view.start(120000)
             elif event.type() == QEvent.Type.Show:
                 self._release_view.stop()
@@ -1239,11 +1268,11 @@ class DesktopController(QObject):
 
     def upload_file(self):
         if not self.ready:
-            self.notify("本地服务尚未就绪，暂时不能导入文件。")
+            self.notify("本地服务尚未就绪，暂时不能添加资料。")
             return
         filename, _ = QFileDialog.getOpenFileName(
             self._ensure_results(),
-            "导入工作文件",
+            "添加工作资料",
             "",
             "工作文件 (*.csv *.txt *.md *.json)",
         )
@@ -1252,7 +1281,7 @@ class DesktopController(QObject):
         path = Path(filename)
         try:
             if path.stat().st_size > 2 * 1024 * 1024:
-                self.notify("文件不能超过 2 MB，请缩小文件后导入。")
+                self.notify("资料不能超过 2 MB，请缩小文件后添加。")
                 return
             data = path.read_bytes()
         except OSError:
@@ -1264,7 +1293,7 @@ class DesktopController(QObject):
             raw=data,
             content_type="application/octet-stream",
             callback=lambda result: self.notify(
-                f"文件已导入：{result.get('path', path.name)}。可以让 JARVIS 读取或分析它。"
+                f"资料已添加：{result.get('path', path.name)}。可以让 JARVIS 读取或分析它。"
             ),
             error=self.notify,
         )
@@ -1278,6 +1307,8 @@ class DesktopController(QObject):
             return
         self._preview_generation += 1
         generation = self._preview_generation
+        if not automatic:
+            window.show_files()
         window.show_preview_loading(artifact_id, name)
         if not automatic:
             window.show_result()

@@ -36,7 +36,7 @@ def worker(config_path):
         for name, value in config["files"].items()
     }
     download_model.MODEL_SOURCES = (
-        DownloadSource("本机 HTTP 503 测试源", config["base"] + "/blocked"),
+        DownloadSource("本机中途断流测试源", config["base"] + "/interrupted"),
         DownloadSource("本机限速 HTTP 测试源", config["base"] + "/slow"),
     )
     download_model.download(Path(config["directory"]))
@@ -66,6 +66,7 @@ def main():
         "model.int8.onnx": b"not-an-inference-model\0" * 150_000,
     }
     requests = []
+    range_requests = []
     events = []
     stopped = threading.Event()
 
@@ -75,24 +76,37 @@ def main():
 
         def do_GET(self):
             requests.append(self.path)
-            if self.path.startswith("/blocked/"):
-                self.send_response(503)
-                self.end_headers()
-                return
-            name = self.path.removeprefix("/slow/")
+            interrupted = self.path.startswith("/interrupted/")
+            name = self.path.split("/", 2)[-1]
             if name not in body:
                 self.send_error(404)
                 return
             value = body[name]
-            self.send_response(200)
+            range_header = self.headers.get("Range")
+            start = (
+                int(range_header.removeprefix("bytes=").removesuffix("-"))
+                if range_header else 0
+            )
+            range_requests.append(
+                {"path": self.path, "range": range_header, "offset": start}
+            )
+            self.send_response(206 if range_header else 200)
             self.send_header("Content-Type", "application/octet-stream")
-            self.send_header("Content-Length", str(len(value)))
+            self.send_header("Content-Length", str(len(value) - start))
+            if range_header:
+                self.send_header(
+                    "Content-Range", f"bytes {start}-{len(value) - 1}/{len(value)}"
+                )
             self.end_headers()
+            end = (
+                len(value) // 2
+                if interrupted and name.endswith(".onnx") else len(value)
+            )
             try:
-                for offset in range(0, len(value), 64 * 1024):
+                for offset in range(start, end, 64 * 1024):
                     if stopped.is_set():
                         return
-                    self.wfile.write(value[offset : offset + 64 * 1024])
+                    self.wfile.write(value[offset : min(offset + 64 * 1024, end)])
                     self.wfile.flush()
                     if name.endswith(".onnx"):
                         stopped.wait(0.125)
@@ -184,6 +198,8 @@ def main():
                             "total_bytes",
                             "eta_seconds",
                             "bytes_per_second",
+                            "resumed_bytes",
+                            "restart_reason",
                         )
                         events.append(
                             {key: values[key] for key in keep if key in values}
@@ -237,7 +253,11 @@ def main():
                 label_fixture(dialog)
                 assert dialog is not first
                 assert controller._downloads["stt"] is active_worker
-                until(lambda: dialog.model_rows["stt"].progress.value() >= 350)
+                until(lambda: (
+                    any(value.get("resumed_bytes", 0) > 0 for value in events)
+                    and dialog.model_rows["stt"].progress.value() >= 650
+                    and controller._model_states["stt"].get("eta_seconds") is not None
+                ))
                 row = dialog.model_rows["stt"]
                 assert 0 < row.progress.value() < 1000
                 assert not row.eta_label.isHidden()
@@ -263,6 +283,19 @@ def main():
                 report["checks"]["source_fallback_observed"] = any(
                     value.get("phase") == "switching" for value in events
                 )
+                report["checks"]["range_resume_after_half_download"] = any(
+                    value.get("offset") == len(body["model.int8.onnx"]) // 2
+                    and value["path"] == "/slow/model.int8.onnx"
+                    for value in range_requests
+                )
+                counters = [
+                    value["completed_bytes"] for value in events
+                    if value.get("phase") in {"downloading", "switching"}
+                ]
+                report["checks"]["source_switch_preserves_visible_progress"] = (
+                    counters == sorted(counters)
+                    and any(value.get("resumed_bytes", 0) > 0 for value in events)
+                )
                 report["checks"]["real_eta_events_observed"] = any(
                     isinstance(value.get("eta_seconds"), (int, float))
                     and value["eta_seconds"] > 0
@@ -280,6 +313,7 @@ def main():
         server.server_close()
         thread.join(timeout=2)
     report["requests"] = requests
+    report["range_requests"] = range_requests
     report["events"] = events
     report["passed"] = all(report["checks"].values())
     (output / "report.json").write_text(

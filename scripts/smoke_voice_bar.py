@@ -207,8 +207,18 @@ def main():
                 and not controller.results.isFullScreen()
             )
             assert (Path(temporary) / "workspace/client-check.md").is_file()
+            assert not controller.results.reply_visible
+            assert controller.results.body.toPlainText() == ""
             controller.results.grab().save(str(output / "04-maximized-result.png"))
             report["checks"]["real_backend_result_maximized_not_fullscreen"] = True
+            report["checks"]["reply_hidden_until_explicit_open"] = True
+            controller.results.reply_button.click()
+            assert controller.results.reply_visible
+            assert controller.results.body.toPlainText().strip()
+            controller.results.grab().save(str(output / "05-explicit-reply.png"))
+            controller.results.show_files()
+            assert not controller.results.reply_visible
+            report["checks"]["reply_can_be_opened_and_closed_explicitly"] = True
             report["checks"][
                 "model_reload_requested_after_idle"
             ] = not controller.pending_settings

@@ -5,7 +5,6 @@ import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import io
 from pathlib import Path
-import tarfile
 import tempfile
 import threading
 import time
@@ -104,10 +103,15 @@ class DownloadFallbackTests(unittest.TestCase):
         self.assertEqual([e["source_index"] for e in switching], [2, 3])
         self.assertEqual(switching[-1]["previous_source"], "corrupt")
         self.assertEqual(switching[-1]["reason"], "SHA-256 校验失败")
+        self.assertEqual(
+            switching[-1]["restart_reason"],
+            "SHA-256 校验失败，正在从头重新下载当前文件",
+        )
+        self.assertIn("从头重新下载", switching[-1]["message"])
         self.assertTrue(all(e["completed_bytes"] == 0 for e in switching))
         self.assertTrue(all(e["source_count"] == 4 for e in switching))
 
-    def test_disconnected_partial_is_discarded_and_progress_resets_to_baseline(self):
+    def test_source_without_range_restarts_only_with_explicit_explanation(self):
         self.routes.update(
             {
                 "/partial": {"body": b"broken data", "length": len(self.body)},
@@ -118,7 +122,11 @@ class DownloadFallbackTests(unittest.TestCase):
             "/partial", "/good", completed_bytes=42, total_bytes=42 + len(self.body)
         )
         switching = next(e for e in self.events if e["phase"] == "switching")
-        self.assertEqual(switching["completed_bytes"], 42)
+        self.assertEqual(switching["completed_bytes"], 42 + len(b"broken data"))
+        self.assertEqual(self.requests, ["/partial", "/good", "/good"])
+        restart = next(e for e in self.events if e.get("restart_reason"))
+        self.assertEqual(restart["completed_bytes"], 42)
+        self.assertIn("重新下载", restart["message"])
         self.assertEqual((self.root / "model").read_bytes(), self.body)
         self.assertEqual(self.events[-1]["completed_bytes"], 42 + len(self.body))
 
@@ -132,7 +140,9 @@ class DownloadFallbackTests(unittest.TestCase):
             }
         )
         self.transfer("/html", "/wrong-length", "/short", "/good")
-        self.assertEqual(self.requests, ["/html", "/wrong-length", "/short", "/good"])
+        self.assertEqual(
+            self.requests, ["/html", "/wrong-length", "/short", "/good", "/good"]
+        )
         self.assertEqual((self.root / "model").read_bytes(), self.body)
 
     def test_read_timeout_switches_without_unbounded_retries(self):
@@ -246,57 +256,51 @@ class DownloadFallbackTests(unittest.TestCase):
         self.assertEqual((destination / "tokens.txt").read_bytes(), tokens)
         self.assertFalse(list(self.root.glob(".jarvis-stt-*")))
 
-    def test_tts_bad_archive_fallback_installs_and_cached_verify_skips_network(self):
-        archive = io.BytesIO()
-        with tarfile.open(fileobj=archive, mode="w:bz2") as bundle:
-            for name in tts.REQUIRED_FILES:
-                data = ("fixture " + name).encode()
-                info = tarfile.TarInfo(tts.MODEL_NAME + "/" + name)
-                info.size = len(data)
-                bundle.addfile(info, io.BytesIO(data))
-        body = archive.getvalue()
-        self.routes.update(
-            {"/bad": {"body": b"x" * len(body)}, "/good": {"body": body}}
-        )
-        destination = self.root / "tts"
-        with (
-            patch.object(tts, "MODEL_SHA256", hashlib.sha256(body).hexdigest()),
-            patch.object(tts, "MODEL_SIZE", len(body)),
-            patch.object(
-                tts, "MODEL_SOURCES", (self.source("/bad"), self.source("/good"))
-            ),
-        ):
-            tts.download(destination, progress=lambda *_: None)
-            self.assertTrue(catalog.verify_installed("tts", destination))
-            self.assertEqual(self.requests, ["/bad", "/good"])
-            self.requests.clear()
-            tts.download(destination, progress=lambda *_: None)
-            self.assertEqual(self.requests, [])
-        self.assertFalse(list(self.root.glob(".jarvis-tts-*")))
-
-    def test_tts_archive_failure_uses_pinned_files_and_remembers_healthy_mirror(self):
+    def test_tts_pinned_files_bad_hash_fallback_and_cache_skips_network(self):
         files = {name: ("fixture " + name).encode() for name in tts.REQUIRED_FILES}
         pinned = {
             name: (len(body), hashlib.sha256(body).hexdigest())
             for name, body in files.items()
         }
         first = next(iter(files))
-        self.routes["/archive"] = {"status": 503}
+        self.routes["/bad/" + first] = {"body": b"x" * len(files[first])}
+        self.routes.update(
+            {"/good/" + name: {"body": body} for name, body in files.items()}
+        )
+        destination = self.root / "tts"
+        with (
+            patch.object(tts, "KOKORO_FILES", pinned),
+            patch.object(
+                tts, "FILE_SOURCES", (self.source("/bad"), self.source("/good"))
+            ),
+        ):
+            tts.download(destination, progress=lambda *_: None)
+            self.assertTrue(catalog.verify_installed("tts", destination))
+            self.assertEqual(
+                self.requests, ["/bad/" + first, *["/good/" + name for name in files]]
+            )
+            self.requests.clear()
+            tts.download(destination, progress=lambda *_: None)
+            self.assertEqual(self.requests, [])
+        self.assertFalse(list(self.root.glob(".jarvis-tts-*")))
+
+    def test_tts_uses_one_pinned_representation_and_remembers_healthy_mirror(self):
+        files = {name: ("fixture " + name).encode() for name in tts.REQUIRED_FILES}
+        pinned = {
+            name: (len(body), hashlib.sha256(body).hexdigest())
+            for name, body in files.items()
+        }
+        first = next(iter(files))
         self.routes["/hf/" + first] = {"status": 403}
         self.routes.update(
             {"/mirror/" + name: {"body": body} for name, body in files.items()}
         )
         sources = (
-            DownloadSource("HF", self.base + "/hf", 2),
-            DownloadSource("Mirror", self.base + "/mirror", 3),
+            DownloadSource("HF", self.base + "/hf", 1),
+            DownloadSource("Mirror", self.base + "/mirror", 2),
         )
         destination = self.root / "tts-files"
         with (
-            patch.object(
-                tts,
-                "MODEL_SOURCES",
-                (DownloadSource("GitHub", self.base + "/archive", 1),),
-            ),
             patch.object(tts, "FILE_SOURCES", sources),
             patch.object(tts, "KOKORO_FILES", pinned),
         ):
@@ -305,7 +309,6 @@ class DownloadFallbackTests(unittest.TestCase):
             )
             self.assertTrue(catalog.verify_installed("tts", destination))
             requests = [
-                "/archive",
                 "/hf/" + first,
                 *["/mirror/" + name for name in files],
             ]
@@ -316,15 +319,15 @@ class DownloadFallbackTests(unittest.TestCase):
         for name, body in files.items():
             self.assertEqual((destination / name).read_bytes(), body)
         transitions = [e for e in self.events if e["phase"] == "switching"]
-        self.assertEqual([e["source_index"] for e in transitions], [2, 3])
-        self.assertTrue(all(e["source_count"] == 3 for e in transitions))
+        self.assertEqual([e["source_index"] for e in transitions], [2])
+        self.assertTrue(all(e["source_count"] == 2 for e in transitions))
         self.assertEqual(
             transitions[0]["total_bytes"], sum(len(body) for body in files.values())
         )
         self.assertEqual(self.events[-1]["verification"], "pinned-file-sha256")
         self.assertEqual(self.events[-1]["total_bytes"], transitions[0]["total_bytes"])
 
-    def test_tts_all_three_sources_fail_without_replacing_previous_model(self):
+    def test_tts_all_file_sources_fail_without_replacing_previous_model(self):
         destination = self.root / "previous-tts"
         destination.mkdir()
         previous = destination / "tokens.txt"
@@ -332,7 +335,6 @@ class DownloadFallbackTests(unittest.TestCase):
         body = b"model fixture"
         self.routes.update(
             {
-                "/archive": {"status": 503},
                 "/hf/model.onnx": {"body": b"x" * len(body)},
                 "/mirror/model.onnx": {"body": b"y" * len(body)},
             }
@@ -340,15 +342,10 @@ class DownloadFallbackTests(unittest.TestCase):
         with (
             patch.object(
                 tts,
-                "MODEL_SOURCES",
-                (DownloadSource("GitHub", self.base + "/archive", 1),),
-            ),
-            patch.object(
-                tts,
                 "FILE_SOURCES",
                 (
-                    DownloadSource("HF", self.base + "/hf", 2),
-                    DownloadSource("Mirror", self.base + "/mirror", 3),
+                    DownloadSource("HF", self.base + "/hf", 1),
+                    DownloadSource("Mirror", self.base + "/mirror", 2),
                 ),
             ),
             patch.object(
@@ -356,7 +353,7 @@ class DownloadFallbackTests(unittest.TestCase):
                 "KOKORO_FILES",
                 {"model.onnx": (len(body), hashlib.sha256(body).hexdigest())},
             ),
-            self.assertRaisesRegex(ModelDownloadError, "所有 3 个"),
+            self.assertRaisesRegex(ModelDownloadError, "所有 2 个"),
         ):
             tts.download(
                 destination, progress=lambda event, data: self.events.append(data)

@@ -142,7 +142,84 @@ class ArtifactPreviewTests(unittest.TestCase):
         self.controller.client.calls[-1][3]["error"]("文件内容损坏，不能预览。")
         self.assertIn("损坏", window.preview.placeholder.text())
         self.assertTrue(window.preview.download.isEnabled())
+        self.assertEqual(window.body.toPlainText(), "")
+        window.reply_button.click()
         self.assertIn("生成实际文件", window.body.toPlainText())
+
+    def test_agent_reply_is_not_parsed_or_shown_until_explicitly_opened(self):
+        window = self.controller._ensure_results()
+        with patch.object(
+            window.body, "setMarkdown", wraps=window.body.setMarkdown
+        ) as parse:
+            for state in ("running", "awaiting_input", "succeeded", "failed"):
+                window.render_task(
+                    {
+                        "task_id": state,
+                        "message": "明确的用户任务",
+                        "status": state,
+                        "display_text": "不要默认显示的智能体回答",
+                        "question": "补充问题内容",
+                        "error": "错误详情",
+                        "artifacts": [],
+                    }
+                )
+                self.assertEqual(window.body.toPlainText(), "")
+                self.assertIs(window.content_tabs.currentWidget(), window.preview)
+                self.assertFalse(window.reply_visible)
+                self.assertNotIn("智能体回答", window.preview.placeholder.text())
+            parse.assert_not_called()
+            window.reply_button.click()
+            self.assertTrue(window.reply_visible)
+            self.assertIs(window.content_tabs.currentWidget(), window.body)
+            self.assertIn("智能体回答", window.body.toPlainText())
+            self.assertEqual(parse.call_count, 1)
+            window.render_task(
+                {
+                    "task_id": "failed",
+                    "status": "failed",
+                    "display_text": "不要默认显示的智能体回答",
+                }
+            )
+            self.assertEqual(parse.call_count, 1)
+
+    def test_task_switch_clears_open_reply_and_requires_another_explicit_click(self):
+        window = self.controller._ensure_results()
+        window.render_task(
+            self.task("one", "第一项", ".docx", display_text="第一项回答")
+        )
+        window.reply_button.click()
+        self.assertIn("第一项回答", window.body.toPlainText())
+        window.render_task(
+            self.task("two", "第二项", ".xlsx", display_text="第二项回答")
+        )
+        self.assertFalse(window.reply_visible)
+        self.assertEqual(window.body.toPlainText(), "")
+        self.assertIs(window.content_tabs.currentWidget(), window.preview)
+        window.reply_button.click()
+        self.assertIn("第二项回答", window.body.toPlainText())
+        self.assertNotIn("第一项回答", window.body.toPlainText())
+        window.reply_button.click()
+        self.assertFalse(window.reply_visible)
+        self.assertIs(window.content_tabs.currentWidget(), window.preview)
+
+    def test_late_file_preview_keeps_explicit_reply_open(self):
+        window = self.controller._ensure_results()
+        window.render_task(self.task("late", "文件", ".docx"))
+        callback = self.controller.client.calls[-1][3]["callback"]
+        window.reply_button.click()
+        callback({"kind": "document", "paragraphs": ["延迟返回的实际文件"]})
+        self.assertTrue(window.reply_visible)
+        self.assertIs(window.content_tabs.currentWidget(), window.body)
+        self.assertIn("延迟返回的实际文件", window.preview.document.toPlainText())
+        window.reply_button.click()
+        self.assertIs(window.content_tabs.currentWidget(), window.preview)
+
+    def test_add_materials_explains_supported_inputs_and_keeps_existing_upload(self):
+        window = self.controller._ensure_results()
+        self.assertEqual(window.attach_button.text(), "＋ 添加资料")
+        self.assertIn("CSV", window.attach_button.toolTip())
+        self.assertIn("2 MB", window.attach_button.toolTip())
+        self.assertNotIn("Word", window.attach_button.toolTip())
 
     def test_table_is_bounded_readonly_and_preserves_formula_text(self):
         model = PreviewTableModel(

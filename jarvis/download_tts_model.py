@@ -12,7 +12,6 @@ from .kokoro_files import KOKORO_FILES, KOKORO_REPO, KOKORO_REVISION
 from .model_download import (
     DOWNLOAD_TIMEOUT,
     DownloadSource,
-    ModelDownloadError,
     TransferProgress,
     download_verified,
 )
@@ -20,22 +19,22 @@ from .model_download import (
 
 MODEL_NAME = "kokoro-multi-lang-v1_1"
 MODEL_URL = f"https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/{MODEL_NAME}.tar.bz2"
-MODEL_SOURCES = (DownloadSource("GitHub", MODEL_URL, 1),)
 FILE_SOURCES = (
     DownloadSource(
         "Hugging Face",
         f"https://huggingface.co/{KOKORO_REPO}/resolve/{KOKORO_REVISION}",
-        2,
+        1,
     ),
     DownloadSource(
         "HF Mirror",
         f"https://hf-mirror.com/{KOKORO_REPO}/resolve/{KOKORO_REVISION}",
-        3,
+        2,
     ),
 )
 # Published SHA-256 in the official GitHub release asset metadata.
 MODEL_SHA256 = "b78e1ac42b852e839cceaafbe88f66806bf5860992d1d7b9a3f2ad1198427aed"
 MODEL_SIZE = 364_855_331
+DOWNLOAD_SIZE = sum(size for size, _ in KOKORO_FILES.values())
 REQUIRED_FILES = (
     "model.onnx",
     "voices.bin",
@@ -112,49 +111,30 @@ def safe_extract(archive: Path, destination: Path) -> Path:
     return destination / MODEL_NAME
 
 
-def _download_files(client, destination, report, archive_failure):
-    """Same official model, pinned per-file hashes on independent providers."""
+def _download_files(client, destination, report):
+    """All sources expose identical pinned files, allowing Range continuation."""
     total = sum(size for size, _ in KOKORO_FILES.values())
     sources = list(FILE_SOURCES)
-    source_count = len(MODEL_SOURCES) + len(FILE_SOURCES)
-    report(
-        "switching",
-        completed_bytes=0,
-        total_bytes=total,
-        message=f"压缩包来源不可用，正在从 {sources[0].name} 下载同版本模型文件",
-        previous_source=archive_failure.failures[-1][0],
-        reason=archive_failure.failures[-1][1],
-        source=sources[0].name,
-        source_index=sources[0].index,
-        source_count=source_count,
-        force=True,
-    )
     completed = 0
     for name, (size, digest) in KOKORO_FILES.items():
         target = destination / name
         target.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            selected = download_verified(
-                client,
-                target,
-                tuple(
-                    DownloadSource(source.name, f"{source.url}/{name}", source.index)
-                    for source in sources
-                ),
-                size,
-                digest,
-                report,
-                completed_bytes=completed,
-                total_bytes=total,
-                source_count=source_count,
-            )
-        except ModelDownloadError as failure:
-            raise ModelDownloadError(
-                (*archive_failure.failures, *failure.failures)
-            ) from None
+        selected = download_verified(
+            client,
+            target,
+            tuple(
+                DownloadSource(source.name, f"{source.url}/{name}", source.index)
+                for source in sources
+            ),
+            size,
+            digest,
+            report,
+            completed_bytes=completed,
+            total_bytes=total,
+        )
         completed += size
-        # Remember the healthy provider within this download. A blocked source
-        # must not cost another timeout for each of the 377 model files.
+        # Remember a healthy provider rather than paying another timeout for
+        # every file. A failed prefix continues on the alternate fixed source.
         sources.sort(key=lambda source: source.name != selected.name)
     return total
 
@@ -192,8 +172,8 @@ def download(directory: Path, archive: Path | None = None, *, progress=None) -> 
                     )
                 report(
                     "ready",
-                    completed_bytes=MODEL_SIZE,
-                    total_bytes=MODEL_SIZE,
+                    completed_bytes=DOWNLOAD_SIZE,
+                    total_bytes=DOWNLOAD_SIZE,
                     message=status["message"],
                     verification="legacy-local-import"
                     if status["verification"] == "legacy-compatible"
@@ -203,37 +183,28 @@ def download(directory: Path, archive: Path | None = None, *, progress=None) -> 
                 return
             with staging_directory(directory, "tts") as temporary:
                 temporary = Path(temporary)
-                total = MODEL_SIZE
-                verification = "official-archive-sha256"
-                provenance = verification + ":" + MODEL_SHA256
-                unpacked = None
                 if archive is None:
-                    archive = temporary / "model.tar.bz2"
+                    # Mixing a partially received compressed archive with a
+                    # different file layout cannot support byte continuation.
+                    # Use one pinned file representation on both online sources.
+                    unpacked = temporary / "files"
                     with httpx.Client(
                         follow_redirects=True, timeout=DOWNLOAD_TIMEOUT
                     ) as client:
-                        try:
-                            download_verified(
-                                client,
-                                archive,
-                                MODEL_SOURCES,
-                                MODEL_SIZE,
-                                MODEL_SHA256,
-                                report,
-                                source_count=len(MODEL_SOURCES) + len(FILE_SOURCES),
-                            )
-                        except ModelDownloadError as failure:
-                            unpacked = temporary / "files"
-                            total = _download_files(client, unpacked, report, failure)
-                            verification = "pinned-file-sha256"
-                            provenance = verification + ":" + KOKORO_REVISION
+                        total = _download_files(client, unpacked, report)
+                    verification = "pinned-file-sha256"
+                    provenance = verification + ":" + KOKORO_REVISION
                 else:
+                    # Developer/offline archive checks still verify the original
+                    # published bundle. This is not an automatic network source.
                     archive = Path(archive)
                     report("verifying", message="正在校验官方模型压缩包", force=True)
                     verify_archive(archive)
-                if unpacked is None:
                     report("installing", message="正在解压模型", force=True)
                     unpacked = safe_extract(archive, temporary / "unpacked")
+                    total = MODEL_SIZE
+                    verification = "official-archive-sha256"
+                    provenance = verification + ":" + MODEL_SHA256
                 if not model_ready(unpacked):
                     raise ValueError("模型缺少必要文件")
                 write_manifest(

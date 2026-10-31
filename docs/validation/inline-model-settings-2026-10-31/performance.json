@@ -1,0 +1,264 @@
+{
+  "recorded_at": "2026-10-31T11:43:24.259249+00:00",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "architecture": "x86_64",
+  "python": "3.12.14",
+  "logical_cpus": 3,
+  "machine_memory_gib": 9.73,
+  "qt_platform": "offscreen",
+  "release_acceptance": false,
+  "widget_samples": [
+    {
+      "startup_to_processed_events_ms": 353.426518,
+      "rss_mib": 75.30859375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 257.528721,
+      "rss_mib": 75.6171875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 231.084071,
+      "rss_mib": 73.078125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 248.019486,
+      "rss_mib": 73.4609375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 227.552228,
+      "rss_mib": 75.4765625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 268.396224,
+      "rss_mib": 75.4609375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 223.815483,
+      "rss_mib": 73.55859375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 206.501848,
+      "rss_mib": 73.03125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 220.148352,
+      "rss_mib": 75.55859375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 228.263834,
+      "rss_mib": 75.0703125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 220.348378,
+      "rss_mib": 74.4765625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 218.10803,
+      "rss_mib": 73.3984375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 212.478135,
+      "rss_mib": 75.34375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 225.500838,
+      "rss_mib": 75.3984375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 223.512002,
+      "rss_mib": 75.56640625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 226.997151,
+      "rss_mib": 75.13671875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 222.025549,
+      "rss_mib": 73.91015625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 237.988301,
+      "rss_mib": 75.1484375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 219.681807,
+      "rss_mib": 72.9765625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 232.790319,
+      "rss_mib": 75.44921875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 220.81944,
+      "rss_mib": 75.4140625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 234.70191,
+      "rss_mib": 72.71875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 240.009439,
+      "rss_mib": 73.2265625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 235.218434,
+      "rss_mib": 74.8828125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 225.092984,
+      "rss_mib": 73.37109375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 217.449616,
+      "rss_mib": 75.3828125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 250.056576,
+      "rss_mib": 75.46484375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 205.056195,
+      "rss_mib": 72.98046875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 215.152986,
+      "rss_mib": 72.89453125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 224.464073,
+      "rss_mib": 75.75,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    }
+  ],
+  "widget_startup_ms": {
+    "count": 30,
+    "p50": 225.092984,
+    "p95": 268.396224,
+    "max": 353.426518
+  },
+  "widget_rss_mib": {
+    "count": 30,
+    "p50": 75.0703125,
+    "p95": 75.6171875,
+    "max": 75.75
+  }
+}

@@ -144,6 +144,37 @@ class ArtifactPreviewWidget(QWidget):
         # Importing the launcher still does not load this module or any Qt class.
         from .desktop_ui import SafeTextBrowser
 
+        self.setObjectName("artifactPreview")
+        self.setStyleSheet(
+            """
+            QWidget#artifactPreview { background: #ffffff; border-radius: 14px; }
+            QLabel { background: transparent; color: #1d1d1f; }
+            QLabel#heading { font-size: 18px; font-weight: 600; }
+            QLabel#muted { color: #6e6e73; }
+            QTextBrowser, QPlainTextEdit { background: #ffffff; color: #1d1d1f;
+                border: 1px solid #e5e5ea; border-radius: 10px; padding: 16px;
+                selection-background-color: #dcecff; selection-color: #1d1d1f; }
+            QTableView { background: #ffffff; alternate-background-color: #f7f8fa;
+                color: #1d1d1f; gridline-color: #e5e5ea; border: 1px solid #e5e5ea;
+                border-radius: 10px; selection-background-color: #dcecff;
+                selection-color: #1d1d1f; }
+            QHeaderView::section { background: #f5f5f7; color: #515154;
+                border: none; border-bottom: 1px solid #e5e5ea; padding: 9px; }
+            QTableCornerButton::section { background: #f5f5f7; border: none; }
+            QPushButton { background: #f5f5f7; color: #1d1d1f; border: 1px solid #e1e1e6;
+                border-radius: 8px; padding: 7px 13px; }
+            QPushButton:hover { background: #ececf0; border-color: #d1d1d6; }
+            QPushButton:pressed { background: #e5e5ea; }
+            QPushButton:disabled { color: #a0a0a6; background: #f7f7f9; border-color: #eeeeF1; }
+            QPushButton#primary { background: #007aff; color: white; border-color: #007aff; }
+            QPushButton#primary:hover { background: #006ee6; border-color: #006ee6; }
+            QPushButton#primary:disabled { background: #dcecff; color: #87a8cf; border-color: #dcecff; }
+            QComboBox { background: #f5f5f7; color: #1d1d1f; border: 1px solid #e1e1e6;
+                border-radius: 8px; padding: 7px 10px; }
+            QComboBox QAbstractItemView { background: #ffffff; color: #1d1d1f;
+                selection-background-color: #dcecff; selection-color: #1d1d1f; }
+            """
+        )
         self.artifact_id = None
         self.name = ""
         self.payload = {}
@@ -152,9 +183,10 @@ class ArtifactPreviewWidget(QWidget):
         self._slide_index = 0
         self.table_model = None
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 8, 0, 0)
+        layout.setContentsMargins(16, 14, 16, 16)
+        layout.setSpacing(12)
         heading = QHBoxLayout()
-        self.title = QLabel("产物内容预览")
+        self.title = QLabel("文件预览")
         self.title.setObjectName("heading")
         self.title.setTextFormat(Qt.TextFormat.PlainText)
         self.title.setWordWrap(True)
@@ -163,21 +195,23 @@ class ArtifactPreviewWidget(QWidget):
             QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
         )
         heading.addWidget(self.title, 1)
-        self.download = QPushButton("下载原文件")
+        self.download = QPushButton("保存文件")
+        self.download.setToolTip("将原始文件保存到你选择的位置")
         self.download.setEnabled(False)
         self.download.clicked.connect(
             lambda: self.download_requested.emit(self.artifact_id, self.name)
         )
         heading.addWidget(self.download)
         layout.addLayout(heading)
-        self.notice = QLabel("选择一个产物查看真实文件内容。")
+        self.notice = QLabel("选择生成的文件，即可在这里查看内容。")
         self.notice.setTextFormat(Qt.TextFormat.PlainText)
         self.notice.setWordWrap(True)
         self.notice.setObjectName("muted")
         layout.addWidget(self.notice)
         self.stack = QStackedWidget()
         layout.addWidget(self.stack, 1)
-        self.placeholder = QLabel("任务完成后会在这里展示产物。")
+        self.placeholder = QLabel("生成的文件会显示在这里")
+        self.placeholder.setObjectName("muted")
         self.placeholder.setTextFormat(Qt.TextFormat.PlainText)
         self.placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.placeholder.setWordWrap(True)
@@ -220,7 +254,8 @@ class ArtifactPreviewWidget(QWidget):
         self.slide = SafeTextBrowser()
         self.slide.setAccessibleName("PPT 实际幻灯片内容预览")
         self.slide.setStyleSheet(
-            "QTextBrowser { background: #122947; border: 1px solid #3a5c83; padding: 28px; }"
+            "QTextBrowser { background: #ffffff; color: #1d1d1f; "
+            "border: 1px solid #e5e5ea; border-radius: 12px; padding: 28px; }"
         )
         self.slide.document().setDefaultStyleSheet(
             "h1 { font-size: 24px; margin-bottom: 18px; } li { font-size: 17px; margin-bottom: 10px; }"
@@ -247,7 +282,8 @@ class ArtifactPreviewWidget(QWidget):
         self.poster.setTextFormat(Qt.TextFormat.PlainText)
         self.poster.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.poster.setStyleSheet(
-            "background: #122947; border: 1px solid #3a5c83; font-size: 26px;"
+            "background: #f5f5f7; color: #6e6e73; border: 1px solid #e5e5ea; "
+            "border-radius: 12px; font-size: 26px;"
         )
         video_layout.addWidget(self.poster, 1)
         self.video_info = QLabel()
@@ -258,7 +294,8 @@ class ArtifactPreviewWidget(QWidget):
             QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
         )
         video_layout.addWidget(self.video_info)
-        self.play = QPushButton("用系统播放器播放")
+        self.play = QPushButton("播放视频")
+        self.play.setToolTip("使用系统默认播放器打开视频")
         self.play.setObjectName("primary")
         self.play.clicked.connect(
             lambda: self.play_requested.emit(self.artifact_id, self.name)
@@ -271,7 +308,7 @@ class ArtifactPreviewWidget(QWidget):
         self.artifact_id, self.name = artifact_id, str(name)
         self.title.setText(self.name[:180])
         self.download.setEnabled(False)
-        self.notice.setText("正在读取实际文件内容…")
+        self.notice.setText("正在打开文件…")
         self.placeholder.setText("正在准备预览…")
         self.stack.setCurrentWidget(self.placeholder)
         self.payload = {}
@@ -320,7 +357,7 @@ class ArtifactPreviewWidget(QWidget):
         elif kind in {"presentation", "slides"}:
             self._slides = list(payload.get("slides") or [])[:100]
             self.notice.setText(
-                "从实际 PPTX 读取的逐页内容与讲稿；原始版式请下载后用 PowerPoint 打开。"
+                "PowerPoint 演示文稿 · 可逐页查看内容与讲稿，保存文件以查看完整排版。"
             )
             self.stack.setCurrentWidget(self.slide_page)
             self._show_slide(0)
@@ -330,9 +367,7 @@ class ArtifactPreviewWidget(QWidget):
             self.stack.setCurrentWidget(self.document)
             if kind == "markdown":
                 self.document.setMarkdown(str(payload.get("content") or "")[:100000])
-                self.notice.setText(
-                    "实际文件内容预览。公众号文章可在检查来源和排版后复制使用。"
-                )
+                self.notice.setText("文章内容预览 · 检查来源和排版后即可复制使用。")
             elif kind == "document":
                 paragraphs = list(payload.get("paragraphs") or [])[:1000]
                 parts, remaining = [], 100000
@@ -366,11 +401,11 @@ class ArtifactPreviewWidget(QWidget):
                     parts.append("</table>")
                 self.document.setHtml("".join(parts) or "<p>文件没有可预览的正文。</p>")
                 self.notice.setText(
-                    "从实际 Word 文件读取的正文和表格；分页与原始版式请下载后用 Word 打开。"
+                    "Word 文档 · 可阅读正文和表格，保存文件以查看完整排版。"
                 )
             else:
                 self.document.setPlainText(str(payload.get("content") or "")[:100000])
-                self.notice.setText("实际文件内容预览。")
+                self.notice.setText("文件内容预览。")
             if payload.get("truncated"):
                 self.notice.setText(
                     self.notice.text() + " 当前内容已截取，完整内容在原文件中。"
@@ -498,6 +533,6 @@ class ArtifactPreviewWidget(QWidget):
             f"{self.name}  ·  {duration_label}  ·  {payload.get('width', '?')} × {payload.get('height', '?')}\n点击播放将打开系统默认播放器。"
         )
         self.notice.setText(
-            "实际视频文件的媒体信息。点击按钮后下载本机副本，并使用系统默认播放器播放。"
+            "视频已准备好。点击「播放视频」使用系统播放器打开，也可保存文件。"
         )
         self.play.setEnabled(self.artifact_id is not None)

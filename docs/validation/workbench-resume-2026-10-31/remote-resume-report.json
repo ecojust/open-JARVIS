@@ -1,0 +1,274 @@
+{
+  "scope": "injected localhost partial disconnect, then real HF Mirror Range continuation",
+  "whole_model_weights_downloaded": false,
+  "cross_application_restart_resume_tested": false,
+  "models": {
+    "stt": {
+      "remote_url": "https://hf-mirror.com/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/2365baeacb507f821a0c8120fcee3d484dba7a07/tokens.txt",
+      "size_bytes": 315894,
+      "retained_bytes": 157947,
+      "remaining_bytes": 157947,
+      "sha256": "f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc",
+      "progress_never_reset": true,
+      "requests": [
+        {
+          "range": "bytes=157947-"
+        }
+      ],
+      "events": [
+        {
+          "phase": "downloading",
+          "source": "Local interrupted source",
+          "source_index": 1,
+          "completed_bytes": 0,
+          "total_bytes": 315894,
+          "resumed_bytes": 0,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "Local interrupted source",
+          "source_index": 1,
+          "completed_bytes": 65536,
+          "total_bytes": 315894,
+          "resumed_bytes": 0,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "Local interrupted source",
+          "source_index": 1,
+          "completed_bytes": 131072,
+          "total_bytes": 315894,
+          "resumed_bytes": 0,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "Local interrupted source",
+          "source_index": 1,
+          "completed_bytes": 157947,
+          "total_bytes": 315894,
+          "resumed_bytes": 0,
+          "eta_seconds": null
+        },
+        {
+          "phase": "switching",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 157947,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "restart_reason": null,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 157947,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 166139,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 182523,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 198907,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 215291,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 222207,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 230399,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 246783,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 263167,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 279551,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 287268,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 295460,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 311844,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 315894,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        },
+        {
+          "phase": "verifying",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 315894,
+          "total_bytes": 315894,
+          "resumed_bytes": 157947,
+          "eta_seconds": null
+        }
+      ]
+    },
+    "tts": {
+      "remote_url": "https://hf-mirror.com/csukuangfj/kokoro-multi-lang-v1_1/resolve/423bfb9ccd6a66115a76602a9630ffea265ae176/tokens.txt",
+      "size_bytes": 1111,
+      "retained_bytes": 555,
+      "remaining_bytes": 556,
+      "sha256": "931ab2df2400cd65d580a22402024c2347ced8ae9ea300e545144b1aacc48e14",
+      "progress_never_reset": true,
+      "requests": [
+        {
+          "range": "bytes=555-"
+        }
+      ],
+      "events": [
+        {
+          "phase": "downloading",
+          "source": "Local interrupted source",
+          "source_index": 1,
+          "completed_bytes": 0,
+          "total_bytes": 1111,
+          "resumed_bytes": 0,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "Local interrupted source",
+          "source_index": 1,
+          "completed_bytes": 555,
+          "total_bytes": 1111,
+          "resumed_bytes": 0,
+          "eta_seconds": null
+        },
+        {
+          "phase": "switching",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 555,
+          "total_bytes": 1111,
+          "resumed_bytes": 555,
+          "restart_reason": null,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 555,
+          "total_bytes": 1111,
+          "resumed_bytes": 555,
+          "eta_seconds": null
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 1111,
+          "total_bytes": 1111,
+          "resumed_bytes": 555,
+          "eta_seconds": null
+        },
+        {
+          "phase": "verifying",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "completed_bytes": 1111,
+          "total_bytes": 1111,
+          "resumed_bytes": 555,
+          "eta_seconds": null
+        }
+      ]
+    }
+  },
+  "passed": true
+}
