@@ -8,9 +8,23 @@
 
 [六项实际任务验收](acceptance/2026-10-31/README.md) 全部通过：35 次真实工具调用、24 次官方页面读取、11 个唯一来源 URL；六次都自动打开对应任务的全屏实际文件预览。MP4 有约 100 秒的真实 Kokoro 配音，排班后续任务正确引用前面的 PPT。初轮发现的小屏视频布局问题已经修复，失败记录与全量重跑报告均保留。
 
-这次验收明确为 `scripted_tool_workflow`，资料经事先检索核对；没有生产任务模型，不能代替自由自然语言规划验收。Linux offscreen 也不替代三端显示器、真实音频设备或系统播放器验收。新版 [三端 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41185289970) 与 [alpha.2 未签名候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41185293675) 已启动；下方三端结果描述的是此前 alpha.1。
+这次验收明确为 `scripted_tool_workflow`，资料经事先检索核对；没有生产任务模型，不能代替自由自然语言规划验收。Linux offscreen 也不替代三端显示器、真实音频设备或系统播放器验收。
 
 新增 Office/视频能力后的 [30 次方块启动复测](validation/linux-office-preview-2026-10-31.json)：P95 **249.1 ms**、方块 RSS P95 **73.7 MiB**，与此前约 248 ms/73.6 MiB 相近。测量仍只覆盖 Linux offscreen 方块，不含后端、语音模型或结果窗口，不能代替全软件性能验收。
+
+首次新版 Windows CI 发现迁移测试自身未关闭手动创建的 SQLite 连接，导致临时目录清理出现文件占用；生产 Store 已显式关闭连接。`dbee278` 修复测试资源释放，18 项任务专项测试通过，随后在三端重新执行全部检查与候选构建。
+
+`dbee278` 的独立 [三端 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41185441738) 最终全部通过。Windows 首次运行另有一项原有线程取消测试超过其 3 秒等待时限；同提交的候选构建已通过该用例，独立 CI 仅重试失败的 Windows 一次后通过，未删减断言或放宽生产超时。这一测试时序抖动保留记录，不能算作真实任务性能基准。
+
+`dbee278` 的 [alpha.2 未签名候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490) 三端均成功：每端执行同套 204 项测试及桌面/后端冒烟，再运行冻结程序，实际生成并重新打开 Word/Excel/PPT、检查包内 FFmpeg、校验并绘制中文字体，然后生成 DMG/EXE。Windows 无权限的符号链接用例仍会明确跳过；没有把语音模型或用户数据打入安装包。该构建没有创建或发布 GitHub Release。
+
+| alpha.2 目标 | Actions artifact | ZIP 大小 |
+| --- | --- | --- |
+| macOS Intel | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490/artifacts/13036139595) | 139,887,302 bytes |
+| macOS Apple Silicon | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490/artifacts/13036553880) | 127,120,998 bytes |
+| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490/artifacts/13036788550) | 109,238,241 bytes |
+
+体积增加来自新增 Office 依赖、目标平台 FFmpeg 和中文字体；这些组件在功能使用时加载，方块启动复测见上文。原生安装与签名验收仍未完成；以下保留此前 alpha.1 的基线记录。
 
 ## 功能与协议
 

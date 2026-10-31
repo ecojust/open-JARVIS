@@ -17,19 +17,19 @@
 
 已完成真实 Word、Excel、PPT、30 人示例排班、中文配音视频与公众号文章的生成及自动全屏预览，**六项工具/桌面验收全部通过**。可直接查看 [六份文件、界面截图与完整报告](docs/acceptance/2026-10-31/README.md)。金融 PPT 的讲解视频约 100 秒；在排班任务之后仍能承接「刚才的 PPT」。
 
-本轮为明确标记的脚本化工具验收：实际联网、生成文件和运行客户端，但未配置任务模型，**不代表自然语言自主执行已通过**。排班采用公开说明的匿名示例规则；视频、文章未发布到外部平台。新增代码本地 204 项测试通过，下方 alpha.1 为此前版本，不含本轮新增能力；alpha.2 [三端候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41185293675) 正在进行。
+本轮为明确标记的脚本化工具验收：实际联网、生成文件和运行客户端，但未配置任务模型，**不代表自然语言自主执行已通过**。排班采用公开说明的匿名示例规则；视频、文章未发布到外部平台。新增代码本地 204 项测试通过，下方 alpha.2 已包含本轮新增能力，[三端候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490) 与冻结后自检通过。
 
 ## 下载开发预览
 
-**0.1.0-alpha.1，未签名测试包**，由相应系统和 CPU 架构的原生运行器构建。登录 GitHub 后从下列 Actions artifact 下载 ZIP，解压后使用其中的 DMG 或 EXE；同时包含 SHA-256 与构建清单。该批产物保留 14 天，过期后可通过手动构建工作流重新生成。
+**0.1.0-alpha.2，未签名测试包**，由相应系统和 CPU 架构的原生运行器构建。登录 GitHub 后从下列 Actions artifact 下载 ZIP，解压后使用其中的 DMG 或 EXE；同时包含 SHA-256 与构建清单。该批产物保留 14 天，过期后可通过手动构建工作流重新生成。
 
 | 平台 | 测试安装包 | Actions ZIP 大小 |
 | --- | --- | --- |
-| macOS Intel，macOS 14+ | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41183552457/artifacts/13035940908) | 约 88.6 MB |
-| macOS Apple Silicon，macOS 14+ | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41183552457/artifacts/13036450109) | 约 81.9 MB |
-| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41183552457/artifacts/13036720064) | 约 70.2 MB |
+| macOS Intel，macOS 14+ | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490/artifacts/13036139595) | 约 139.9 MB |
+| macOS Apple Silicon，macOS 14+ | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490/artifacts/13036553880) | 约 127.1 MB |
+| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490/artifacts/13036788550) | 约 109.2 MB |
 
-[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41183550016) · [安装包构建与自检记录](https://github.com/ecojust/open-JARVIS/actions/runs/41183552457)。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。未完成签名/公证，系统可能阻止直接打开；这些产物用于开发试用，尚未发布正式 GitHub Release。首次运行后通过方块右键菜单配置任务模型、下载两个语音模型。
+[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41185441738) · [安装包构建与自检记录](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490)。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。未完成签名/公证，系统可能阻止直接打开；这些产物用于开发试用，尚未发布正式 GitHub Release。首次运行后通过方块右键菜单配置任务模型、下载两个语音模型。
 
 ## 源码运行
 
@@ -676,7 +676,7 @@ M1 可以使用确定性任务执行器验证 UI 与协议，但必须标为测�
 
 本轮工作场景验收使用 `scripts/acceptance_scenarios.py`：由脚本安排真实检索、文件生成及客户端预览，明确记录 `scripted_tool_workflow`。未配置生产任务模型，不能据此宣称自由自然语言自主执行已通过。MAF 协议测试使用真实框架与可控模型 HTTP 服务；本地合成音频测试不经过麦克风或扬声器。
 
-30 次 Linux offscreen 方块单进程启动 P95 为 **248 ms**、RSS P95 为 **73.6 MiB**，不包含后端和语音模型。Kokoro 短句热合成约 **1.30–1.80 秒**，已高于预定热首声目标；真实首声仍需测量。全部原始样本与限制见 [验证记录](docs/VALIDATION.md)。
+30 次 Linux offscreen 方块单进程启动 P95 为 **249 ms**、RSS P95 为 **73.7 MiB**，不包含后端和语音模型。Kokoro 短句热合成约 **1.30–1.80 秒**，已高于预定热首声目标；真实首声仍需测量。全部原始样本与限制见 [验证记录](docs/VALIDATION.md)。
 
 **仍待发布验收：** 三端干净系统安装/升级与签名/公证、生产模型驱动的完整工作任务、麦克风持续监听与扬声器播放、权限/设备切换/睡眠恢复、8 小时稳定性与各项性能预算。当前 TTS 空闲释放模型引用，但尚未证明原生内存归还系统；暂停监听不会卸载 STT；内存压力驱动回收、系统托盘简化图标和大数据虚拟化仍未实现。上述架构里的这些要求继续作为工程目标，不因已有实现而视为完成。
 

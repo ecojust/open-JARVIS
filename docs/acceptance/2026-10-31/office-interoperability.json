@@ -1,0 +1,31 @@
+{
+  "engine": "LibreOfficeDev 26.8.0.0.alpha0 2c87e51eeaa2b413ff4ae097b2705eea1995d8e5",
+  "platform": "Linux x86_64",
+  "files": [
+    {
+      "file": "国际形势总结.docx",
+      "sha256": "45060569ca217465e585b69b59b0cc22b92d10c3a4743a780d4fa6e26a7e149d",
+      "opened_and_rendered": true,
+      "pdf_pages": 2
+    },
+    {
+      "file": "国际形势清单.xlsx",
+      "sha256": "8ffe89194a6bfe847a6b59d53e233b305d259aaf3e5147bded5c5d7b832d767b",
+      "opened_and_rendered": true,
+      "pdf_pages": 2
+    },
+    {
+      "file": "近期金融趋势.pptx",
+      "sha256": "0ec5b6b794ef89e3db290c36cc4a5dc7336f2be4ec52278dde33b47d5f1271c3",
+      "opened_and_rendered": true,
+      "pdf_pages": 6
+    },
+    {
+      "file": "30人一周示例排班.xlsx",
+      "sha256": "826d562fc99609f2dfddf89856e16106e1837a88d804eef6b00219444022909a",
+      "opened_and_rendered": true,
+      "pdf_pages": 2
+    }
+  ],
+  "scope": "Actual delivered files opened and converted to PDF; does not claim Microsoft Office or native-client pixel-perfect rendering."
+}
