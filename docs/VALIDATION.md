@@ -2,6 +2,24 @@
 
 日期：2026-10-31。此记录区分已经执行的检查与发布前仍需完成的验收。
 
+## 桌面语音条与模型升级兼容
+
+`88cdca6` 将入口改为 320×72 的山羊语音条，声浪来自真实 PCM/VAD 电平；点击展开使用 `showMaximized()`，显式退出已有全屏状态。增加设置中的下载/校验按钮、进度、取消和重试；已下载模型按固定模型 revision/运行时契约复用，升级默认模型不会误认旧格式，原子安装中断可恢复。`3b3153e` 补充验证：与收音无关的下载或服务警告不会遮住正在接收的真实声浪。
+
+本地 **247 项测试通过**，包括原生按钮/拖动、静音无动画、窗口最大化且非全屏、下载进程协议、升级模型复用、未知 ABI 拒绝，以及强杀发布前后的恢复。[实际 GUI 验收与截图](validation/desktop-ux-2026-10-31/README.md) 使用真实中文音频样例、实际已有模型哈希核验进程及实际任务后端；模型未重复联网下载，麦克风/扬声器与 macOS 真机 Spaces 未验收。
+
+30 次 Linux offscreen 语音条启动 P95 261.3 ms、RSS P95 75.6 MiB，不含后端和语音模型。[完整原始测量](validation/desktop-ux-2026-10-31/performance.json) 保留每次独立启动的数据。
+
+`3b3153e4a574056e0b12bc68a360995535f5dd61` 的 [三端 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41186757582) 与 [alpha.3 候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41186795823) 均首次通过，无重试。每端执行同套测试、实际桌面/后端冒烟及冻结程序自检，然后生成未签名 DMG/EXE。冻结程序自检包含实际 Office 文件生成/重新打开、FFmpeg 与中文字体检查。Windows 无权限的符号链接用例仍明确跳过。
+
+| alpha.3 目标 | Actions artifact | ZIP 大小 |
+| --- | --- | --- |
+| macOS Intel | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41186795823/artifacts/13037057388) | 139,942,838 bytes |
+| macOS Apple Silicon | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41186795823/artifacts/13037446030) | 127,816,156 bytes |
+| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41186795823/artifacts/13038020100) | 109,314,567 bytes |
+
+产物保留 14 天，未包含语音模型及用户数据，未创建或发布 GitHub Release。当前环境无法从 Actions 存储域下载产物，本地未重新打开 DMG/EXE；原生干净系统安装、真实音频和签名验收仍待完成。以下记录保留此前版本的实际证据。
+
 ## 本轮 Office、排班、视频与预览
 
 实现提交 `b59fbbb` 新增真实 Office 文件、排班约束审计、PPT 中文配音视频、实际文件预览与跨任务产物引用。本地完整 **204 项测试通过**，ruff 通过；真实桌面/后端生命周期冒烟通过。新增 MAF 协议测试验证嵌套 Office 参数和 Media 委派，仍使用可控模型 HTTP 服务。

@@ -4,7 +4,7 @@
   <img src="assets/branding/open-jarvis-sheep.png" alt="Open JARVIS 生肖羊 Logo 设计稿：宝蓝色圆角底板上的黑色与米白色雕刻风格卷角公羊" width="160" height="160" />
 </p>
 
-一个面向个人工作自动化的桌面语音智能体。平时只显示一个常驻桌面的桌面语音条；用户说出任务后，JARVIS 在后台完成资料检索、文档撰写或数据分析，随后开口反馈，并打开最大化窗口展示结果。
+一个面向个人工作自动化的桌面语音智能体。平时只显示一个常驻桌面的语音条；用户说出任务后，JARVIS 在后台完成资料检索、文档撰写或数据分析，随后开口反馈，并打开最大化窗口展示结果。
 
 **首版发布目标：macOS Intel（x86_64）、macOS Apple Silicon（arm64）、Windows 64 位（x86_64）。** 三种目标均交付可安装客户端，不要求最终用户自行安装 Python。
 
@@ -17,25 +17,25 @@
 
 桌面入口为 **山羊 Logo → 实际声浪 → 展开图标** 的 320×72 长条。点击后最大化结果窗口，避免主动进入 macOS 全屏 Space；收音时声浪跟随实际音量，静音/暂停/播报时归零。模型通过「设置 → 下载与管理语音模型」按钮下载安装，完成后自动加载，兼容的已下载模型可跨客户端版本复用。
 
-[界面截图与验收记录](docs/validation/desktop-ux-2026-10-31/README.md)。以上为最新源码能力；下方 alpha.2 安装包尚不包含本轮交互变更，alpha.3 构建完成后更新下载入口。
+[界面截图与验收记录](docs/validation/desktop-ux-2026-10-31/README.md)。下方 **alpha.3** 三端安装包已包含这些功能，本地 247 项测试及三端原生 CI、安装包构建与自检通过。
 
 ## 六项工作任务的实际结果
 
 此前 alpha.2 已完成真实 Word、Excel、PPT、30 人示例排班、中文配音视频与公众号文章的生成和弹出预览，**六项工具/桌面验收全部通过**。可直接查看 [六份文件、界面截图与完整报告](docs/acceptance/2026-10-31/README.md)。金融 PPT 的讲解视频约 100 秒；在排班任务之后仍能承接「刚才的 PPT」。
 
-本轮为明确标记的脚本化工具验收：实际联网、生成文件和运行客户端，但未配置任务模型，**不代表自然语言自主执行已通过**。排班采用公开说明的匿名示例规则；视频、文章未发布到外部平台。新增代码本地 204 项测试通过，下方 alpha.2 已包含本轮新增能力，[三端候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490) 与冻结后自检通过。
+该轮为明确标记的脚本化工具验收：实际联网、生成文件和运行客户端，但未配置任务模型，**不代表自然语言自主执行已通过**。排班采用公开说明的匿名示例规则；视频、文章未发布到外部平台。当时的 204 项本地测试、[alpha.2 三端候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490) 与冻结后自检通过；alpha.3 保留这些能力，结果窗口改为最大化。
 
 ## 下载开发预览
 
-**0.1.0-alpha.2，未签名测试包**，由相应系统和 CPU 架构的原生运行器构建。登录 GitHub 后从下列 Actions artifact 下载 ZIP，解压后使用其中的 DMG 或 EXE；同时包含 SHA-256 与构建清单。该批产物保留 14 天，过期后可通过手动构建工作流重新生成。
+**0.1.0-alpha.3，未签名测试包**，由相应系统和 CPU 架构的原生运行器构建。登录 GitHub 后从下列 Actions artifact 下载 ZIP，解压后使用其中的 DMG 或 EXE；同时包含 SHA-256 与构建清单。该批产物保留 14 天，过期后可通过手动构建工作流重新生成。
 
 | 平台 | 测试安装包 | Actions ZIP 大小 |
 | --- | --- | --- |
-| macOS Intel，macOS 14+ | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490/artifacts/13036139595) | 约 139.9 MB |
-| macOS Apple Silicon，macOS 14+ | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490/artifacts/13036553880) | 约 127.1 MB |
-| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490/artifacts/13036788550) | 约 109.2 MB |
+| macOS Intel，macOS 14+ | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41186795823/artifacts/13037057388) | 约 139.9 MB |
+| macOS Apple Silicon，macOS 14+ | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41186795823/artifacts/13037446030) | 约 127.8 MB |
+| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41186795823/artifacts/13038020100) | 约 109.3 MB |
 
-[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41185441738) · [安装包构建与自检记录](https://github.com/ecojust/open-JARVIS/actions/runs/41185456490)。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。未完成签名/公证，系统可能阻止直接打开；这些产物用于开发试用，尚未发布正式 GitHub Release。首次运行后通过语音条右键菜单配置任务模型、下载两个语音模型。
+[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41186757582) · [安装包构建与自检记录](https://github.com/ecojust/open-JARVIS/actions/runs/41186795823)。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。未完成签名/公证，系统可能阻止直接打开；这些产物用于开发试用，尚未发布正式 GitHub Release。首次运行后通过语音条右键菜单配置任务模型、下载两个语音模型。
 
 ## 源码运行
 
@@ -682,7 +682,7 @@ M1 可以使用确定性任务执行器验证 UI 与协议，但必须标为测�
 
 本轮工作场景验收使用 `scripts/acceptance_scenarios.py`：由脚本安排真实检索、文件生成及客户端预览，明确记录 `scripted_tool_workflow`。未配置生产任务模型，不能据此宣称自由自然语言自主执行已通过。MAF 协议测试使用真实框架与可控模型 HTTP 服务；本地合成音频测试不经过麦克风或扬声器。
 
-30 次 Linux offscreen 方块单进程启动 P95 为 **249 ms**、RSS P95 为 **73.7 MiB**，不包含后端和语音模型。Kokoro 短句热合成约 **1.30–1.80 秒**，已高于预定热首声目标；真实首声仍需测量。全部原始样本与限制见 [验证记录](docs/VALIDATION.md)。
+本轮 30 次 Linux offscreen 语音条单进程启动 P95 为 **261 ms**、RSS P95 为 **75.6 MiB**，不包含后端和语音模型。Kokoro 短句热合成约 **1.30–1.80 秒**，已高于预定热首声目标；真实首声仍需测量。全部原始样本与限制见 [验证记录](docs/VALIDATION.md)。
 
 **仍待发布验收：** 三端干净系统安装/升级与签名/公证、生产模型驱动的完整工作任务、麦克风持续监听与扬声器播放、权限/设备切换/睡眠恢复、8 小时稳定性与各项性能预算。当前 TTS 空闲释放模型引用，但尚未证明原生内存归还系统；暂停监听不会卸载 STT；内存压力驱动回收、系统托盘简化图标和大数据虚拟化仍未实现。上述架构里的这些要求继续作为工程目标，不因已有实现而视为完成。
 

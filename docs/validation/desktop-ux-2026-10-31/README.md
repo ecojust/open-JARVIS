@@ -16,6 +16,8 @@
 
 [实际 GUI 验收报告](report.json) 覆盖：默认只出现语音条、声浪和归零、设置按钮、实际模型验证进程、当前任务结束后自动重新加载服务、真实后台写文件并最大化展示。状态断言为 `isMaximized() == true`、`isFullScreen() == false`。另有 [桌面/后端生命周期冒烟](backend-smoke.json) 验证退出后自有进程结束。
 
-本地完整自动测试 **246 项通过**。这些检查使用 Linux offscreen Qt，不代替 macOS 真机 Spaces、真实麦克风/扬声器、屏幕缩放或持续监听性能验收。模型下载 HTTP 测试使用明确的受控小文件；GUI 核验使用真实已安装权重，不冒充再次完成整包网络下载。
+本地完整自动测试 **247 项通过**。这些检查使用 Linux offscreen Qt，不代替 macOS 真机 Spaces、真实麦克风/扬声器、屏幕缩放或持续监听性能验收。模型下载 HTTP 测试使用明确的受控小文件；GUI 核验使用真实已安装权重，不冒充再次完成整包网络下载。
+
+[30 次语音条启动复测](performance.json)：P95 261.3 ms，单进程 RSS P95 75.6 MiB。相较此前方块的约 249.1 ms/73.7 MiB，增加约 12 ms/2 MiB；范围仅为 Linux offscreen 桌面入口，不含后端和语音模型，不能宣传为完整持续监听开销。
 
 开发复现：已有两个模型时运行 `python scripts/smoke_voice_bar.py --verify-installed-models`。模型应先通过客户端按钮准备；最终用户无需安装脚本。
