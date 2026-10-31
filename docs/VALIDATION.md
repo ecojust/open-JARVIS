@@ -40,7 +40,17 @@ Kokoro 已生成有效、非空且采样均为有限值的中文音频；将其�
 
 ## 三端与分发
 
-已配置 macOS Intel、macOS arm64、Windows x64 的原生 CI、PyInstaller 目录式打包、DMG/EXE 生成和可选签名流程。PyPI 二进制依赖预检显示固定版本有对应 Python 3.12 wheel；Qt 6.12 的 Mac wheel 最低为 macOS 14，Windows/macOS 的 sounddevice wheel 包含 PortAudio。实际流水线结果以 [GitHub Actions](https://github.com/ecojust/open-JARVIS/actions) 为准。
+已配置 macOS Intel、macOS arm64、Windows x64 的原生 CI、PyInstaller 目录式打包、DMG/EXE 生成和可选签名流程。PyPI 二进制依赖预检显示固定版本有对应 Python 3.12 wheel；Qt 6.12 的 Mac wheel 最低为 macOS 14，Windows/macOS 的 sounddevice wheel 包含 PortAudio。实现提交 `7c0fb76` 的 [三端 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41183550016) 与 [候选安装包构建](https://github.com/ecojust/open-JARVIS/actions/runs/41183552457) 均已成功。三端完成同一套 132 项测试、原生依赖自检、真实桌面/后端冒烟；候选构建还运行了冻结后的程序，确认 Qt、音频、MAF 等原生导入与资源，之后才生成 DMG/EXE。Windows 无符号链接权限时，对应两项符号链接测试会明确跳过，其余路径边界测试继续执行。
+
+| 目标 | 构建运行器 | 已上传 artifact | Actions ZIP 体积 |
+| --- | --- | --- | --- |
+| macOS Intel | macos-15-intel / x86_64 | candidate-macos-x64 | 88,617,437 bytes |
+| macOS Apple Silicon | macos-15 / arm64 | candidate-macos-arm64 | 81,940,690 bytes |
+| Windows x64 | windows-2022 / AMD64 | candidate-windows-x64 | 70,188,525 bytes |
+
+包版本为 `0.1.0-alpha.1`，明确选择未签名构建；创建 Release 的步骤跳过。Actions artifact 保留 14 天，包含安装器、校验与清单，并单独保留桌面 smoke 和冻结自检证据。上述体积是 artifact ZIP，不是解压后安装占用。当前环境无法从 Actions 的存储域下载产物，因此这里只确认原生构建/自检与上传成功，未在本地重新打开 DMG/EXE。
+
+原生验证过程中修复了 macOS `/var` 与 `/private/var`、Windows 短路径与长路径的测试期望差异，修正了音频尾音测试依赖固定等待的问题；打包增加目标平台 PortAudio 筛选和 `webrtcvad-wheels` 元数据 hook，并将 macOS 最低版本明确写为 14.0。
 
 Linux 上的 `python -m jarvis --role self-test` 如实报告 sounddevice 原生导入失败，因为系统没有 PortAudio；其他原生模块成功导入。该自检不会隐藏设备依赖失败，也不会标记 `hardware_tested=true`。
 
