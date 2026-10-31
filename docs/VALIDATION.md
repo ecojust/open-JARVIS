@@ -8,7 +8,7 @@
 
 [本轮完整证据与四张截图](validation/session-voice-2026-10-31/README.md)包含真实 Qt/HTTP/SSE/SQLite 多轮验收、真实 Kokoro→VAD→SenseVoice 连续两句回放，以及 Fed/ECB/UN/IMF 实际网页正文和分页读取。网页支持 Markdown/text、中文编码、有界解压与固定来源跳转；模型输出裁剪保留分页位置。界面测试使用 demo 工具，语音为合成录音回放，不代表生产模型自由任务或真实麦克风/扬声器验收。
 
-30 次 Linux offscreen 语音条启动 P95 **228.9 ms**、RSS P95 **75.8 MiB**；范围不含后端和模型。最终源码 `59631c3d509cd2f4d68b6f5ff3ffd4565b9291eb` 的 [三端原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41218568950) 与 [安装包构建](https://github.com/ecojust/open-JARVIS/actions/runs/41218568807) 均通过，冻结 worker 均完成实际 MAF 任务检查。首轮 Windows 检查发现测试用的旧 SQLite 连接未关闭，修正测试夹具后完成本轮三端验证；没有将旧失败构建提升为发布。公开发布正在进行。
+30 次 Linux offscreen 语音条启动 P95 **228.9 ms**、RSS P95 **75.8 MiB**；范围不含后端和模型。最终源码 `59631c3d509cd2f4d68b6f5ff3ffd4565b9291eb` 的 [三端原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41218568950) 与 [安装包构建](https://github.com/ecojust/open-JARVIS/actions/runs/41218568807) 均通过，冻结 worker 均完成实际 MAF 任务检查。首轮 Windows 检查发现测试用的旧 SQLite 连接未关闭，修正测试夹具后完成本轮三端验证；没有将旧失败构建提升为发布。已于 `2026-10-31T16:19:08Z` 公开发布 [v0.1.0-alpha.10](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.10)，9 个附件全部上传；公开后匿名访问并下载三份构建清单和校验文件，核对来源 tag、附件摘要及三端 `agent_roundtrip.ok=true`。[发布元数据](validation/session-voice-2026-10-31/release.json)。
 
 ## 内置 MAF 组件修复（alpha.9）
 

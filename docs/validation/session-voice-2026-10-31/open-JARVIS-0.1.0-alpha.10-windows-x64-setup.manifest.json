@@ -1,0 +1,139 @@
+{
+  "version": "0.1.0-alpha.10",
+  "target": "windows-x64",
+  "artifact": "open-JARVIS-0.1.0-alpha.10-windows-x64-setup.exe",
+  "sha256": "b5931597d7f9928fba0adf0338bd5c900ddda5bbf77c42b88ac5cf81f3b8c40c",
+  "signed": false,
+  "release_status": "unsigned-test-build",
+  "python": "3.12.10",
+  "os": "Windows-2022Server-10.0.20348-SP0",
+  "machine": "AMD64",
+  "dependencies": {
+    "PyInstaller": "6.22.3",
+    "Pillow": "13.0.0",
+    "PySide6-Essentials": "6.12.0",
+    "sherpa-onnx": "1.13.8",
+    "agent-framework-core": "1.24.0",
+    "agent-framework-openai": "1.18.0",
+    "python-docx": "1.2.0",
+    "openpyxl": "3.1.5",
+    "python-pptx": "1.0.2",
+    "imageio-ffmpeg": "0.6.0"
+  },
+  "models_bundled": false,
+  "hardware_tested": false,
+  "self_test": {
+    "ok": true,
+    "platform": "win32",
+    "architecture": "AMD64",
+    "python": "3.12.10",
+    "frozen": true,
+    "assets": {
+      "assets/branding/open-jarvis-sheep.png": true,
+      "examples/example-sales.csv": true,
+      "static/index.html": true,
+      "assets/fonts/NotoSansSC-Regular.otf": true,
+      "assets/fonts/OFL.txt": true,
+      "assets/fonts/source.json": true
+    },
+    "modules": {
+      "PySide6": true,
+      "sherpa_onnx": true,
+      "sounddevice": true,
+      "webrtcvad": true,
+      "numpy": true,
+      "agent_framework": true,
+      "fastapi": true,
+      "docx": true,
+      "openpyxl": true,
+      "pptx": true,
+      "imageio_ffmpeg": true
+    },
+    "versions": {
+      "PySide6-Essentials": "6.12.0",
+      "sherpa-onnx": "1.13.8",
+      "agent-framework-core": "1.24.0",
+      "agent-framework-openai": "1.18.0",
+      "python-docx": "1.2.0",
+      "openpyxl": "3.1.5",
+      "python-pptx": "1.0.2",
+      "Pillow": "13.0.0",
+      "imageio-ffmpeg": "0.6.0"
+    },
+    "native_imports": {
+      "PySide6.QtWidgets": {
+        "ok": true
+      },
+      "sherpa_onnx": {
+        "ok": true
+      },
+      "sounddevice": {
+        "ok": true
+      },
+      "webrtcvad": {
+        "ok": true
+      },
+      "numpy": {
+        "ok": true
+      },
+      "agent_framework.openai": {
+        "ok": true
+      },
+      "agent_framework_openai": {
+        "ok": true
+      }
+    },
+    "office_roundtrip": {
+      "docx": {
+        "ok": true,
+        "reopened": true,
+        "size_bytes": 36606
+      },
+      "xlsx": {
+        "ok": true,
+        "reopened": true,
+        "size_bytes": 4847
+      },
+      "pptx": {
+        "ok": true,
+        "reopened": true,
+        "size_bytes": 28258
+      }
+    },
+    "ffmpeg": {
+      "ok": true,
+      "bundled": true,
+      "executable": "ffmpeg-win-x86_64-v7.1.exe",
+      "version_line": "ffmpeg version 7.1-essentials_build-www.gyan.dev Copyright (c) 2000-2024 the FFmpeg developers"
+    },
+    "font_render": {
+      "ok": true,
+      "resource": "assets/fonts/NotoSansSC-Regular.otf",
+      "sha256": "faa6c9df652116dde789d351359f3d7e5d2285a2b2a1f04a2d7244df706d5ea9",
+      "family": "Noto Sans SC",
+      "glyphs_checked": "中文",
+      "license": "SIL Open Font License 1.1"
+    },
+    "agent_roundtrip": {
+      "ok": true,
+      "mode": "configured-maf",
+      "provider_responses": "explicit local HTTP/SSE fixtures",
+      "external_services_used": false,
+      "user_configuration_used": false,
+      "model_requests": 4,
+      "tool_calls": 1,
+      "streaming_requests": 2,
+      "chinese_request_roundtrip": true,
+      "chinese_file_roundtrip": true,
+      "chinese_answer_roundtrip": true,
+      "coordinator_writer_delegation": true,
+      "local_server_stopped": true,
+      "elapsed_seconds": 1.141
+    },
+    "models": {
+      "sensevoice": false,
+      "kokoro": false
+    },
+    "hardware_tested": false
+  }
+}

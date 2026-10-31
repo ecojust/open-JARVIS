@@ -55,3 +55,17 @@
 源码 `59631c3d509cd2f4d68b6f5ff3ffd4565b9291eb` 的 [原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41218568950) 与 [alpha.10 构建](https://github.com/ecojust/open-JARVIS/actions/runs/41218568807) 全部成功。[native-build.json](native-build.json) 保存源码、各 job 步骤、运行编号及候选产物身份。三个平台都运行测试、实际桌面/后台冒烟和冻结程序检查；冻结 worker 实际执行本地 HTTP/SSE 的 MAF 委派、中文文件写出与最终回答。
 
 首轮 `8bc7907` 在 Windows 发现新测试夹具仅提交 SQLite 事务、未关闭连接，导致临时目录清理失败；macOS/Linux 删除打开文件时没有暴露该测试问题。改为显式关闭 fixture 连接后，7 项会话专项再次通过，并重新执行三端 CI/构建。旧构建已停止且不用于发布。[初次检查记录](initial-windows-check.json)保留原因和注释；不宣称整个功能首次构建无失败。
+
+## 公开下载与附件核验
+
+[alpha.10 Release](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.10) 已于 `2026-10-31T16:19:08Z` 发布，`draft=false`、`prerelease=true`。[发布流程](https://github.com/ecojust/open-JARVIS/actions/runs/41219038905) 校验来源、全部安装器 SHA-256、清单和三个冻结 MAF 任务后上传 9 个附件。
+
+公开后确认匿名可见并下载了三份原始 manifest 和 SHA-256 文件，核对其内容摘要、公开安装器 digest 与实际源码 tag。没有在本开发环境重新安装三端安装器；执行证据来自原生 runner，设备验收边界保持不变。
+
+| 目标 | 公开构建清单 | 安装器字节数 |
+| --- | --- | --- |
+| macOS Intel | [manifest](open-JARVIS-0.1.0-alpha.10-macos-x64.manifest.json) | 144,510,956 |
+| macOS Apple Silicon | [manifest](open-JARVIS-0.1.0-alpha.10-macos-arm64.manifest.json) | 132,369,720 |
+| Windows x64 | [manifest](open-JARVIS-0.1.0-alpha.10-windows-x64-setup.manifest.json) | 110,386,482 |
+
+[release.json](release.json) 保存 Release ID、时间、准确源码提交、9 个附件及其大小/摘要。
