@@ -1,0 +1,290 @@
+{
+  "recorded_at": "2026-10-31T07:56:16.265152+00:00",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "architecture": "x86_64",
+  "python": "3.12.14",
+  "logical_cpus": 3,
+  "machine_memory_gib": 9.73,
+  "qt_platform": "offscreen",
+  "release_acceptance": false,
+  "widget_samples": [
+    {
+      "startup_to_processed_events_ms": 238.602869,
+      "rss_mib": 73.640625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 206.32962,
+      "rss_mib": 73.30078125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 226.418216,
+      "rss_mib": 72.4765625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 247.772214,
+      "rss_mib": 72.10546875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 227.274719,
+      "rss_mib": 73.4453125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 256.485499,
+      "rss_mib": 73.55859375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 211.554229,
+      "rss_mib": 72.8203125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 219.976158,
+      "rss_mib": 72.13671875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 236.242217,
+      "rss_mib": 72.32421875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 232.757232,
+      "rss_mib": 72.62109375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 199.183222,
+      "rss_mib": 72.25390625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 223.599328,
+      "rss_mib": 72.6171875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 205.380173,
+      "rss_mib": 72.38671875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 194.735401,
+      "rss_mib": 73.30859375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 210.144863,
+      "rss_mib": 73.1171875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 195.247399,
+      "rss_mib": 72.24609375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 185.286166,
+      "rss_mib": 72.70703125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 200.558739,
+      "rss_mib": 72.70703125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 212.062791,
+      "rss_mib": 72.3046875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 205.771738,
+      "rss_mib": 73.37109375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 193.911121,
+      "rss_mib": 72.22265625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 218.05177,
+      "rss_mib": 72.76171875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 196.463561,
+      "rss_mib": 73.9140625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 214.282438,
+      "rss_mib": 73.3125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 191.141708,
+      "rss_mib": 72.37890625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 220.371608,
+      "rss_mib": 73.36328125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 210.396932,
+      "rss_mib": 73.6015625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 216.229955,
+      "rss_mib": 72.3046875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 215.634665,
+      "rss_mib": 72.48046875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 191.018441,
+      "rss_mib": 72.296875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    }
+  ],
+  "widget_startup_ms": {
+    "count": 30,
+    "p50": 211.554229,
+    "p95": 247.772214,
+    "max": 256.485499
+  },
+  "widget_rss_mib": {
+    "count": 30,
+    "p50": 72.62109375,
+    "p95": 73.640625,
+    "max": 73.9140625
+  },
+  "voice": {
+    "scope": "real_models_synthesized_audio_no_microphone_or_speaker",
+    "tts_model_load_ms": 1382.4423810001463,
+    "tts_samples": [
+      {
+        "synthesis_ms": 1302.1724590003032,
+        "audio_seconds": 2.069375,
+        "finite_samples": true
+      },
+      {
+        "synthesis_ms": 1506.0175950002304,
+        "audio_seconds": 2.0697916666666667,
+        "finite_samples": true
+      },
+      {
+        "synthesis_ms": 1795.6256560000838,
+        "audio_seconds": 2.0698333333333334,
+        "finite_samples": true
+      }
+    ],
+    "stt_model_load_ms": 788.6228739998842,
+    "stt_decode_ms": 100.90610799989008,
+    "stt_text": "你好，我是贾维斯。",
+    "combined_process_rss_mib": 922.421875,
+    "actual_audio_output_tested": false
+  }
+}

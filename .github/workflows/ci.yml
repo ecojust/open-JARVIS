@@ -1,0 +1,62 @@
+name: Native validation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Explicit architecture labels, verified against actions/runner-images.
+          - runner: macos-15-intel
+            target: macos-x64
+            python_arch: x64
+          - runner: macos-15
+            target: macos-arm64
+            python_arch: arm64
+          - runner: windows-2022
+            target: windows-x64
+            python_arch: x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    env:
+      QT_QPA_PLATFORM: offscreen
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: ${{ matrix.python_arch }}
+          cache: pip
+      - name: Verify native architecture
+        run: python scripts/build_release.py --target ${{ matrix.target }} --version 0.1.0 --check-host
+      - name: Install application and build dependencies
+        run: python -m pip install -r requirements-build.txt
+      - name: Test deterministic logic and native UI without hardware
+        run: python -m unittest discover -s tests -v
+      - name: Runtime self-test
+        run: python -m jarvis --role self-test
+      - name: Native desktop and real backend lifecycle smoke
+        shell: bash
+        run: python scripts/smoke_desktop.py | tee desktop-smoke.json
+      - name: Preserve desktop smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-smoke-${{ matrix.target }}
+          path: desktop-smoke.json
+          if-no-files-found: ignore
+          retention-days: 14

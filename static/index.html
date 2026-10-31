@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0a1018" />
+    <title>Open JARVIS · 你的个人智能助理</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="助理状态和工作空间">
+        <a class="brand" href="/" aria-label="Open JARVIS 首页">
+          <span class="brand-mark" aria-hidden="true">J<span></span></span>
+          <span><span class="brand-name">OPEN <strong>JARVIS</strong></span><span class="brand-caption">YOUR PERSONAL AI ASSISTANT</span></span>
+        </a>
+
+        <div class="connection-card">
+          <div class="section-label">系统状态 <span class="status-dot" id="connection-dot"></span></div>
+          <p id="connection-name">正在连接助理…</p>
+          <span id="model-name" class="muted small">检查本地服务</span>
+        </div>
+
+        <section class="workspace-section" aria-labelledby="workspace-heading">
+          <div class="section-heading"><h2 id="workspace-heading">工作空间</h2><button class="icon-button refresh-button" id="refresh-workspace" type="button" aria-label="刷新工作空间" title="刷新工作空间">↻</button></div>
+          <div class="workspace-tabs" role="tablist" aria-label="工作空间内容">
+            <button class="workspace-tab" id="tab-todos" role="tab" aria-selected="false" aria-controls="workspace-panel" data-tab="todos" tabindex="-1" type="button">待办 <span id="todos-count">0</span></button>
+            <button class="workspace-tab" id="tab-notes" role="tab" aria-selected="false" aria-controls="workspace-panel" data-tab="notes" tabindex="-1" type="button">笔记 <span id="notes-count">0</span></button>
+            <button class="workspace-tab active" id="tab-files" role="tab" aria-selected="true" aria-controls="workspace-panel" data-tab="files" type="button">文件 <span id="files-count">0</span></button>
+          </div>
+          <div id="workspace-panel" class="workspace-panel" role="tabpanel" aria-labelledby="tab-files" tabindex="0"><p class="empty-workspace">正在读取工作空间…</p></div>
+          <p class="workspace-location" id="workspace-location" title="文件保存位置"></p>
+        </section>
+
+        <section class="capabilities" aria-labelledby="capabilities-heading">
+          <h2 class="section-label" id="capabilities-heading">可以为你做什么</h2>
+          <div class="capability"><span aria-hidden="true">✧</span><div>检索与整理资料<small>搜索资料，整理带来源的简报</small></div></div>
+          <div class="capability"><span aria-hidden="true">▤</span><div>撰写文档与报告<small>把想法变成可下载的工作成果</small></div></div>
+          <div class="capability"><span aria-hidden="true">◉</span><div>分析你的数据<small>上传 CSV，让数字讲清楚问题</small></div></div>
+        </section>
+        <div class="sidebar-footer"><span class="tiny-orbit" aria-hidden="true"></span>为你的下一步，随时就绪<span class="version">v0.1</span></div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div><span class="eyebrow">ASSISTANT / CONTROL CENTER</span><h1>对话即行动<span class="title-dot">.</span></h1></div>
+          <button id="clear-history" type="button" class="quiet-button" title="清空聊天记录，保留工作空间">清空对话 <span aria-hidden="true">↗</span></button>
+        </header>
+        <div id="mode-banner" class="mode-banner" hidden><span class="banner-icon" aria-hidden="true">i</span><p id="mode-message"></p></div>
+
+        <section class="conversation" id="conversation" aria-label="与 JARVIS 的对话">
+          <div class="welcome" id="welcome">
+            <div class="reactor" aria-hidden="true"><div class="reactor-orbit"></div><div class="reactor-ring"></div><div class="reactor-core"><svg viewBox="0 0 40 40"><path d="M24 8v17c0 6-9 9-14 3l4-4c2 3 5 2 5 0V8z" fill="currentColor"/></svg></div><span class="reactor-point point-a"></span><span class="reactor-point point-b"></span></div>
+            <div class="welcome-kicker"><span></span> READY WHEN YOU ARE</div>
+            <h2>你好，我是 <span>JARVIS</span>。</h2>
+            <p>检索资料、撰写文档、分析数据。把下一件事交给我。</p>
+            <div class="suggestions" id="suggestions">
+              <button type="button" class="suggestion" data-prompt="检索 Python 3.13 的主要变化，整理成带来源的简报" data-demo="/search Python 3.13 主要变化"><span class="suggestion-icon" aria-hidden="true">✧</span><span><strong>做一份资料简报</strong><small>搜索、整理、附上来源</small></span><span class="suggestion-arrow" aria-hidden="true">↗</span></button>
+              <button type="button" class="suggestion" data-prompt="帮我起草一份项目周报模板，保存为 weekly-report.md" data-demo="/write weekly-report.md | # 项目周报\n\n## 本周进展\n\n## 下周计划\n\n## 风险与支持"><span class="suggestion-icon" aria-hidden="true">▤</span><span><strong>起草一份工作文档</strong><small>从一句话到一份初稿</small></span><span class="suggestion-arrow" aria-hidden="true">↗</span></button>
+              <button type="button" class="suggestion" data-prompt="读取 example-sales.csv，分析销售数据并写一份报告" data-demo="/analyze example-sales.csv"><span class="suggestion-icon" aria-hidden="true">◫</span><span><strong>看看数据的发现</strong><small>分析 CSV，提炼结论</small></span><span class="suggestion-arrow" aria-hidden="true">↗</span></button>
+            </div>
+          </div>
+          <div id="messages" class="messages" role="log" aria-label="聊天记录" aria-live="polite" aria-relevant="additions text"></div>
+        </section>
+
+        <div class="composer-area">
+          <div id="notice" class="notice" role="status" hidden></div>
+          <div class="activity-line"><span id="activity-dot" class="activity-dot"></span><span id="activity-text" role="status">等待连接</span><button id="stop-speaking" class="text-button" type="button" hidden>停止朗读</button></div>
+          <form id="chat-form" class="composer">
+            <label for="message-input" class="sr-only">给 JARVIS 的消息</label>
+            <textarea id="message-input" name="message" rows="2" maxlength="12000" placeholder="告诉 JARVIS，你想做什么…" required></textarea>
+            <div class="composer-bottom">
+              <div class="input-options"><input id="file-input" type="file" accept=".csv,.txt,.md,.json" hidden /><button type="button" id="upload-file" class="upload-button" aria-label="上传文件，支持 CSV、TXT、Markdown、JSON，最大 2 MB" title="上传文件（最大 2 MB）"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 12 6-6a3 3 0 0 1 4 4l-8 8a5 5 0 0 1-7-7l8-8M6 14l8-8"/></svg></button><span class="option-divider"></span><button type="button" id="microphone" class="microphone-button" aria-pressed="false" title="点击开始语音输入"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M8 22h8"/></svg><span id="microphone-label">语音输入</span></button><span class="option-divider"></span><label class="speech-toggle"><input id="read-aloud" type="checkbox" /><span class="toggle-track" aria-hidden="true"></span><span>朗读回复</span></label></div>
+              <button id="send-button" class="send-button" type="submit" aria-label="发送消息"><span>发送</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19 0-14M6 11l6-6 6 6"/></svg></button>
+            </div>
+          </form>
+          <div class="composer-hint"><span id="voice-hint">语音功能由你的浏览器提供</span><span><kbd>Enter</kbd> 发送 · <kbd>Shift + Enter</kbd> 换行</span></div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

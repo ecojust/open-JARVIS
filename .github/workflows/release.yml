@@ -1,0 +1,180 @@
+name: Build native release candidates
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: SemVer version without a leading v
+        required: true
+        default: 0.1.0-rc.1
+        type: string
+      signed:
+        description: Sign and notarize using configured signing secrets
+        required: true
+        default: false
+        type: boolean
+      create_draft:
+        description: Create a draft prerelease after all three builds pass (never publishes)
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            target: macos-x64
+            python_arch: x64
+          - runner: macos-15
+            target: macos-arm64
+            python_arch: arm64
+          - runner: windows-2022
+            target: windows-x64
+            python_arch: x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      QT_QPA_PLATFORM: offscreen
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+      JARVIS_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: ${{ matrix.python_arch }}
+          cache: pip
+      - name: Verify native architecture
+        shell: bash
+        run: python scripts/build_release.py --target '${{ matrix.target }}' --version "$JARVIS_VERSION" --check-host
+      - name: Install build dependencies
+        run: python -m pip install -r requirements-build.txt
+      - name: Run deterministic validation
+        run: python -m unittest discover -s tests -v
+      - name: Native desktop and real backend lifecycle smoke
+        shell: bash
+        run: python scripts/smoke_desktop.py | tee desktop-smoke.json
+      - name: Preserve desktop smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-smoke-${{ matrix.target }}
+          path: desktop-smoke.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Prepare macOS signing keychain
+        if: inputs.signed && runner.os == 'macOS'
+        shell: bash
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          python -c 'import os,base64,pathlib; pathlib.Path(os.environ["RUNNER_TEMP"],"jarvis-signing.p12").write_bytes(base64.b64decode(os.environ["CERTIFICATE_BASE64"]))'
+          task_keychain="$RUNNER_TEMP/jarvis-signing.keychain-db"
+          task_password="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+          echo "::add-mask::$task_password"
+          security create-keychain -p "$task_password" "$task_keychain"
+          security set-keychain-settings -lut 21600 "$task_keychain"
+          security unlock-keychain -p "$task_password" "$task_keychain"
+          security import "$RUNNER_TEMP/jarvis-signing.p12" -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$task_keychain"
+          security set-key-partition-list -S apple-tool:,apple: -k "$task_password" "$task_keychain"
+          security list-keychains -d user -s "$task_keychain" login.keychain-db
+          xcrun notarytool store-credentials jarvis-ci --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --keychain "$task_keychain"
+          echo "JARVIS_NOTARY_PROFILE=jarvis-ci" >> "$GITHUB_ENV"
+          echo "JARVIS_NOTARY_KEYCHAIN=$task_keychain" >> "$GITHUB_ENV"
+      - name: Prepare Windows signing certificate
+        if: inputs.signed && runner.os == 'Windows'
+        shell: pwsh
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          $certificateFile = Join-Path $env:RUNNER_TEMP 'jarvis-signing.pfx'
+          [IO.File]::WriteAllBytes($certificateFile, [Convert]::FromBase64String($env:CERTIFICATE_BASE64))
+          $certificatePassword = ConvertTo-SecureString $env:CERTIFICATE_PASSWORD -AsPlainText -Force
+          $certificate = Import-PfxCertificate -FilePath $certificateFile -CertStoreLocation Cert:\CurrentUser\My -Password $certificatePassword | Where-Object { $_.HasPrivateKey } | Select-Object -First 1
+          if (-not $certificate) { throw 'The signing certificate does not contain a private key.' }
+          Add-Content $env:GITHUB_ENV "JARVIS_WINDOWS_CERT_SHA1=$($certificate.Thumbprint)"
+      - name: Build signed candidate
+        if: inputs.signed
+        shell: bash
+        env:
+          JARVIS_MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        run: python scripts/build_release.py --target '${{ matrix.target }}' --version "$JARVIS_VERSION" --sign
+      - name: Build explicitly unsigned test candidate
+        if: ${{ !inputs.signed }}
+        shell: bash
+        run: python scripts/build_release.py --target '${{ matrix.target }}' --version "$JARVIS_VERSION" --allow-unsigned
+      - name: Preserve candidate and verification metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-${{ matrix.target }}
+          path: dist/releases/*
+          if-no-files-found: error
+          retention-days: 14
+      - name: Remove temporary signing material
+        if: always() && inputs.signed
+        shell: bash
+        run: |
+          rm -f "$RUNNER_TEMP/jarvis-signing.p12" "$RUNNER_TEMP/jarvis-signing.pfx"
+          if [ "$RUNNER_OS" = macOS ]; then
+            security delete-keychain "$RUNNER_TEMP/jarvis-signing.keychain-db" || true
+          fi
+      - name: Remove Windows certificate and private key
+        if: always() && inputs.signed && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if ($env:JARVIS_WINDOWS_CERT_SHA1) {
+            Remove-Item "Cert:\CurrentUser\My\$env:JARVIS_WINDOWS_CERT_SHA1" -DeleteKey -ErrorAction SilentlyContinue
+          }
+
+  draft:
+    if: inputs.create_draft
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: candidate-*
+          merge-multiple: true
+          path: candidates
+      - name: Verify complete matrix and create draft only
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          JARVIS_VERSION: ${{ inputs.version }}
+          JARVIS_COMMIT: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import glob, hashlib, json, os, pathlib
+          manifests = [json.loads(pathlib.Path(p).read_text()) for p in glob.glob('candidates/*.manifest.json')]
+          assert len(manifests) == 3 and {m['target'] for m in manifests} == {'macos-x64', 'macos-arm64', 'windows-x64'}, 'Incomplete release matrix'
+          for manifest in manifests:
+            assert manifest['version'] == os.environ['JARVIS_VERSION'], 'Mixed candidate versions'
+            artifact = pathlib.Path('candidates', manifest['artifact'])
+            assert artifact.is_file(), 'Missing candidate artifact'
+            assert hashlib.sha256(artifact.read_bytes()).hexdigest() == manifest['sha256'], 'Candidate checksum mismatch'
+          signed = all(m['signed'] for m in manifests)
+          text = 'Native build candidates for review.\n\n'
+          text += 'Signing completed for all artifacts.\n' if signed else 'UNSIGNED TEST BUILDS: not a production release.\n'
+          text += '\nHardware microphone/speaker tests, performance budgets, upgrade behavior and license review remain required before publication.\n'
+          pathlib.Path('release-notes.md').write_text(text)
+          PY
+          gh release create "v$JARVIS_VERSION" candidates/* --repo "$GH_REPO" --target "$JARVIS_COMMIT" --draft --prerelease --title "Open JARVIS $JARVIS_VERSION — candidate" --notes-file release-notes.md

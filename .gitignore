@@ -1,0 +1,14 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+data/
+workspace/
+models/
+.DS_Store
+build/
+dist/
+artifacts/
+.ruff_cache/
+.coverage

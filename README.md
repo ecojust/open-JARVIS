@@ -10,8 +10,59 @@
 
 **实现原则：以性能作为第一性原则。** 常驻开销、交互延迟与资源可回收性是架构约束和发布门槛，从第一阶段测量；既有原型、框架和组件选择都必须接受验证。正确性、语音可用性和数据完整性仍须同时满足。
 
-> **文档状态：整体架构设计 v0.4，2026-10-31。**
-> 当前先完成设计，再按里程碑实施。下文中的客户端、MAF 编排、语音闭环和任务接口均为目标设计，不能据此认为产品已经完成。已有实验代码的验证范围见「当前状态」。
+> **当前版本：0.1.0 开发预览，2026-10-31。**
+> 已实现原生桌面、持久化任务、MAF 专业 Agent 编排及本地 STT/TTS 管线；下文保留整体架构和发布验收要求。三端安装包、真实音频设备和性能预算尚未完成验收，当前不是正式发行版。详细证据见 [验证记录](docs/VALIDATION.md)。
+
+## 快速开始
+
+开发环境使用 **Python 3.12（64 位）**。当前 Qt 6.12 的 macOS wheel 要求 **macOS 14 或更新版本**，Intel 与 Apple Silicon 均使用原生 Python。Windows 使用 x64 Python；最低 Windows 版本仍需安装验收。
+
+```sh
+git clone https://github.com/ecojust/open-JARVIS.git
+cd open-JARVIS
+python -m venv .venv
+```
+
+macOS 激活环境：`source .venv/bin/activate`；Windows PowerShell：`.venv\Scripts\Activate.ps1`。然后执行：
+
+```sh
+python -m pip install -r requirements-desktop.txt
+python -m jarvis
+```
+
+启动后默认仅显示生肖羊语音方块。右键打开「设置」，填写支持工具调用及流式响应的 OpenAI-compatible 服务地址、模型名与 API Key，保存后应用会重新启动空闲的后台服务。本地模型服务不要求密钥时，API Key 填一个非空占位值。也可复制 [.env.example](.env.example) 为 `.env` 配置开发默认值；实际进程环境变量优先，其次是界面保存的设置，最后是 `.env` 默认值。
+
+从方块右键菜单打开「下载语音模型」，分别下载 STT 与 TTS，或通过命令安装：
+
+```sh
+python -m jarvis --role download-stt
+python -m jarvis --role download-tts
+```
+
+下载器校验固定版本的 SHA-256，模型不会提交 Git 或打进可执行文件。模型准备好后，在设置中保存应用以重新加载音频服务，并允许系统使用麦克风。当前模型资源合计下载约 605 MB；网络与磁盘空间须足够。已有模型可在设置中选择对应目录。
+
+语音使用示例：「贾维斯，分析 example-sales.csv，写一份销售简报并保存为 report.md。」任务在后台执行，完成后显示全屏结果并用 Kokoro 播报；Esc 收起结果。上传 CSV/文本、查看执行记录和下载产物均可在结果窗口完成。播报期间采用半双工，暂停收音并在播放结束后恢复；「停止播报」与「取消任务」独立。
+
+未配置任务模型时是**明确标记的命令演示模式**，可在结果窗口输入下列命令验证真实文件与统计流程，不具备自由自然语言理解能力：
+
+```text
+/analyze example-sales.csv
+/write weekly-report.md | 已完成本周工作整理。
+/files
+```
+
+数据与设置默认写入当前用户目录：macOS 为 `~/Library/Application Support/OpenJARVIS`，Windows 为 `%LOCALAPPDATA%/OpenJARVIS`；工作文件位于其 `workspace/`，也可自选目录。源码目录已有 `models/` 时优先复用其中开发模型。API Key 目前保存在用户设置文件中，尚未接入系统钥匙串。
+
+测试与开发测量：
+
+```sh
+python -m pip install -r requirements-dev.txt
+python -m unittest discover -s tests -v
+python scripts/smoke_desktop.py
+python scripts/measure_runtime.py --samples 30 --voice --output artifacts/performance.json
+```
+
+原生 DMG/EXE 构建、签名配置与三端 CI 见 [分发说明](packaging/README.md)。Linux 仅用于开发验证，音频还需系统 PortAudio，并非首版安装包目标。
 
 ## 1. 产品目标与边界
 
@@ -154,7 +205,7 @@ JARVIS 的品牌主体确定为**十二生肖中的羊**，采用卷角公羊形
 
 本项目使用**宝蓝色底板**作为独立品牌色，主体保留卷角、羊毛、羊脸和四肢的明确特征。图案内部不放名称文字；产品名称在图案外独立排版。羊的轮廓是长期识别标记，不随任务状态更换动物形象。
 
-当前 [Logo 设计稿与来源说明](assets/branding/README.md) 已随文档保存，用于评审品牌方向；它是参考同系列视觉语言后新生成的羊图稿，不是从青牛或紫鸡原图中提取的既有羊素材。ICNS、ICO 和托盘简化图标尚未导出。
+[Logo 与来源说明](assets/branding/README.md) 已接入原生方块和应用图标；构建脚本从同一份经过哈希验证的母版导出 ICNS、ICO。它是参考同系列视觉语言后新生成的羊图稿。托盘简化单色图标和三端小尺寸视觉验收仍待完成。
 
 设计与使用规则：
 
@@ -167,7 +218,7 @@ JARVIS 的品牌主体确定为**十二生肖中的羊**，采用卷角公羊形
 
 ### 常驻语音方块
 
-设计尺寸约为 112 × 112 像素，可根据显示缩放调整；默认右下角，可拖动，并保存位置。提供状态文字、颜色和简短提示，不仅依赖颜色表达状态。
+当前尺寸为 128 × 128 像素，可根据显示缩放调整；默认右下角，可拖动，并保存位置。提供状态文字、颜色和简短提示，不仅依赖颜色表达状态。
 
 | 状态 | 显示示例 | 可用操作 |
 | --- | --- | --- |
@@ -190,7 +241,7 @@ JARVIS 的品牌主体确定为**十二生肖中的羊**，采用卷角公羊形
 - 适合阅读的报告正文、统计数据和来源链接。
 - 产物列表：文件名、类型、打开或下载入口。
 - 可折叠执行记录：执行了什么、返回了什么、哪些步骤失败。
-- 后续对话输入，例如「把刚才的报告改成面向管理层的版本」。
+- 文字任务与补充回答入口。待补充的问题会续接原任务；已完成任务后的新输入创建独立任务，修改报告需明确文件名，例如「读取 report.md，另存一份面向管理层的版本」。自动继承选中任务上下文尚未实现。
 
 已有结果窗口时更新对应任务，不重复创建窗口。Esc 或「收起」隐藏结果窗口，小方块与后台任务继续运行；隐藏后停止刷新与动画，空闲时回收视图和大内容缓存，再次打开从任务记录恢复。外部来源链接交给系统浏览器，工作目录文件通过受控产物接口访问。
 
@@ -302,7 +353,7 @@ flowchart LR
 
 传给每个专业 Agent 的上下文只包含当前子任务所需资料、工具结果及产物引用。网页和文件里的文字是资料，不能改变系统指令或扩大工具权限。历史对话使用受大小限制的近期上下文；长期记忆检索不是第一版承诺。
 
-MAF 的具体包版本在实现阶段锁定。前期已核对 `agent-framework-core 1.24.0`、`agent-framework-openai 1.18.0` 的 `Agent`、`Agent.run(..., stream=True)`、`Agent.as_tool(...)` 和 `OpenAIChatClient` 接口；这只是 API 可用性核对，尚未完成项目集成。
+已锁定 `agent-framework-core==1.24.0`、`agent-framework-openai==1.18.0`，实际通过总控 `Agent.run(...)`、`Agent.as_tool(...)` 内部的子 Agent 流式执行和 **`OpenAIChatCompletionClient`** 集成 Chat Completions。自动化测试使用真实 MAF 与本地可控的模型 HTTP 服务，覆盖专业 Agent 流式委派、真实写文件、预算和取消；尚未用生产模型服务完成完整工作场景验收。
 
 ## 7. 工具执行与产物
 
@@ -318,13 +369,13 @@ MAF 的具体包版本在实现阶段锁定。前期已核对 `agent-framework-c
 
 普通、已授权的工作目录内操作直接执行，避免每一步都打断用户。覆盖文件必须符合用户明确意图；不在工具能力范围内的请求如实说明。未来接入外部发送、删除或系统操作时，再为这些具体能力设计授权策略。
 
-工具返回统一结构，至少包含成功标志、数据、错误类型、产物与已发生的修改。可重试的只读网络错误允许有限重试；写文件等有副作用操作使用操作标识去重，不在失败恢复时盲目重放。
+当前工具返回业务数据或明确的 `error`，任务执行入口据此持久化成功/失败步骤、产物与结果。客户端任务提交使用幂等键，默认拒绝覆盖同名文件，取消/重启不自动重放写操作。工具层统一结果信封、操作标识去重与受全局预算控制的网络重试仍是后续目标，目前没有自动重试副作用工具。
 
 取消或失败不等于撤销已完成的操作。最终反馈必须保留已生成的文件、已完成步骤与未完成部分。
 
 ## 8. 任务状态、接口与事件
 
-以下为**拟定协议**，不是当前原型已提供的完整 API。
+以下任务协议已由本地后端实现。桌面通过短期实例令牌访问，SSE 订阅与任务执行独立。
 
 ### 8.1 任务状态机
 
@@ -361,10 +412,12 @@ stateDiagram-v2
 | --- | --- |
 | `GET /api/health` | 后端就绪与运行实例身份，不泄露密钥 |
 | `POST /api/tasks` | 提交文字任务，立即返回 `task_id`；支持客户端幂等键 |
+| `GET /api/tasks` | 有界任务摘要列表，默认最多 100 项 |
 | `GET /api/tasks/{task_id}` | 查询任务、最终结果与产物 |
 | `GET /api/events?after={event_id}` | SSE 订阅与断线后事件重放 |
 | `POST /api/tasks/{task_id}/input` | 补充总控请求的缺失信息 |
 | `POST /api/tasks/{task_id}/cancel` | 请求协作式取消；返回实际状态 |
+| `POST /api/tasks/{task_id}/resume` | 恢复重启后暂缓派发的排队任务；不重放中断任务 |
 | `GET /api/artifacts/{artifact_id}` | 下载经过工作目录校验的产物 |
 | `POST /api/files` | 上传支持格式的工作文件 |
 
@@ -389,7 +442,9 @@ stateDiagram-v2
 }
 ```
 
-主要事件：`task.queued`、`task.plan_created`、`task.awaiting_input`、`step.started`、`tool.started`、`tool.completed`、`tool.failed`、`artifact.created`、`task.completed`、`task.failed`、`task.cancelled`、`task.interrupted`。
+主要事件：`task.queued`、`task.awaiting_input`、`step.started`、`tool.started`、`tool.completed`、`tool.failed`、`artifact.created`、`task.completed`、`task.failed`、`task.cancelled`、`task.interrupted`。
+
+当前会记录实际委派和工具执行，但尚未生成独立的持久化执行计划；`task.plan_created` 与计划视图保留为后续扩展。
 
 `task.completed` 覆盖 `succeeded` 与 `partially_succeeded`，必须通过数据中的 `status` 区分。所有终态事件使用共同结果结构，包含 `status`、`display_text`、`speech_text`、产物、已完成步骤、未完成项和错误原因。数据库中的任务状态更新与对应事件在同一事务中提交，避免断线重放时状态与事件矛盾。
 
@@ -408,32 +463,32 @@ stateDiagram-v2
 | `artifacts` | 产物 ID、相对路径、类型、大小、所属任务 |
 | `notes` / `todos` | 个人记事与待办 |
 
-推荐目录：
+当前模块：
 
 ```text
 open-JARVIS/
-├── README.md             # 本架构设计
-├── desktop/              # 悬浮窗、结果窗口、应用生命周期（计划）
-├── audio/                # 音频 IPC、VAD、STT/TTS 适配器（计划）
-├── backend/
-│   ├── api/              # 任务提交、查询、SSE（计划）
-│   ├── orchestration/    # MAF 角色与工作流（计划）
-│   ├── tools/            # 工具注册和执行入口（计划）
-│   └── storage/          # 数据模型与迁移（计划）
-├── web/                  # 已有 Web 展示原型/候选扩展，非默认常驻运行时
-├── tests/                # 单元、协议与集成验证
-├── models/               # 本地下载的语音模型，不提交 Git
-├── data/                 # SQLite、运行日志，不提交 Git
-└── workspace/            # 用户文件和任务产物，不提交 Git
+├── jarvis/
+│   ├── desktop.py / desktop_ui.py / desktop_client.py  # 原生方块、结果、异步控制器
+│   ├── audio_process.py / voice_runtime.py / voice.py  # 音频 IPC、STT、VAD
+│   ├── tts_runtime.py                                # Kokoro 合成、播放、缓存
+│   ├── app.py / tasks.py / storage.py                 # HTTP/SSE、任务生命周期、SQLite
+│   ├── orchestration.py / agent.py / tools.py         # MAF 角色、执行器、工作工具
+│   └── paths.py / config.py / launcher.py             # 用户目录、设置、进程入口
+├── scripts/              # 桌面冒烟、性能测量、原生构建
+├── packaging/            # PyInstaller、macOS 权限、Inno Setup
+├── tests/                # 单元、协议、真实 MAF 集成与原生 UI 测试
+├── static/               # 可选 Web 调试界面，默认桌面不加载
+├── assets/branding/      # 羊 Logo 母版及来源
+└── docs/                 # 开发验证记录与原始测量
 ```
 
-这是目标职责划分；实施时可保留一个 Python 包下的同等模块结构，不要求为目录形式而拆分。
+安装目录仅存程序资源；模型、数据库、设置和工作文件放在用户可写目录，不随升级替换。
 
 ### 启动与恢复
 
 启动顺序为：加载最小配置并显示可交互方块 → 建立本机实例身份 → 异步初始化音频与轻量任务服务 → 分别报告就绪状态。MAF 和任务模型客户端按需初始化，TTS 按需加载或在资源允许时预热，结果窗口首次展示时才创建。STT/TTS 模型缺失时提示安装入口，不能显示“持续聆听就绪”或“可播报”；“模型已下载、可按需加载”和“已加载可播放”分别表示。
 
-重启后，未正常结束的运行任务标记为 `interrupted`；核对已有产物后由用户选择是否继续，不自动重放有副作用的工具操作。此前排队的任务保留为 `queued`，但暂停派发，用户选择恢复后再执行。等待用户补充的任务保留其问题、上下文和等待期限。
+重启后，未正常结束的运行任务标记为 `interrupted`，保留已记录的产物和步骤；如需继续，查看结果后提交新的任务，不自动重放有副作用的工具操作。此前排队的任务保留为 `queued`，但暂停派发，用户选择恢复后再执行。等待用户补充的任务保留其问题、上下文和等待期限。
 
 退出顺序为：停止接收新任务 → 停止收音与播放 → 取消或记录未完成工作 → 刷新持久化 → 关闭自有子进程。结果窗口关闭不触发上述退出流程。
 
@@ -470,7 +525,7 @@ open-JARVIS/
 
 三种目标属于同一正式版本的发布范围，共用功能与协议，不将其中一端长期作为未验证的附属版本。macOS 首版使用两个独立原生包，不要求 Intel 包经 Rosetta 运行，也不要求先做 Universal 2 合包。Windows ARM64、Windows 32 位与 Linux 安装包不属于首版承诺范围。
 
-最低 macOS/Windows 版本须在三端依赖预检后冻结，并写入构建配置、安装检查和发布说明；目前尚未验证，不能根据“使用 Qt”推断支持任意系统版本。
+当前固定的 PySide6-Essentials 6.12.0 wheel 要求 macOS 14+，两个 Mac 架构均受此限制。最低 Windows 版本与最终安装支持范围仍需在干净真机完成验证；CI 使用 macOS 15 与 Windows Server 2022，不等于消费端支持范围已验收。
 
 ### 11.2 共享代码与平台适配
 
@@ -486,7 +541,7 @@ MAF 编排、任务协议、工具逻辑、数据结构和结果页面保持共�
 
 ### 11.3 构建与原生依赖
 
-计划采用 **PyInstaller 的目录式打包（onedir）**，封装 Python 运行时和依赖，再生成 macOS `.app`/DMG 与 Windows 安装程序（计划使用 Inno Setup）。默认不打包未使用的 QtWebEngine，按实际使用裁减 Qt 模块和资源，避免启动时反复解压运行时。语音模型单独管理，不嵌入可执行文件。
+构建脚本采用 **PyInstaller 的目录式打包（onedir）**，封装 Python 运行时和依赖，再生成 macOS `.app`/DMG 与 Windows 安装程序（使用 Inno Setup）。默认不打包未使用的 QtWebEngine，按实际使用裁减 Qt 模块和资源，避免启动时反复解压运行时。语音模型单独管理，不嵌入可执行文件。
 
 三种目标在对应系统和架构上分别构建、测试；不假设能在 Linux 上直接生成可靠的 macOS/Windows 发布包。Python 小版本和依赖版本统一锁定，并保留每个平台的依赖清单与哈希。
 
@@ -513,7 +568,7 @@ SenseVoice INT8 模型约 239 MB；Kokoro v1.1 官方压缩包约 365 MB（348 M
 
 ### 11.6 CI 与发布门槛
 
-计划建立三个独立 CI 构建任务：`macos-x64`、`macos-arm64`、`windows-x64`。选用明确匹配架构的运行器；托管运行器不覆盖的目标使用自托管机器，不依赖可能变更的 `latest` 标签推断 CPU 架构。
+已配置三个独立 CI 目标：`macos-x64`、`macos-arm64`、`windows-x64`。选用明确匹配架构的运行器；托管运行器不覆盖的目标使用自托管机器，不依赖可能变更的 `latest` 标签推断 CPU 架构。
 
 发布流水线为：依赖与架构校验 → 单元/协议测试 → 原生打包 → 安装包启动及子进程冒烟测试 → 三端性能与稳定性基准 → 签名/公证 → 真机验收 → 发布到 GitHub Releases。正式版本三个产物全部满足功能与性能门槛后再作为同一版本发布；提供版本说明、系统要求、SHA-256 校验清单与第三方许可证。
 
@@ -567,19 +622,19 @@ M1 可以使用确定性任务执行器验证 UI 与协议，但必须标为测�
 
 ## 13. 当前状态
 
-本仓库最初仅有 MIT 许可证。前期已开展少量技术原型验证，现已按“先整体设计、再实现软件”的顺序暂停功能开发。
+已交付开发预览实现：
 
-已验证的局部内容：
+- 原生 Qt 羊方块、按需全屏结果、设置、导入文件、下载产物；默认无 QtWebEngine。
+- 独立音频与任务进程；VAD、SenseVoice、Kokoro、半双工播报、补充问题路由和停止/暂停。
+- MAF 总控与检索、分析、文档专业 Agent；12 次模型/24 次工具全任务预算；单任务执行与 3 项待办。
+- SQLite 持久化、任务幂等提交、取消边界、SSE 重放、重启中断和排队任务手动恢复。
+- 三端原生依赖检查、安装包构建及签名脚本；固定模型校验下载、图标导出和性能测量工具。
 
-- 本地工具、CSV 统计、文件上传下载、基础对话与模拟模型工具调用的自动化测试。
-- 网页结果原型的浏览器交互；这不能替代原生桌面验收。
-- VAD 分段与文本前缀匹配的单元测试。
-- SenseVoice 模型实际加载及一段中文样例识别：当前测试环境使用 2 个 CPU 线程，5.59 秒音频解码约 0.30 秒；仅为单次样例，不是准确率或跨设备性能保证。
-- Kokoro 官方模型下载和完整性校验，以及 MAF API 可用性核对。
+本地验证：128 项测试通过；真实 Qt 控制器启动本地后端、执行写文件并全屏展示结果，退出后自有子进程停止。真实 Kokoro 合成的中文音频经 SenseVoice 回识别得到正确文本。这些模型测试未经过麦克风或扬声器，MAF 集成测试使用可控模型服务，不冒充生产模型验收。
 
-**尚未完成：** 原生桌面端到端验证、真实麦克风持续监听验收、Kokoro 合成与实际播放闭环、MAF 项目集成、本文任务协议与恢复机制，以及 macOS Intel、macOS arm64、Windows x64 的依赖兼容性验证、原生构建、签名、安装包验收与性能基准。三端发布和性能预算目前是明确的设计要求，不是已经验证的支持或达标声明。
+30 次 Linux offscreen 方块单进程启动 P95 为 **248 ms**、RSS P95 为 **73.6 MiB**，不包含后端和语音模型。Kokoro 短句热合成约 **1.30–1.80 秒**，已高于预定热首声目标；真实首声仍需测量。全部原始样本与限制见 [验证记录](docs/VALIDATION.md)。
 
-实验代码不作为已交付产品。本阶段仅维护设计文档与品牌设计素材，不继续功能开发；Logo 设计稿也不代表三端应用图标已接入。下一步应依据上述阶段实施，不从实验文件的存在推断功能已经完成。
+**仍待发布验收：** 三端原生构建与安装/签名、生产模型和真实联网任务、麦克风持续监听与扬声器播放、权限/设备切换/睡眠恢复、8 小时稳定性与各项性能预算。当前 TTS 空闲释放模型引用，但尚未证明原生内存归还系统；暂停监听不会卸载 STT；内存压力驱动回收、系统托盘简化图标和大数据虚拟化仍未实现。上述架构里的这些要求继续作为工程目标，不因已有实现而视为完成。
 
 ## License
 
