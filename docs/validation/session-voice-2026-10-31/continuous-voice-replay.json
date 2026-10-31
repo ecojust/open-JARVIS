@@ -1,0 +1,156 @@
+{
+  "scope": "Real local Kokoro recording through actual WebRTC VAD and SenseVoice. First recording reused from baseline; second utterance has no wake word. Only sounddevice RawInputStream replaced. An explicit temporary pause/resume between sentences simulates TTS echo suppression; no actual microphone, speaker, UI session or external model API is tested.",
+  "recorded_at": "2026-10-31T16:07:08.053280+00:00",
+  "source_sentences": [
+    "贾维斯，帮我写一份本周工作总结，说明已经完成的任务和下一步计划。",
+    "再把这份总结改成三个要点，并保留下一步计划。"
+  ],
+  "models": {
+    "tts": "Kokoro bilingual v1.1 local",
+    "stt": "SenseVoice int8 local"
+  },
+  "audio_format": {
+    "sample_rate": 16000,
+    "channels": 1,
+    "encoding": "int16 little endian"
+  },
+  "audio_seconds": [
+    8.52,
+    6.48
+  ],
+  "second_tts_load_and_synthesis_seconds": 6.377,
+  "pcm_sha256": [
+    "0a3338a18189fe8193a7fccef89793dc8a95a5a21e9e2a64ae8163a738b8563a",
+    "a4b77f8eba17e81a96d86493747e4b16a119bfe72c0abff5b2bf35b9ab1ab877"
+  ],
+  "source_sha256": {
+    "jarvis/voice.py": "dbcc87fde61f8a30d789d0a4949a97d2768bab3fb9ef1b03d47ca25c495dcaf8",
+    "jarvis/voice_runtime.py": "fb5f4519f659f513f0ebdd4a0ecc395f16f54577aad3b0388900ff3d15f18e67"
+  },
+  "wake_word_required_for_first": true,
+  "second_sentence_without_wake_accepted": true,
+  "temporary_echo_pause_preserved_wake": true,
+  "partial_count": 7,
+  "final_count": 2,
+  "final_texts": [
+    "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。",
+    "再把这份总结改成三个要点，并保留下一步计划。"
+  ],
+  "events": [
+    {
+      "event": "started",
+      "data": {
+        "utterance_id": "1d05d477697b46a3a3529149c9ad3150",
+        "generation": 0
+      },
+      "seconds_from_replay": 0.421
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "帮我写一。",
+        "final": false,
+        "utterance_id": "1d05d477697b46a3a3529149c9ad3150",
+        "generation": 0
+      },
+      "seconds_from_replay": 2.068
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "帮我写一份本周工作总。",
+        "final": false,
+        "utterance_id": "1d05d477697b46a3a3529149c9ad3150",
+        "generation": 0
+      },
+      "seconds_from_replay": 3.648
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "帮我写一份本周工作总结，说明已经完。",
+        "final": false,
+        "utterance_id": "1d05d477697b46a3a3529149c9ad3150",
+        "generation": 0
+      },
+      "seconds_from_replay": 5.794
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "帮我写一份本周工作总结，说明已经完成的任务和下一。",
+        "final": false,
+        "utterance_id": "1d05d477697b46a3a3529149c9ad3150",
+        "generation": 0
+      },
+      "seconds_from_replay": 7.39
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。",
+        "final": true,
+        "utterance_id": "1d05d477697b46a3a3529149c9ad3150",
+        "generation": 0
+      },
+      "seconds_from_replay": 8.58
+    },
+    {
+      "event": "started",
+      "data": {
+        "utterance_id": "87bd6ff5afe74bbcbd537352d09f88e1",
+        "generation": 2
+      },
+      "seconds_from_replay": 8.991
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "再把这份总结改。",
+        "final": false,
+        "utterance_id": "87bd6ff5afe74bbcbd537352d09f88e1",
+        "generation": 2
+      },
+      "seconds_from_replay": 10.614
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "再把这份总结改成三个要点并。",
+        "final": false,
+        "utterance_id": "87bd6ff5afe74bbcbd537352d09f88e1",
+        "generation": 2
+      },
+      "seconds_from_replay": 12.207
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "再把这份总结改成三个要点，并保留下一步计划。",
+        "final": false,
+        "utterance_id": "87bd6ff5afe74bbcbd537352d09f88e1",
+        "generation": 2
+      },
+      "seconds_from_replay": 13.779
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "再把这份总结改成三个要点，并保留下一步计划。",
+        "final": true,
+        "utterance_id": "87bd6ff5afe74bbcbd537352d09f88e1",
+        "generation": 2
+      },
+      "seconds_from_replay": 15.03
+    }
+  ],
+  "hardware_tested": false,
+  "passed": true,
+  "preview_policy": {
+    "minimum_interval_seconds": 1.5,
+    "adaptive_interval": "max(1.5 seconds, twice previous prefix inference duration)",
+    "pending_partial_slots": 1,
+    "maximum_queued_finals": 3,
+    "finals_bypass_partial_cooldown": true
+  }
+}

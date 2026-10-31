@@ -11,6 +11,7 @@ import math
 import os
 import sys
 import threading
+from collections import deque
 
 from .tts_runtime import TTSService
 from .voice_runtime import VoiceService
@@ -37,6 +38,7 @@ class AudioController:
         self._followup_generation = 0
         self._resume_timer = None
         self._last_level = {"level": 0.0, "speech": False, "listening": False}
+        self._final_utterances = deque(maxlen=64)
         self.echo_seconds = max(0, echo_seconds)
         inference_lock = threading.Lock()
         self.voice = voice_factory(self._voice_event, inference_lock=inference_lock)
@@ -104,8 +106,38 @@ class AudioController:
                     listening=listening,
                 )
             elif name == "transcript":
-                if not self._update_pause():
-                    self._send("stt.final", text=data["text"])
+                generation = data.get("generation")
+                current = getattr(self.voice, "capture_generation", generation)
+                if (
+                    generation is not None and generation != current
+                ) or self._update_pause():
+                    return
+                text = data.get("text")
+                if not isinstance(text, str) or not text.strip():
+                    return
+                final = data.get("final", True) is True
+                utterance_id = data.get("utterance_id")
+                if utterance_id and utterance_id in self._final_utterances:
+                    return
+                if final and utterance_id:
+                    self._final_utterances.append(utterance_id)
+                self._send(
+                    "stt.final" if final else "stt.partial",
+                    **{
+                        "text": text,
+                        "final": final,
+                        **{
+                            key: data[key]
+                            for key in ("utterance_id", "generation")
+                            if key in data
+                        },
+                    },
+                )
+            elif name in {"started", "cancelled"}:
+                generation = data.get("generation")
+                current = getattr(self.voice, "capture_generation", generation)
+                if generation == current and not self._update_pause():
+                    self._send("stt." + name, **data)
             elif name == "error":
                 self._voice_ready = False
                 self._send_level(listening=False)
@@ -219,7 +251,9 @@ class AudioController:
                 if action in {"pause", "resume"}:
                     self._user_paused = action == "pause"
                     if self._user_paused:
+                        self._reply_after_playback.clear()
                         self._followup_generation += 1
+                        self.voice.reset_wake()
                     paused = self._update_pause()
                     self._send(
                         "audio.status",
@@ -268,6 +302,15 @@ class AudioController:
                         if type(seconds) not in (int, float) or not 1 <= seconds <= 60:
                             raise ValueError("等待回答时长应位于 1–60 秒")
                         self.voice.arm_followup(seconds)
+                elif action == "discard_input":
+                    self._reply_after_playback.clear()
+                    self._followup_generation += 1
+                    self.voice.discard_input()
+                    self._send(
+                        "stt.discarded",
+                        id=request_id,
+                        generation=self.voice.capture_generation,
+                    )
                 elif action == "shutdown":
                     self._send("audio.ack", id=request_id, command=action)
                     return False

@@ -418,7 +418,7 @@ class ToolsTests(unittest.IsolatedAsyncioTestCase):
             result = await self.registry.execute(
                 "fetch_page", {"url": "https://public.example/article"}
             )
-        self.assertIn("1 MB", result["error"])
+        self.assertIn("4 MB", result["error"])
 
     async def test_search_reports_challenge_without_fake_results(self):
         async def page(*args, **kwargs):

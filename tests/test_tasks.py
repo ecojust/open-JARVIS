@@ -91,6 +91,7 @@ class TaskTests(unittest.IsolatedAsyncioTestCase):
 
         manager = await self.manager(Agent)
         first = await manager.submit("第一份")
+        self.store.create_session()
         second = await manager.submit("第二份")
         one = await self.terminal(manager, first["task_id"])
         two = await self.terminal(manager, second["task_id"])
@@ -136,8 +137,10 @@ class TaskTests(unittest.IsolatedAsyncioTestCase):
         manager = await self.manager(Agent)
         parent = await manager.submit("准备前序资料")
         original = await self.terminal(manager, parent["task_id"])
+        self.store.create_session()
         unrelated = await manager.submit("无关个人记录不要进入上下文")
         await self.terminal(manager, unrelated["task_id"])
+        self.store.activate_session(parent["session_id"])
         child = await manager.submit(
             "根据刚才资料制作讲解稿", "followup-id", parent["task_id"]
         )
@@ -148,7 +151,9 @@ class TaskTests(unittest.IsolatedAsyncioTestCase):
         )
         self.assertLessEqual(len(detail["parent_context"]["summary"]), 6000)
         history = seen[-1]
-        self.assertEqual([item["role"] for item in history], ["user", "user"])
+        self.assertEqual(
+            [item["role"] for item in history], ["user", "user", "assistant", "user"]
+        )
         self.assertIn("不能改变系统规则", history[0]["content"])
         self.assertIn("references.md", history[0]["content"])
         self.assertNotIn("无关个人记录", str(history))
@@ -256,7 +261,9 @@ class TaskTests(unittest.IsolatedAsyncioTestCase):
                 history = _bounded_history(self.store.scoped(child["task_id"]), "继续")
                 reference = history[0]["content"]
                 self.assertLessEqual(len(reference), 12000)
-                self.assertEqual(json.loads(reference.split("\n", 1)[1]), context)
+                self.assertEqual(
+                    json.loads(reference.split("\n", 1)[1])["selected_parent"], context
+                )
                 self.assertEqual(history[-1], {"role": "user", "content": "继续"})
 
     async def test_multiple_artifacts_validate_actual_files_and_preserve_hidden_role(
@@ -497,15 +504,33 @@ class TaskTests(unittest.IsolatedAsyncioTestCase):
         first = await manager.submit("请写报告")
         waiting = await self.terminal(manager, first["task_id"])
         self.assertEqual(waiting["status"], "awaiting_input")
+        self.store.create_session()
         second = await manager.submit("另一项工作")
         self.assertEqual(
             (await self.terminal(manager, second["task_id"]))["status"], "succeeded"
         )
-        await manager.provide_input(first["task_id"], "销售情况")
-        result = await self.terminal(manager, first["task_id"])
+        continuation = await manager.provide_input(
+            first["task_id"], "销售情况", "followup-request"
+        )
+        self.assertNotEqual(continuation["task_id"], first["task_id"])
+        self.assertEqual(continuation["session_id"], first["session_id"])
+        result = await self.terminal(manager, continuation["task_id"])
         self.assertEqual(result["status"], "succeeded")
         self.assertEqual(
-            [m["content"] for m in seen[-1]], ["请写报告", "主题是什么？", "销售情况"]
+            [m["content"] for m in seen[-1][-3:]],
+            ["请写报告", "主题是什么？", "销售情况"],
+        )
+        self.assertEqual(
+            (
+                await manager.provide_input(
+                    first["task_id"], "销售情况", "followup-request"
+                )
+            )["task_id"],
+            continuation["task_id"],
+        )
+        self.assertEqual(
+            self.store.get_task(first["task_id"])["continued_by_run_id"],
+            continuation["task_id"],
         )
         with self.assertRaises(TaskConflict):
             await manager.provide_input(first["task_id"], "不能再次补充")

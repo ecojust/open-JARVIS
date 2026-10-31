@@ -33,6 +33,16 @@ class ChatRequest(BaseModel):
 class TaskRequest(ChatRequest):
     client_request_id: str | None = Field(default=None, min_length=1, max_length=128)
     parent_task_id: str | None = Field(default=None, min_length=1, max_length=128)
+    session_id: str | None = Field(default=None, min_length=1, max_length=128)
+
+
+class InputRequest(ChatRequest):
+    client_request_id: str | None = Field(default=None, min_length=1, max_length=128)
+    session_id: str | None = Field(default=None, min_length=1, max_length=128)
+
+
+class SessionRequest(BaseModel):
+    title: str = Field(default="新对话", min_length=1, max_length=120)
 
 
 def create_app(settings: Settings | None = None, *, agent_factory=Agent) -> FastAPI:
@@ -145,6 +155,7 @@ def create_app(settings: Settings | None = None, *, agent_factory=Agent) -> Fast
             "last_event_id": app.state.store.last_event_id(),
             "active_task_id": app.state.tasks.active_id,
             "pending_tasks": len(app.state.tasks.pending),
+            "active_session_id": app.state.store.current_session()["session_id"],
             "tools": [
                 {
                     "name": item["function"]["name"],
@@ -154,21 +165,68 @@ def create_app(settings: Settings | None = None, *, agent_factory=Agent) -> Fast
             ],
         }
 
+    def require_session(session_id):
+        session = app.state.store.get_session(session_id)
+        if session is None:
+            raise HTTPException(404, "找不到该对话。")
+        return session
+
+    @app.get("/api/sessions")
+    async def list_sessions(limit: int = Query(100, ge=1, le=200)):
+        return {
+            "sessions": app.state.store.list_sessions(limit),
+            "active_session_id": app.state.store.current_session()["session_id"],
+        }
+
+    @app.post("/api/sessions", status_code=201)
+    async def new_session(payload: SessionRequest):
+        return app.state.store.create_session(payload.title)
+
+    @app.get("/api/sessions/current")
+    async def current_session():
+        return app.state.store.current_session()
+
+    @app.post("/api/sessions/{session_id}/activate")
+    async def activate_session(session_id: str):
+        require_session(session_id)
+        return app.state.store.activate_session(session_id)
+
+    @app.get("/api/sessions/{session_id}/runs")
+    async def session_runs(session_id: str, limit: int = Query(100, ge=1, le=200)):
+        require_session(session_id)
+        return {
+            "session_id": session_id,
+            "runs": app.state.store.list_tasks(limit, session_id=session_id),
+        }
+
+    @app.get("/api/tools")
+    async def tool_catalog():
+        return {"tools": app.state.registry.catalog(orchestrator=settings.orchestrator)}
+
     @app.post("/api/tasks", status_code=202)
     async def submit_task(payload: TaskRequest):
         task = await app.state.tasks.submit(
-            text_message(payload), payload.client_request_id, payload.parent_task_id
+            text_message(payload),
+            payload.client_request_id,
+            payload.parent_task_id,
+            payload.session_id,
         )
         return {
             "task_id": task["task_id"],
+            "run_id": task["run_id"],
+            "session_id": task["session_id"],
             "status": task["status"],
             "held": task["held"],
             "parent_task_id": task["parent_task_id"],
         }
 
     @app.get("/api/tasks")
-    async def list_tasks(limit: int = Query(100, ge=1, le=200)):
-        return {"tasks": app.state.store.list_tasks(limit)}
+    async def list_tasks(
+        limit: int = Query(100, ge=1, le=200), session_id: str | None = None
+    ):
+        if session_id:
+            require_session(session_id)
+        return {"tasks": app.state.store.list_tasks(limit, session_id=session_id)}
 
     @app.get("/api/tasks/{task_id}")
     async def get_task(task_id: str):
@@ -176,9 +234,14 @@ def create_app(settings: Settings | None = None, *, agent_factory=Agent) -> Fast
         return app.state.tasks.details(task_id)
 
     @app.post("/api/tasks/{task_id}/input", status_code=202)
-    async def provide_input(task_id: str, payload: ChatRequest):
+    async def provide_input(task_id: str, payload: InputRequest):
         require_task(task_id)
-        return await app.state.tasks.provide_input(task_id, text_message(payload))
+        return await app.state.tasks.provide_input(
+            task_id,
+            text_message(payload),
+            payload.client_request_id,
+            payload.session_id,
+        )
 
     @app.post("/api/tasks/{task_id}/cancel")
     async def cancel_task(task_id: str):

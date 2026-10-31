@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "scope": "real Qt desktop, owned backend, HTTP/SSE and SQLite; replayed recorded STT IPC events; demo tools, no production model or physical audio devices",
+  "checks": {
+    "persisted_initial_session": true,
+    "real_file_write": true,
+    "two_runs_one_session": true,
+    "recorded_partials_visible_not_sent": true,
+    "final_auto_sent_once_same_session": true,
+    "recorded_final_text_matches_run": true,
+    "real_catalog_loaded_by_toolbar_icon": true,
+    "spoken_new_session_only_explicitly": true,
+    "server_three_distinct_runs": true,
+    "real_sse_completed": true,
+    "restored_conversation": true
+  },
+  "screenshots": [
+    "voice-partial.png",
+    "agent-tools.png",
+    "new-session.png",
+    "conversation-runs.png"
+  ],
+  "voice_run_status": "awaiting_input (demo asks to configure task model)",
+  "elapsed_seconds": 1.223
+}

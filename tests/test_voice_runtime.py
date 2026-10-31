@@ -13,8 +13,7 @@ from jarvis.audio_meter import SpeechMeter
 
 class WakeWordGateTests(unittest.TestCase):
     def setUp(self):
-        self.now = 100.0
-        self.gate = WakeWordGate(clock=lambda: self.now)
+        self.gate = WakeWordGate()
 
     def test_command_requires_wake_prefix_and_strips_greeting_punctuation(self):
         self.assertEqual(self.gate.accept("帮我写报告"), (None, False))
@@ -24,14 +23,12 @@ class WakeWordGateTests(unittest.TestCase):
         )
         self.assertEqual(self.gate.accept("  贾维斯，分析数据  "), ("分析数据", False))
 
-    def test_standalone_wake_arms_exactly_one_command_for_eight_seconds(self):
+    def test_standalone_wake_starts_continuous_conversation_until_reset(self):
         self.assertEqual(self.gate.accept("贾维斯！"), (None, True))
-        self.now += 7.9
         self.assertEqual(self.gate.accept("生成报告"), ("生成报告", False))
-        self.assertEqual(self.gate.accept("再生成一份"), (None, False))
-        self.assertEqual(self.gate.accept("贾维斯"), (None, True))
-        self.now += 8
-        self.assertEqual(self.gate.accept("超时的指令"), (None, False))
+        self.assertEqual(self.gate.accept("再生成一份"), ("再生成一份", False))
+        self.gate.reset()
+        self.assertEqual(self.gate.accept("暂停后需要重新唤醒"), (None, False))
 
     def test_common_transcription_aliases_are_accepted(self):
         for word in ("贾维斯", "加维斯", "贾维思", "佳维斯", "JARVIS", "Jarvis"):
@@ -56,6 +53,18 @@ class WakeWordGateTests(unittest.TestCase):
         self.gate.reset()
         self.assertEqual(self.gate.accept("任务"), (None, False))
 
+    def test_previews_neither_start_nor_end_a_conversation(self):
+        self.assertEqual(self.gate.preview("贾维斯"), (None, True))
+        self.assertEqual(self.gate.accept("没有真正唤醒"), (None, False))
+        self.assertEqual(self.gate.preview("贾维斯，写报告"), ("写报告", False))
+        self.assertFalse(self.gate.engaged)
+        self.gate.accept("贾维斯")
+        for text in ("写", "写报告", "贾维斯，写报告"):
+            self.assertIsNotNone(self.gate.preview(text)[0])
+            self.assertTrue(self.gate.engaged)
+        self.assertEqual(self.gate.accept("写报告"), ("写报告", False))
+        self.assertEqual(self.gate.accept("第二句"), ("第二句", False))
+
 
 class _FakeSamples:
     def astype(self, dtype):
@@ -66,6 +75,279 @@ class _FakeSamples:
 
 
 class VoiceServiceTests(unittest.TestCase):
+    def test_decoder_keeps_wake_across_echo_and_session_reset_until_manual_pause(self):
+        events = []
+        changed = threading.Condition()
+        replies = iter(
+            (
+                "贾维斯，第一句",
+                "播报后的第二句",
+                "新会话第三句",
+                "暂停后不接受",
+                "贾维斯，重新唤醒",
+            )
+        )
+
+        def emit(name, data):
+            with changed:
+                events.append((name, data))
+                changed.notify_all()
+
+        class Recognizer:
+            def create_stream(self):
+                return SimpleNamespace(
+                    accept_waveform=lambda *args: None, result=SimpleNamespace(text="")
+                )
+
+            def decode_stream(self, stream):
+                stream.result.text = next(replies)
+
+        service = VoiceService(emit)
+        worker = threading.Thread(
+            target=service._decode, args=(Recognizer(),), daemon=True
+        )
+        service._decoder = worker
+
+        def submit(identifier):
+            service._queue_final(service.capture_generation, identifier, b"\0" * 960)
+            with changed:
+                self.assertTrue(
+                    changed.wait_for(
+                        lambda: any(
+                            n in {"transcript", "cancelled"}
+                            and d.get("utterance_id") == identifier
+                            for n, d in events
+                        ),
+                        timeout=2,
+                    )
+                )
+
+        with patch.dict("os.environ", {"JARVIS_WAKE_WORD": "贾维斯"}):
+            worker.start()
+            try:
+                submit("first")
+                service.set_paused(True)
+                service.set_paused(False)
+                submit("echo-resumed")
+                service.discard_input()
+                submit("new-session")
+                service.reset_wake()
+                service.set_paused(True)
+                service.set_paused(False)
+                submit("manual-resumed")
+                submit("wake-again")
+            finally:
+                service.stop()
+        self.assertEqual(
+            [d["text"] for n, d in events if n == "transcript"],
+            ["第一句", "播报后的第二句", "新会话第三句", "重新唤醒"],
+        )
+        self.assertEqual(
+            [d["utterance_id"] for n, d in events if n == "cancelled"],
+            ["manual-resumed"],
+        )
+        self.assertFalse(worker.is_alive())
+
+    def test_capture_previews_once_then_finalizes_same_real_pcm_sentence(self):
+        """Native device/model boundaries are simulated; segmentation is real."""
+        now = [0.0]
+        partial_received = threading.Event()
+        final_received = threading.Event()
+        producer_finished = threading.Event()
+        events, decoded_samples = [], []
+        voiced = struct.pack("<480h", *([3000, -3000] * 240))
+        silence = b"\0" * 960
+
+        def emit(name, data):
+            events.append((name, data))
+            if name == "transcript":
+                if data["final"]:
+                    final_received.set()
+                    service._stop.set()
+                else:
+                    partial_received.set()
+
+        class Recognizer:
+            def create_stream(self):
+                stream = SimpleNamespace(result=SimpleNamespace(text=""))
+                stream.accept_waveform = lambda rate, samples: setattr(
+                    stream, "samples", len(samples)
+                )
+                return stream
+
+            def decode_stream(self, stream):
+                decoded_samples.append(stream.samples)
+                stream.result.text = (
+                    "贾维斯，帮我写报告"
+                    if stream.samples == 90 * 480
+                    else "贾维斯，帮我"
+                )
+
+        class InputStream:
+            def __init__(self, **kwargs):
+                self.callback = kwargs["callback"]
+
+            def __enter__(self):
+                def produce():
+                    for _ in range(60):
+                        self.callback(voiced, 480, None, False)
+                    if partial_received.wait(3):
+                        for _ in range(30):
+                            self.callback(silence, 480, None, False)
+                        final_received.wait(3)
+                    service._stop.set()
+                    producer_finished.set()
+
+                self.producer = threading.Thread(target=produce, daemon=True)
+                self.producer.start()
+                return self
+
+            def __exit__(self, *args):
+                self.producer.join(timeout=1)
+
+        class Vad:
+            def __init__(self, mode):
+                pass
+
+            def is_speech(self, frame, rate):
+                now[0] += 0.03
+                return frame != silence
+
+        service = VoiceService(emit)
+        __import__("numpy")
+        with (
+            patch.dict("os.environ", {"JARVIS_WAKE_WORD": "贾维斯"}),
+            patch(
+                "jarvis.voice_runtime.time", SimpleNamespace(monotonic=lambda: now[0])
+            ),
+            patch("jarvis.paths.model_dir", return_value=Path("unused-test-model")),
+            patch.dict(
+                "sys.modules",
+                {
+                    "sounddevice": SimpleNamespace(RawInputStream=InputStream),
+                    "sherpa_onnx": SimpleNamespace(
+                        OfflineRecognizer=SimpleNamespace(
+                            from_sense_voice=lambda **kwargs: Recognizer()
+                        )
+                    ),
+                    "webrtcvad": SimpleNamespace(Vad=Vad),
+                    "jarvis.model_catalog": SimpleNamespace(
+                        inspect_directory=lambda *args: {"state": "ready"}
+                    ),
+                },
+            ),
+        ):
+            service._run()
+            service.stop()
+        self.assertTrue(producer_finished.is_set())
+        self.assertFalse([d for name, d in events if name == "error"])
+        started = [d for name, d in events if name == "started"]
+        transcripts = [d for name, d in events if name == "transcript"]
+        self.assertEqual(len(started), 1)
+        self.assertEqual([d["final"] for d in transcripts], [False, True])
+        self.assertEqual([d["text"] for d in transcripts], ["帮我", "帮我写报告"])
+        self.assertTrue(
+            all(d["utterance_id"] == started[0]["utterance_id"] for d in transcripts)
+        )
+        self.assertEqual(len(decoded_samples), 2)
+        self.assertGreaterEqual(decoded_samples[0], 50 * 480)
+        self.assertEqual(decoded_samples[-1], 90 * 480)
+
+    def test_preview_does_not_consume_followup_and_discard_input_preserves_pause(self):
+        service = VoiceService(lambda *args: None)
+        gate = WakeWordGate()
+        service.arm_followup()
+        self.assertEqual(service._preview_transcript(gate, "明"), "明")
+        self.assertEqual(service._preview_transcript(gate, "明天"), "明天")
+        self.assertEqual(service._accept_transcript(gate, "明天"), ("明天", False))
+        self.assertIsNone(service._preview_transcript(gate, "后天"))
+        service.arm_followup()
+        service._queue_partial(0, "old", b"\0" * 960)
+        service._queue_final(0, "final", b"\0" * 960)
+        service.discard_input()
+        self.assertEqual(service._snapshot(), (1, False))
+        self.assertIsNone(service._decode_job())
+        self.assertIsNone(service._preview_transcript(gate, "旧回答"))
+        service.set_paused(True)
+        generation = service.capture_generation
+        service.discard_input()
+        self.assertEqual(service._snapshot(), (generation + 1, True))
+
+    def test_preview_queue_is_latest_only_and_finals_have_priority(self):
+        service = VoiceService(lambda *args: None)
+        for index in range(100):
+            service._queue_partial(0, "sentence", bytes([index]) * 960)
+        self.assertEqual(
+            service._decode_job(), (0, bytes([99]) * 960, "sentence", False)
+        )
+        service._queue_partial(0, "sentence", b"p" * 960)
+        service._queue_final(0, "sentence", b"f" * 960)
+        service._queue_final(0, "sentence", b"duplicate" * 960)
+        service._queue_partial(0, "sentence", b"late" * 960)
+        self.assertEqual(service._decode_job(), (0, b"f" * 960, "sentence", True))
+        self.assertIsNone(service._decode_job())
+
+    def test_inflight_preview_yields_to_final_and_only_final_can_submit(self):
+        partial_started = threading.Event()
+        release_partial = threading.Event()
+        final_received = threading.Event()
+        events = []
+
+        def emit(name, data):
+            events.append((name, data))
+            if name == "transcript" and data.get("final"):
+                final_received.set()
+
+        class Recognizer:
+            calls = 0
+
+            def create_stream(self):
+                return SimpleNamespace(
+                    accept_waveform=lambda *args: None, result=SimpleNamespace(text="")
+                )
+
+            def decode_stream(self, stream):
+                self.calls += 1
+                if self.calls == 1:
+                    partial_started.set()
+                    release_partial.wait(2)
+                    stream.result.text = "贾维斯，过时的前缀"
+                else:
+                    stream.result.text = "贾维斯，完整的最终任务"
+
+        service = VoiceService(emit)
+        recognizer = Recognizer()
+        worker = threading.Thread(
+            target=service._decode, args=(recognizer,), daemon=True
+        )
+        service._decoder = worker
+        with patch.dict("os.environ", {"JARVIS_WAKE_WORD": "贾维斯"}):
+            worker.start()
+            try:
+                service._queue_partial(0, "utterance", b"\0" * 960)
+                self.assertTrue(partial_started.wait(2))
+                service._queue_final(0, "utterance", b"\0" * 1920)
+                release_partial.set()
+                self.assertTrue(final_received.wait(2))
+                service._queue_final(0, "utterance", b"\0" * 1920)
+            finally:
+                release_partial.set()
+                service.stop()
+        transcripts = [data for name, data in events if name == "transcript"]
+        self.assertEqual(
+            transcripts,
+            [
+                {
+                    "text": "完整的最终任务",
+                    "final": True,
+                    "utterance_id": "utterance",
+                    "generation": 0,
+                }
+            ],
+        )
+        self.assertEqual(recognizer.calls, 2)
+        self.assertFalse(worker.is_alive())
+
     def test_capture_callback_only_queues_pcm_and_consumer_reuses_one_vad_decision(
         self,
     ):

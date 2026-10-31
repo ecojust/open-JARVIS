@@ -1,0 +1,93 @@
+{
+  "scope": "Real local Kokoro synthesized recording replayed through actual VAD/SenseVoice VoiceService; only sounddevice RawInputStream replaced. No microphone/speaker, external API or model download.",
+  "recorded_at": "2026-10-31T16:04:43.060106+00:00",
+  "source_sentence": "贾维斯，帮我写一份本周工作总结，说明已经完成的任务和下一步计划。",
+  "tts_model": "kokoro bilingual v1.1, local models/kokoro/model.onnx",
+  "stt_model": "SenseVoice int8, local models/sensevoice/model.int8.onnx",
+  "sample_rate": 16000,
+  "channels": 1,
+  "sample_format": "int16 little endian",
+  "audio_seconds_with_padding": 8.52,
+  "audio_sha256": "7f82cce87e0738a9b6a14b5cc3e6fa63a233b762fb87958eae54abe641e367f1",
+  "tts_load_and_synthesis_seconds": 5.452,
+  "replay_seconds": 8.52,
+  "partial_count": 4,
+  "final_count": 1,
+  "same_utterance_id": true,
+  "final_text": "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。",
+  "events": [
+    {
+      "event": "started",
+      "data": {
+        "utterance_id": "8eb7e43a3f7443fc9a61beec990c200f",
+        "generation": 0
+      },
+      "seconds_from_replay": 0.421
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "帮我写一。",
+        "final": false,
+        "utterance_id": "8eb7e43a3f7443fc9a61beec990c200f",
+        "generation": 0
+      },
+      "seconds_from_replay": 2.097
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "帮我写一份本周工作总。",
+        "final": false,
+        "utterance_id": "8eb7e43a3f7443fc9a61beec990c200f",
+        "generation": 0
+      },
+      "seconds_from_replay": 3.679
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "帮我写一份本周工作总结，说明已经完。",
+        "final": false,
+        "utterance_id": "8eb7e43a3f7443fc9a61beec990c200f",
+        "generation": 0
+      },
+      "seconds_from_replay": 5.797
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "帮我写一份本周工作总结，说明已经完成的任务和下一。",
+        "final": false,
+        "utterance_id": "8eb7e43a3f7443fc9a61beec990c200f",
+        "generation": 0
+      },
+      "seconds_from_replay": 7.397
+    },
+    {
+      "event": "transcript",
+      "data": {
+        "text": "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。",
+        "final": true,
+        "utterance_id": "8eb7e43a3f7443fc9a61beec990c200f",
+        "generation": 0
+      },
+      "seconds_from_replay": 8.512
+    }
+  ],
+  "hardware_tested": false,
+  "production_model_api_used": false,
+  "passed": true,
+  "source_sha256": {
+    "jarvis/voice.py": "dbcc87fde61f8a30d789d0a4949a97d2768bab3fb9ef1b03d47ca25c495dcaf8",
+    "jarvis/voice_runtime.py": "095ae651249cbd2de3d292577f1c04d8e0a095f7036a9efa152e2f7e8992cd55",
+    "jarvis/audio_process.py": "a4d0e4f76bd220acd3ca243b956b989a0b05664f953d638c15ee35c029a68ac1"
+  },
+  "preview_policy": {
+    "minimum_interval_seconds": 1.5,
+    "adaptive_interval": "max(1.5 seconds, twice previous prefix inference duration)",
+    "pending_partial_slots": 1,
+    "maximum_queued_finals": 3,
+    "finals_bypass_partial_cooldown": true
+  }
+}

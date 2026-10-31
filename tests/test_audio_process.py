@@ -47,6 +47,14 @@ class FakeVoice:
     def disarm_followup(self):
         self.followup = False
 
+    def discard_input(self):
+        self.followup = False
+        self.capture_generation = getattr(self, "capture_generation", 0) + 1
+
+    def reset_wake(self):
+        self.wake_resets = getattr(self, "wake_resets", 0) + 1
+        self.followup = False
+
 
 class FakeTTS:
     def __init__(self, event, **kwargs):
@@ -66,6 +74,76 @@ class FakeTTS:
 
 
 class AudioControllerTests(unittest.TestCase):
+    def test_manual_pause_cannot_be_rearmed_by_an_older_question_playback(self):
+        controller, events, resumed = self.make()
+        controller.start()
+        controller.handle(
+            {
+                "command": "speak",
+                "text": "哪一天？",
+                "playback_id": "question",
+                "awaiting_input": True,
+            }
+        )
+        self.assertFalse(getattr(controller.voice, "wake_resets", 0))
+        controller.handle({"command": "pause"})
+        controller.handle({"command": "resume"})
+        resumed.clear()
+        controller.tts.event("finished", {"playback_id": "question"})
+        self.assertTrue(resumed.wait(1))
+        self.assertEqual(controller.voice.wake_resets, 1)
+        self.assertFalse(controller.voice.followup)
+
+    def test_partial_final_identity_deduplication_and_session_discard_protocol(self):
+        controller, events, _ = self.make()
+        controller.voice.capture_generation = 0
+        controller.start()
+        identity = {"utterance_id": "one-sentence", "generation": 0}
+        controller.voice.event("started", identity)
+        controller.voice.event("transcript", {**identity, "text": "写", "final": False})
+        controller.voice.event(
+            "transcript", {**identity, "text": "写报告", "final": False}
+        )
+        controller.voice.event(
+            "transcript", {**identity, "text": "写报告", "final": True}
+        )
+        controller.voice.event(
+            "transcript", {**identity, "text": "写报告", "final": True}
+        )
+        controller.voice.event(
+            "transcript", {**identity, "text": "晚到预览", "final": False}
+        )
+        self.assertEqual(
+            [n for n, _ in events if n.startswith("stt.")],
+            ["stt.started", "stt.partial", "stt.partial", "stt.final"],
+        )
+        self.assertTrue(
+            all(
+                d["utterance_id"] == "one-sentence"
+                for n, d in events
+                if n.startswith("stt.")
+            )
+        )
+        controller.handle({"command": "discard_input", "id": "session-switch"})
+        self.assertFalse(controller.voice.paused)
+        self.assertEqual(
+            [data for name, data in events if name == "stt.discarded"][-1],
+            {"id": "session-switch", "generation": 1},
+        )
+        self.assertFalse(getattr(controller.voice, "wake_resets", 0))
+        before = len([n for n, _ in events if n.startswith("stt.")])
+        controller.voice.event("started", {"utterance_id": "old", "generation": 0})
+        controller.voice.event("transcript", {"text": "旧会话", "generation": 0})
+        self.assertEqual(len([n for n, _ in events if n.startswith("stt.")]), before)
+        controller.voice.event(
+            "transcript", {"text": "新会话", "generation": 1, "final": True}
+        )
+        self.assertEqual(events[-1][0], "stt.final")
+        controller.handle({"command": "pause"})
+        self.assertEqual(controller.voice.wake_resets, 1)
+        controller.handle({"command": "discard_input"})
+        self.assertTrue(controller.voice.paused)
+
     def make(self):
         events = EventLog()
         changed = threading.Event()

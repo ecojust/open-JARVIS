@@ -499,6 +499,124 @@ class MessageInput(QPlainTextEdit):
         super().keyPressEvent(event)
 
 
+def _tools_icon():
+    """Small native vector wrench; no font glyph or extra asset dependency."""
+    pixmap = QPixmap(22, 22)
+    pixmap.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setPen(
+        QPen(
+            QColor("#59616d"),
+            1.8,
+            Qt.PenStyle.SolidLine,
+            Qt.PenCapStyle.RoundCap,
+            Qt.PenJoinStyle.RoundJoin,
+        )
+    )
+    painter.drawLine(5, 17, 13, 9)
+    painter.drawLine(7, 19, 15, 11)
+    painter.drawArc(11, 2, 9, 10, 35 * 16, 250 * 16)
+    painter.drawLine(18, 3, 15, 6)
+    painter.drawLine(15, 6, 17, 8)
+    painter.drawLine(17, 8, 20, 5)
+    painter.drawLine(5, 17, 5, 19)
+    painter.drawLine(5, 19, 7, 19)
+    painter.end()
+    return QIcon(pixmap)
+
+
+class ToolsDialog(QDialog):
+    """Read-only, bounded catalog fetched only when explicitly opened."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("JARVIS · 工具")
+        self.setStyleSheet(LIGHT_STYLE)
+        self.resize(760, 570)
+        self.tools = []
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(22, 22, 22, 18)
+        heading = QLabel("JARVIS 可以使用的工具")
+        heading.setObjectName("heading")
+        layout.addWidget(heading)
+        self.notice = QLabel("正在读取工具目录…")
+        self.notice.setObjectName("muted")
+        self.notice.setWordWrap(True)
+        layout.addWidget(self.notice)
+        self.search = QLineEdit()
+        self.search.setPlaceholderText("搜索工具、能力或角色")
+        self.search.setAccessibleName("搜索 Agent 工具")
+        self.search.textChanged.connect(self._filter)
+        layout.addWidget(self.search)
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.list = QListWidget()
+        self.list.setAccessibleName("Agent 工具列表")
+        self.list.currentItemChanged.connect(self._selected)
+        splitter.addWidget(self.list)
+        self.details = QPlainTextEdit()
+        self.details.setReadOnly(True)
+        self.details.setAccessibleName("工具能力和参数说明")
+        splitter.addWidget(self.details)
+        splitter.setSizes([285, 425])
+        layout.addWidget(splitter, 1)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.button(QDialogButtonBox.StandardButton.Close).setText("关闭")
+        buttons.rejected.connect(self.close)
+        layout.addWidget(buttons)
+
+    def set_tools(self, tools):
+        self.tools = [item for item in tools[:120] if isinstance(item, dict)]
+        self.notice.setText(f"共 {len(self.tools)} 项能力 · 点击查看用途与输入参数。")
+        self._filter()
+
+    def _filter(self, *_):
+        query = self.search.text().strip().casefold()
+        self.list.clear()
+        self.details.clear()
+        for index, tool in enumerate(self.tools):
+            searchable = " ".join(
+                str(tool.get(key, ""))
+                for key in ("name", "title", "description", "category", "agents")
+            )
+            if query and query not in searchable.casefold():
+                continue
+            item = QListWidgetItem(
+                str(tool.get("title") or tool.get("name"))
+                + "\n"
+                + str(tool.get("category") or "工具")
+            )
+            item.setData(Qt.ItemDataRole.UserRole, index)
+            self.list.addItem(item)
+        if self.list.count():
+            self.list.setCurrentRow(0)
+
+    def _selected(self, current, previous):
+        if current is None:
+            return
+        tool = self.tools[current.data(Qt.ItemDataRole.UserRole)]
+        lines = [
+            str(tool.get("title") or tool.get("name")),
+            str(tool.get("name", "")),
+            "",
+            str(tool.get("description", "")),
+            "",
+            "使用角色：" + "、".join(str(name) for name in tool.get("agents", [])),
+            "操作范围：" + str(tool.get("effect", "")),
+        ]
+        schema = tool.get("parameters") or {}
+        required = set(schema.get("required", []))
+        lines.extend(["", "输入参数"])
+        for name, value in list(schema.get("properties", {}).items())[:40]:
+            label = str(name) + ("（必填）" if name in required else "（可选）")
+            lines.append(
+                label + "：" + str(value.get("description") or value.get("type", ""))
+            )
+        if not schema.get("properties"):
+            lines.append("无需参数")
+        self.details.setPlainText("\n".join(lines)[:30000])
+
+
 class ResultsWindow(QMainWindow):
     def __init__(self, controller):
         super().__init__()
@@ -528,6 +646,15 @@ class ResultsWindow(QMainWindow):
         subtitle.setObjectName("muted")
         top.addWidget(subtitle)
         top.addStretch(1)
+        self.tools_button = QPushButton()
+        self.tools_button.setIcon(_tools_icon())
+        self.tools_button.setIconSize(QSize(22, 22))
+        self.tools_button.setFixedSize(38, 36)
+        self.tools_button.setObjectName("quiet")
+        self.tools_button.setToolTip("查看 JARVIS 的工具")
+        self.tools_button.setAccessibleName("查看 Agent 工具")
+        self.tools_button.clicked.connect(controller.show_tools)
+        top.addWidget(self.tools_button)
         for label, callback in [
             ("设置", controller.show_settings),
             ("收起", self.hide),
@@ -544,22 +671,36 @@ class ResultsWindow(QMainWindow):
         side_layout.setContentsMargins(12, 18, 12, 12)
         side_layout.setSpacing(10)
         side_heading = QHBoxLayout()
-        label = QLabel("最近任务")
+        label = QLabel("对话")
         label.setObjectName("eyebrow")
         side_heading.addWidget(label, 1)
         refresh = QPushButton("刷新")
         refresh.setObjectName("quiet")
-        refresh.setAccessibleName("刷新任务")
-        refresh.clicked.connect(controller.refresh_tasks)
+        refresh.setAccessibleName("刷新对话和运行记录")
+        refresh.clicked.connect(controller.refresh_sessions)
         side_heading.addWidget(refresh)
         side_layout.addLayout(side_heading)
+        self.new_session_button = QPushButton("＋ 新建对话")
+        self.new_session_button.setAccessibleName("新建对话")
+        self.new_session_button.clicked.connect(controller.new_session)
+        side_layout.addWidget(self.new_session_button)
+        self.sessions = QListWidget()
+        self.sessions.setAccessibleName("对话列表")
+        self.sessions.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.sessions.currentItemChanged.connect(self._selected_session)
+        side_layout.addWidget(self.sessions, 1)
+        self.runs_label = QLabel("本次对话 · 问答记录")
+        self.runs_label.setObjectName("eyebrow")
+        side_layout.addWidget(self.runs_label)
         self.tasks = QListWidget()
-        self.tasks.setAccessibleName("最近任务列表")
+        self.tasks.setAccessibleName("当前对话的问答运行记录")
         self.tasks.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.tasks.setTextElideMode(Qt.TextElideMode.ElideRight)
         self.tasks.setWordWrap(False)
         self.tasks.currentItemChanged.connect(self._selected_task)
-        side_layout.addWidget(self.tasks, 1)
+        side_layout.addWidget(self.tasks, 2)
         sidebar.setMinimumWidth(176)
         sidebar.setMaximumWidth(280)
         side_note = QLabel("收起窗口，任务也会继续。")
@@ -675,7 +816,7 @@ class ResultsWindow(QMainWindow):
         composer_layout.setSpacing(4)
         self.input = MessageInput()
         self.input.setObjectName("taskInput")
-        self.input.setPlaceholderText("想完成什么？告诉 JARVIS。")
+        self.input.setPlaceholderText("输入或说出你的想法，说完后会自动发送。")
         self.input.setAccessibleName("任务或补充说明")
         self.input.setMaximumHeight(74)
         self.input.setMinimumHeight(52)
@@ -690,9 +831,9 @@ class ResultsWindow(QMainWindow):
         self.attach_button.setAccessibleName("添加任务资料文件")
         self.attach_button.clicked.connect(controller.upload_file)
         composer_actions.addWidget(self.attach_button)
-        hint = QLabel("Enter 发送 · Shift + Enter 换行")
-        hint.setObjectName("muted")
-        composer_actions.addWidget(hint, 1)
+        self.input_hint = QLabel("Enter 发送 · Shift + Enter 换行 · 语音自动发送")
+        self.input_hint.setObjectName("muted")
+        composer_actions.addWidget(self.input_hint, 1)
         self.send_button = QPushButton("发送任务")
         self.send_button.setObjectName("primary")
         self.send_button.clicked.connect(self._submit)
@@ -710,8 +851,47 @@ class ResultsWindow(QMainWindow):
         if len(text) > 12000:
             self.set_status("任务文字不能超过 12,000 个字符，请缩短后再发送。")
             return
-        if self.controller.submit(text) is not False:
-            self.input.clear()
+        self.controller.submit(text)
+
+    def _selected_session(self, current, previous):
+        if current:
+            self.controller.select_session(current.data(Qt.ItemDataRole.UserRole))
+
+    def render_sessions(self, sessions, active_id):
+        self.sessions.blockSignals(True)
+        self.sessions.clear()
+        for session in sessions[:100]:
+            item = QListWidgetItem(
+                str(session.get("title") or "新对话")[:55]
+                + "\n"
+                + f"{session.get('run_count', 0)} 轮问答"
+            )
+            item.setData(Qt.ItemDataRole.UserRole, session.get("session_id"))
+            self.sessions.addItem(item)
+            if session.get("session_id") == active_id:
+                self.sessions.setCurrentItem(item)
+        self.sessions.blockSignals(False)
+
+    def reset_conversation(self):
+        self.task_id = None
+        self.tasks.clear()
+        self.title.setText("把下一件事交给 JARVIS")
+        self.task_state.setText("新对话 · 等待你的第一句话")
+        self.show_files()
+        self.body.clear()
+        self._body_signature = None
+        self._reply_content = ""
+        self.reply_button.setEnabled(False)
+        self._set_artifacts([])
+        self.preview.loading(None, "文件预览")
+        self.preview.notice.setText("新对话的文件会显示在这里。")
+        self.preview.placeholder.setText("说出你的想法，JARVIS 会在这里展示结果。")
+        self.events.clear()
+        self.events.hide()
+        self.events_toggle.hide()
+        self.cancel_button.hide()
+        self.resume_button.hide()
+        self.send_button.setText("发送任务")
 
     def _selected_task(self, current, previous):
         if current:
@@ -754,7 +934,11 @@ class ResultsWindow(QMainWindow):
             task_id = task.get("task_id", task.get("id"))
             if task_id is None:
                 continue
-            status = STATUS_NAMES.get(task.get("status"), str(task.get("status", "")))
+            status = (
+                "已补充"
+                if task.get("continued_by_run_id")
+                else STATUS_NAMES.get(task.get("status"), str(task.get("status", "")))
+            )
             title = str(
                 task.get("title")
                 or task.get("message")
@@ -777,6 +961,18 @@ class ResultsWindow(QMainWindow):
         incoming_id = task.get("task_id", task.get("id"))
         changed = incoming_id != self.task_id
         self.task_id = incoming_id
+        # Details may arrive after the session's run list. Keep its selection
+        # aligned without dispatching a second fetch through selection signals.
+        current = self.tasks.currentItem()
+        if current is None or current.data(Qt.ItemDataRole.UserRole) != incoming_id:
+            self.tasks.blockSignals(True)
+            self.tasks.setCurrentRow(-1)
+            for row in range(self.tasks.count()):
+                item = self.tasks.item(row)
+                if item.data(Qt.ItemDataRole.UserRole) == incoming_id:
+                    self.tasks.setCurrentItem(item)
+                    break
+            self.tasks.blockSignals(False)
         title = str(
             task.get("title")
             or task.get("message")
@@ -785,15 +981,22 @@ class ResultsWindow(QMainWindow):
         ).replace("\n", " ")
         self.title.setText(title[:180])
         status = str(task.get("status", ""))
-        self.task_state.setText(STATUS_NAMES.get(status, status))
+        self.task_state.setText(
+            "已补充"
+            if task.get("continued_by_run_id")
+            else STATUS_NAMES.get(status, status)
+        )
         self.cancel_button.setEnabled(
             status in {"queued", "planning", "running", "awaiting_input"}
+            and not task.get("continued_by_run_id")
         )
         self.cancel_button.setVisible(self.cancel_button.isEnabled())
         self.events_toggle.setVisible(bool(self.task_id))
         self.resume_button.setVisible(bool(task.get("held")) and status == "queued")
         self.send_button.setText(
-            "补充说明" if status == "awaiting_input" else "发送任务"
+            "补充说明"
+            if status == "awaiting_input" and not task.get("continued_by_run_id")
+            else "发送任务"
         )
         content = (
             task.get("display_text") or task.get("answer") or task.get("result") or ""
@@ -1111,7 +1314,9 @@ class SettingsDialog(QDialog):
         self.provider_info_button.setCheckable(True)
         self.provider_info_button.setAutoDefault(False)
         self.provider_info_button.setAccessibleName("查看模型服务配置帮助")
-        self.provider_info_button.setToolTip("查看不同厂商的接口地址、模型名称和 API Key 获取方式")
+        self.provider_info_button.setToolTip(
+            "查看不同厂商的接口地址、模型名称和 API Key 获取方式"
+        )
         model_heading.addWidget(self.provider_info_button)
         model_heading.addStretch(1)
         content_layout.addLayout(model_heading)
@@ -1130,7 +1335,7 @@ class SettingsDialog(QDialog):
             ("OPENAI_API_KEY", "模型 API Key", ""),
             ("JARVIS_STT_MODEL_DIR", "语音识别模型", ""),
             ("JARVIS_TTS_MODEL_DIR", "语音合成模型", ""),
-            ("JARVIS_WAKE_WORD", "指令前缀", "贾维斯"),
+            ("JARVIS_WAKE_WORD", "唤醒词（唤醒一次后连续对话）", "贾维斯"),
             ("JARVIS_MIC_DEVICE", "麦克风设备", ""),
         ]
         for key, label, default in specs:
@@ -1208,7 +1413,10 @@ class SettingsDialog(QDialog):
         self.provider_model = QLineEdit()
         self.provider_model.setPlaceholderText("填写服务实际提供的模型 ID")
         self.provider_copy_buttons = []
-        for label, field in (("模型接口", self.provider_url), ("模型名称", self.provider_model)):
+        for label, field in (
+            ("模型接口", self.provider_url),
+            ("模型名称", self.provider_model),
+        ):
             field.setReadOnly(True)
             field.setAccessibleName(label + "示例")
             field.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -1218,7 +1426,11 @@ class SettingsDialog(QDialog):
             copy.setAutoDefault(False)
             copy.setAccessibleName("复制" + label + "示例")
             copy.setToolTip("复制示例，不修改下方配置")
-            copy.clicked.connect(lambda checked=False, field=field: QApplication.clipboard().setText(field.text()))
+            copy.clicked.connect(
+                lambda checked=False, field=field: QApplication.clipboard().setText(
+                    field.text()
+                )
+            )
             self.provider_copy_buttons.append(copy)
             row.addWidget(copy)
             form.addRow(label, row)
@@ -1236,7 +1448,9 @@ class SettingsDialog(QDialog):
         self.provider_note.setObjectName("muted")
         self.provider_note.setTextFormat(Qt.TextFormat.PlainText)
         self.provider_note.setWordWrap(True)
-        self.provider_note.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.provider_note.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
         layout.addWidget(self.provider_note)
         self.provider_selector.currentIndexChanged.connect(self._update_provider_help)
         self._update_provider_help()
@@ -1248,10 +1462,14 @@ class SettingsDialog(QDialog):
         self.provider_model.setText(provider["model"])
         self.provider_copy_buttons[0].setEnabled(bool(provider["base_url"]))
         self.provider_copy_buttons[1].setEnabled(bool(provider["model"]))
-        self.provider_key_hint.setText("填写你自己的 API Key" if provider["key_url"] else "请参阅下方说明")
+        self.provider_key_hint.setText(
+            "填写你自己的 API Key" if provider["key_url"] else "请参阅下方说明"
+        )
         self.provider_key_link.setVisible(bool(provider["key_url"]))
         self.provider_key_link.setToolTip(provider["key_url"])
-        self.provider_key_link.setAccessibleName("打开" + provider["name"] + "官方 API Key 页面")
+        self.provider_key_link.setAccessibleName(
+            "打开" + provider["name"] + "官方 API Key 页面"
+        )
         self.provider_note.setText(provider["note"])
 
     def _open_provider_key_page(self):

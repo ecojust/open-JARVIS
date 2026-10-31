@@ -411,12 +411,25 @@ class DesktopController(QObject):
         self.tasks = {}
         self.task_order = []
         self.selected_task = None
+        self.sessions = []
+        self.active_session_id = None
+        self._session_revision = 0
+        self._session_switching = False
+        self._drafts = {}
+        self._voice_captures = {}
+        self._voice_finished = deque(maxlen=256)
+        self._voice_draft = None
+        self._voice_reset_id = None
+        self._voice_min_generation = None
+        self._pending_submissions = set()
+        self._submission_ids = {}
         self.notifications = deque()
         self._notified_events = deque(maxlen=256)
         self.last_status = "正在启动本地服务…"
         self.errors = {}
         self.results = None
         self.settings_dialog = None
+        self.tools_dialog = None
         self.client = None
         self.token = ""
         self.instance_id = ""
@@ -452,9 +465,7 @@ class DesktopController(QObject):
         self.audio = process_factory(self)
         self.audio.readyReadStandardOutput.connect(self._read_audio)
         self.audio.readyReadStandardError.connect(self._read_audio_log)
-        self.audio.started.connect(
-            lambda: self._send_audio("pause") if self.user_paused else None
-        )
+        self.audio.started.connect(self._audio_started)
         self.audio.errorOccurred.connect(self._audio_process_error)
         self.audio.finished.connect(self._audio_finished)
         self.tile = VoiceTile(self)
@@ -621,14 +632,16 @@ class DesktopController(QObject):
             callback=self._status_ready,
             error=lambda message: self.notify(message, "backend"),
         )
-        self.refresh_tasks()
+        self.refresh_sessions()
         self.start_audio()
         self.update_tile()
 
     def _status_ready(self, data):
         self.configured = bool(data.get("configured"))
+        if data.get("active_session_id") and self.active_session_id is None:
+            self._activate_session_local(data["active_session_id"])
         if self.configured:
-            self.last_status = "任务模型已配置。说“贾维斯”加上你的任务。"
+            self.last_status = "任务模型已配置。说“贾维斯”开始对话，之后可连续交谈。"
         else:
             self.last_status = "演示模式：请在设置中配置任务模型。也可先输入 /analyze example-sales.csv 验证流程。"
         self._render_status()
@@ -653,6 +666,14 @@ class DesktopController(QObject):
         self.last_status = "正在准备本地语音模型…"
         self._launch(self.audio, "audio")
         self.update_tile()
+
+    def _audio_started(self):
+        # Each worker has its own generation sequence. Establish its boundary
+        # before any queued transcript can become a user instruction.
+        self._voice_min_generation = None
+        self._discard_voice_capture()
+        if self.user_paused:
+            self._send_audio("pause")
 
     def _read_audio_log(self):
         self.audio_log = (
@@ -705,6 +726,8 @@ class DesktopController(QObject):
         self.speaking = False
         self._playback_id = None
         self._playback_task = None
+        self._voice_reset_id = None
+        self._voice_min_generation = None
         if self.closing or self._restarting:
             return
         self.notify(
@@ -715,6 +738,16 @@ class DesktopController(QObject):
 
     def handle_audio_event(self, event, data):
         if self.closing:
+            return
+        if event == "stt.discarded":
+            if (
+                data.get("id") == self._voice_reset_id
+                and self._voice_reset_id is not None
+            ):
+                generation = data.get("generation")
+                if type(generation) is int and generation >= 0:
+                    self._voice_min_generation = generation
+                    self._voice_reset_id = None
             return
         if event == "audio.level":
             receiving = (
@@ -742,10 +775,8 @@ class DesktopController(QObject):
                 self.listening = bool(data["listening"])
             if not self.speaking and not self._active_tasks():
                 self.last_status = str(data.get("message", "持续聆听中"))
-        elif event == "stt.final":
-            text = str(data.get("text", "")).strip()
-            if text and not self.user_paused and not self.speaking:
-                self.submit(text, voice=True)
+        elif event in {"stt.started", "stt.partial", "stt.final", "stt.cancelled"}:
+            self._handle_transcript(event, data)
         elif event == "tts.started":
             if data.get("playback_id") != self._playback_id:
                 return
@@ -786,7 +817,211 @@ class DesktopController(QObject):
             if task.get("status") in self.ACTIVE_STATUSES and not task.get("held")
         ]
 
-    def submit(self, text, *, voice=False):
+    def _same_session(self, task):
+        return (
+            self.active_session_id is None
+            or task.get("session_id") == self.active_session_id
+        )
+
+    @staticmethod
+    def _needs_input(task):
+        return task.get("status") == "awaiting_input" and not task.get(
+            "continued_by_run_id"
+        )
+
+    def refresh_sessions(self):
+        if not self.ready or self.client is None or self.closing:
+            return
+        revision = self._session_revision
+
+        def ready(payload):
+            if revision != self._session_revision or self.closing:
+                return
+            self.sessions = payload.get("sessions", [])[:100]
+            active = payload.get("active_session_id")
+            if active and self.active_session_id is None:
+                self._activate_session_local(active)
+            if self.results:
+                self.results.render_sessions(self.sessions, self.active_session_id)
+            self.refresh_tasks()
+
+        self.client.request("GET", "/api/sessions", callback=ready, error=self.notify)
+
+    def _discard_voice_capture(self, *, restore_draft=True):
+        for identifier in self._voice_captures:
+            if identifier not in self._voice_finished:
+                self._voice_finished.append(identifier)
+        self._voice_captures.clear()
+        draft = self._voice_draft
+        if restore_draft and (
+            draft
+            and self.results
+            and self.results.input.toPlainText() == draft.get("display")
+        ):
+            self.results.input.setPlainText(draft.get("base", ""))
+        if restore_draft:
+            self._voice_draft = None
+        identifier = uuid.uuid4().hex
+        self._voice_reset_id = identifier
+        if not self._send_audio("discard_input", id=identifier):
+            self._voice_reset_id = None
+
+    def _activate_session_local(self, session_id):
+        if self.active_session_id == session_id:
+            return
+        self._discard_voice_capture()
+        if self.results:
+            self._drafts[self.active_session_id] = self.results.input.toPlainText()
+        self._session_revision += 1
+        self.active_session_id = session_id
+        self.selected_task = self.awaiting_task = self._voice_awaiting_task = None
+        self._browsing_task = None
+        self._force_new_task = False
+        self.task_order = []
+        self._preview_generation += 1
+        if self.results:
+            self.results.reset_conversation()
+            self.results.input.setPlainText(self._drafts.get(session_id, ""))
+            self.results.render_sessions(self.sessions, session_id)
+        self._send_audio("expect_input", enabled=False)
+
+    def _switch_session(self, path, *, completed=None):
+        if not self.ready or self.client is None or self._session_switching:
+            self.notify("对话服务尚未就绪，请稍后重试。")
+            return False
+        self._session_switching = True
+        self._discard_voice_capture(restore_draft=False)
+        if self.results:
+            self.results.input.setEnabled(False)
+            self.results.send_button.setEnabled(False)
+
+        def finished():
+            self._session_switching = False
+            if self.results:
+                self.results.input.setEnabled(True)
+                self.results.send_button.setEnabled(True)
+
+        def ready(session):
+            finished()
+            if self.closing:
+                return
+            if completed:
+                completed()
+            self._activate_session_local(session["session_id"])
+            self.last_status = (
+                "已进入新对话。" if path == "/api/sessions" else "已切换对话。"
+            )
+            self.refresh_sessions()
+            self._render_status()
+
+        def failed(message):
+            finished()
+            self.notify(message)
+
+        self.client.request("POST", path, {}, callback=ready, error=failed)
+        return True
+
+    def new_session(self, checked=False, *, completed=None):
+        return self._switch_session("/api/sessions", completed=completed)
+
+    def select_session(self, session_id):
+        if not session_id or session_id == self.active_session_id:
+            return
+        return self._switch_session(
+            "/api/sessions/" + quote(str(session_id), safe="") + "/activate"
+        )
+
+    def _handle_transcript(self, event, data):
+        identifier = str(data.get("utterance_id") or "")
+        generation = data.get("generation")
+        if self._voice_reset_id is not None:
+            return
+        if self._voice_min_generation is not None and (
+            (type(generation) is int and generation < self._voice_min_generation)
+            or (identifier and type(generation) is not int)
+        ):
+            return
+        if identifier and identifier in self._voice_finished:
+            return
+        if self.user_paused or self.speaking or self._session_switching:
+            if identifier:
+                self._voice_finished.append(identifier)
+            return
+        if event == "stt.cancelled":
+            if identifier:
+                self._voice_finished.append(identifier)
+                self._voice_captures.pop(identifier, None)
+            draft = self._voice_draft
+            if draft and draft["id"] == identifier:
+                if self.results and self.results.input.toPlainText() == draft.get(
+                    "display"
+                ):
+                    self.results.input.setPlainText(draft.get("base", ""))
+                self._voice_draft = None
+            return
+        if identifier not in self._voice_captures:
+            if len(self._voice_captures) >= 64:
+                oldest = next(iter(self._voice_captures))
+                self._voice_finished.append(oldest)
+                self._voice_captures.pop(oldest)
+            self._voice_captures[identifier] = self.active_session_id
+        if self._voice_captures[identifier] != self.active_session_id:
+            return
+        if event == "stt.started":
+            return
+        text = str(data.get("text", "")).strip()
+        if not text or len(text) > 12000:
+            return
+        final = event == "stt.final" and data.get("final", True) is not False
+        window = self._ensure_results()
+        current = window.input.toPlainText()
+        previous = self._voice_draft
+        if previous and previous["id"] == identifier:
+            draft = previous
+            if current != draft.get("display"):
+                draft["edited"] = True
+        else:
+            base = (
+                previous.get("base", "")
+                if previous and current == previous.get("display")
+                else current
+            )
+            draft = {
+                "id": identifier,
+                "base": base,
+                "edited": False,
+                "session_id": self.active_session_id,
+            }
+            self._voice_draft = draft
+        draft["text"] = text
+        if not draft["edited"]:
+            draft["display"] = (draft["base"] + "\n" if draft["base"] else "") + text
+            window.input.setPlainText(draft["display"])
+            window.input_hint.setText(
+                "语音已识别，正在发送…" if final else "正在聆听 · 说完后自动发送"
+            )
+        if not final:
+            return
+        if identifier:
+            self._voice_finished.append(identifier)
+        self._voice_captures.pop(identifier, None)
+
+        def sent():
+            if (
+                self._voice_draft is draft
+                and self.results is window
+                and draft["session_id"] == self.active_session_id
+            ):
+                if window.input.toPlainText() == draft.get("display"):
+                    window.input.setPlainText(draft["base"])
+                self._voice_draft = None
+                window.input_hint.setText(
+                    "Enter 发送 · Shift + Enter 换行 · 语音自动发送"
+                )
+
+        self.submit(text, voice=True, submitted=sent)
+
+    def submit(self, text, *, voice=False, submitted=None):
         text = str(text).strip()
         if not text or len(text) > 12000:
             self.notify("请输入 1–12,000 个字符的任务。")
@@ -797,6 +1032,20 @@ class DesktopController(QObject):
         if self.pending_settings:
             self.notify("设置等待现有任务结束后应用，请稍后再发送新任务。")
             return False
+        if self._session_switching:
+            self.notify("正在切换对话，请稍后再发送。")
+            return False
+        if re.fullmatch(
+            r"(?:新建对话|开启新对话|开始新对话|新建一个对话)[。！!？?\s]*", text
+        ):
+
+            def created():
+                if submitted:
+                    submitted()
+                elif self.results and self.results.input.toPlainText().strip() == text:
+                    self.results.input.clear()
+
+            return self.new_session(completed=created)
         if text.startswith("新任务"):
             self._force_new_task = True
             text = re.sub(r"^新任务[，,。:：\s]*", "", text).strip()
@@ -814,14 +1063,31 @@ class DesktopController(QObject):
             if voice
             else self.awaiting_task
         )
+        if waiting:
+            related = self.tasks.get(waiting, {})
+            if related and (
+                not self._same_session(related) or related.get("continued_by_run_id")
+            ):
+                waiting = None
         path = (
             f"/api/tasks/{quote(str(waiting), safe='')}/input"
             if waiting
             else "/api/tasks"
         )
-        payload = {"message": text}
+        pending_key = (self.active_session_id, text, waiting)
+        if pending_key in self._pending_submissions:
+            return False
+        if pending_key not in self._submission_ids:
+            if len(self._submission_ids) >= 64:
+                self._submission_ids.pop(next(iter(self._submission_ids)))
+            self._submission_ids[pending_key] = uuid.uuid4().hex
+        payload = {
+            "message": text,
+            "client_request_id": self._submission_ids[pending_key],
+        }
+        if self.active_session_id:
+            payload["session_id"] = self.active_session_id
         if not waiting:
-            payload["client_request_id"] = uuid.uuid4().hex
             parent = None if self._force_new_task else self._parent_for_message(text)
             if parent is not None:
                 payload["parent_task_id"] = parent
@@ -836,12 +1102,47 @@ class DesktopController(QObject):
                 ]
             )
         self._render_status()
+        session_id = self.active_session_id
+        self._pending_submissions.add(pending_key)
+
+        def accepted(task):
+            self._pending_submissions.discard(pending_key)
+            self._submission_ids.pop(pending_key, None)
+            if submitted:
+                submitted()
+            elif (
+                self.results
+                and session_id == self.active_session_id
+                and self.results.input.toPlainText().strip() == text
+            ):
+                self.results.input.clear()
+                if not voice:
+                    self._voice_draft = None
+            self._task_submitted(task, waiting)
+
+        def failed(message):
+            self._pending_submissions.discard(pending_key)
+            self.notify(message)
+            if self.results and session_id == self.active_session_id:
+                if voice and text not in self.results.input.toPlainText():
+                    current = self.results.input.toPlainText()
+                    self.results.input.setPlainText(
+                        (current + "\n" if current else "") + text
+                    )
+                self.results.input_hint.setText("发送失败，文字已保留，可修改后重试。")
+            elif voice:
+                current = self._drafts.get(session_id, "")
+                if text not in current:
+                    self._drafts[session_id] = (
+                        current + "\n" if current else ""
+                    ) + text
+
         self.client.request(
             "POST",
             path,
             payload,
-            callback=lambda task: self._task_submitted(task, waiting),
-            error=self.notify,
+            callback=accepted,
+            error=failed,
         )
         return True
 
@@ -877,7 +1178,7 @@ class DesktopController(QObject):
             order = list(dict.fromkeys([self.selected_task, *self.task_order]))
             for task_id in order:
                 task = self.tasks.get(task_id, {})
-                if task.get("status") not in terminal:
+                if task.get("status") not in terminal or not self._same_session(task):
                     continue
                 if any(
                     Path(str(item.get("path") or "")).suffix.lower() in wanted
@@ -886,10 +1187,16 @@ class DesktopController(QObject):
                 ):
                     return task_id
             return None
-        return self.selected_task if selected.get("status") in terminal else None
+        return (
+            self.selected_task
+            if selected.get("status") in terminal and self._same_session(selected)
+            else None
+        )
 
     def _task_submitted(self, data, waiting):
         task_id = data.get("task_id")
+        if task_id:
+            self.tasks[task_id] = {**self.tasks.get(task_id, {}), **data}
         if waiting and self.awaiting_task == waiting:
             self.awaiting_task = None
         if waiting and self._voice_awaiting_task == waiting:
@@ -899,29 +1206,38 @@ class DesktopController(QObject):
         if self.speech_enabled:
             self._send_audio("prewarm")
         self.last_status = "任务已提交，正在后台处理。可以继续安排下一项任务。"
-        if task_id:
+        if task_id and self._same_session(data):
             # A new user submission ends the explicit history-browsing hold.
             self._browsing_task = None
             self.selected_task = task_id
-            self.awaiting_task = (
-                task_id if data.get("status") == "awaiting_input" else None
-            )
+            self.awaiting_task = task_id if self._needs_input(data) else None
             self._fetch_task(task_id, callback=self._update_task)
-        self.refresh_tasks()
+        self.refresh_sessions()
         self.update_tile()
         self._render_status()
 
     def refresh_tasks(self):
         if not self.ready or self.client is None or self.closing:
             return
+        revision = self._session_revision
+        query = {"limit": 100}
+        if self.active_session_id:
+            query["session_id"] = self.active_session_id
+
+        def ready(payload):
+            if revision == self._session_revision:
+                self._tasks_ready(payload)
+
         self.client.request(
-            "GET", "/api/tasks?limit=100", callback=self._tasks_ready, error=self.notify
+            "GET", "/api/tasks?" + urlencode(query), callback=ready, error=self.notify
         )
 
     def _tasks_ready(self, payload):
         tasks = payload.get("tasks", []) if isinstance(payload, dict) else []
         self.task_order = []
         for task in tasks[:100]:
+            if not self._same_session(task):
+                continue
             task_id = task.get("task_id", task.get("id"))
             if task_id is not None:
                 self.tasks[task_id] = {**self.tasks.get(task_id, {}), **task}
@@ -933,10 +1249,21 @@ class DesktopController(QObject):
             self._voice_awaiting_task,
             self._playback_task,
         }
+        keep.update(
+            task_id
+            for task_id, task in self.tasks.items()
+            if task.get("status") in self.ACTIVE_STATUSES
+        )
         self.tasks = {key: value for key, value in self.tasks.items() if key in keep}
         self._trim_task_details()
         if self.results and self.results.isVisible():
             self.results.render_tasks([self.tasks[key] for key in self.task_order])
+        if not self.selected_task and self.task_order:
+            self.selected_task = self.task_order[0]
+            if self.results:
+                self.select_task(self.selected_task, user_selected=False)
+            else:
+                self._fetch_task(self.selected_task)
         self._maybe_apply_settings()
         self.update_tile()
 
@@ -955,7 +1282,7 @@ class DesktopController(QObject):
             return
         self.tasks[task_id] = {**self.tasks.get(task_id, {}), **task}
         if self.selected_task == task_id and "status" in task:
-            self.awaiting_task = task_id if task["status"] == "awaiting_input" else None
+            self.awaiting_task = task_id if self._needs_input(task) else None
         if self.results and self.results.isVisible() and self.selected_task == task_id:
             self.results.render_task(self.tasks[task_id])
         self.update_tile()
@@ -980,15 +1307,15 @@ class DesktopController(QObject):
     def select_task(self, task_id, *, user_selected=True):
         if task_id is None:
             return
+        if task_id in self.tasks and not self._same_session(self.tasks[task_id]):
+            return
         if user_selected:
             self._browsing_task = task_id
         self.selected_task = task_id
         self._trim_task_details()
         task = self.tasks.get(task_id)
         if task:
-            self.awaiting_task = (
-                task_id if task.get("status") == "awaiting_input" else None
-            )
+            self.awaiting_task = task_id if self._needs_input(task) else None
             self._arm_view_followup()
             self._ensure_results().render_task(task)
         self._fetch_task(
@@ -1000,9 +1327,7 @@ class DesktopController(QObject):
         # parse the same Markdown/artifacts a second time on every selection.
         self._update_task(task)
         if self.selected_task == requested_id:
-            self.awaiting_task = (
-                requested_id if task.get("status") == "awaiting_input" else None
-            )
+            self.awaiting_task = requested_id if self._needs_input(task) else None
             self._arm_view_followup()
 
     def _arm_view_followup(self):
@@ -1024,6 +1349,15 @@ class DesktopController(QObject):
             data = {}
         if task_id:
             task = self.tasks.setdefault(task_id, {"task_id": task_id})
+            if envelope.get("session_id") or data.get("session_id"):
+                task["session_id"] = envelope.get("session_id") or data["session_id"]
+            if kind == "task.continued":
+                task["continued_by_run_id"] = data.get("continued_by_run_id")
+                if self.awaiting_task == task_id:
+                    self.awaiting_task = None
+                if self._voice_awaiting_task == task_id:
+                    self._voice_awaiting_task = None
+                    self._send_audio("expect_input", enabled=False)
             if "status" in data:
                 task["status"] = data["status"]
             elif kind == "task.queued":
@@ -1084,13 +1418,21 @@ class DesktopController(QObject):
             return
         task = self.notifications.popleft()
         task_id = task.get("task_id", task.get("id"))
-        awaiting = task_id if task.get("status") == "awaiting_input" else None
-        self._voice_awaiting_task = awaiting
+        latest = self.tasks.get(task_id, {})
+        if latest.get("continued_by_run_id"):
+            task["continued_by_run_id"] = latest["continued_by_run_id"]
+        same_session = self._same_session(task)
+        awaiting = task_id if self._needs_input(task) and same_session else None
+        if same_session:
+            self._voice_awaiting_task = awaiting
         preserve_view = bool(
-            self.results
-            and self.results.isVisible()
-            and self.selected_task is not None
-            and self._browsing_task == self.selected_task
+            not same_session
+            or (
+                self.results
+                and self.results.isVisible()
+                and self.selected_task is not None
+                and self._browsing_task == self.selected_task
+            )
         )
         if not preserve_view:
             self._browsing_task = None
@@ -1098,7 +1440,9 @@ class DesktopController(QObject):
             self.awaiting_task = awaiting
         self._send_audio("expect_input", enabled=False)
         self.last_status = "请补充任务信息。" if awaiting else "任务已返回结果。"
-        if self.auto_fullscreen or (self.results and self.results.isVisible()):
+        if same_session and (
+            self.auto_fullscreen or (self.results and self.results.isVisible())
+        ):
             window = self._ensure_results()
             window.render_tasks(
                 [self.tasks[key] for key in self.task_order if key in self.tasks]
@@ -1134,6 +1478,8 @@ class DesktopController(QObject):
 
     def toggle_pause(self):
         self.user_paused = not self.user_paused
+        if self.user_paused:
+            self._discard_voice_capture()
         self._send_audio("pause" if self.user_paused else "resume")
         self.update_tile()
 
@@ -1163,6 +1509,10 @@ class DesktopController(QObject):
 
             self.results = ResultsWindow(self)
             self.results.installEventFilter(self)
+            self.results.render_sessions(self.sessions, self.active_session_id)
+            self.results.input.setPlainText(
+                self._drafts.get(self.active_session_id, "")
+            )
         return self.results
 
     def show_results(self):
@@ -1173,7 +1523,7 @@ class DesktopController(QObject):
             [self.tasks[key] for key in self.task_order if key in self.tasks]
         )
         window.show_result()
-        self.refresh_tasks()
+        self.refresh_sessions()
         if self.selected_task:
             self.select_task(self.selected_task, user_selected=False)
 
@@ -1188,6 +1538,10 @@ class DesktopController(QObject):
 
     def _discard_hidden_results(self):
         if self.results and not self.results.isVisible():
+            # Unsent text survives recycling of the heavy preview window.
+            if self._voice_draft or self.tools_dialog is not None:
+                return
+            self._drafts[self.active_session_id] = self.results.input.toPlainText()
             self.results.deleteLater()
             self.results = None
             for task in self.tasks.values():
@@ -1195,6 +1549,37 @@ class DesktopController(QObject):
                 task.pop("messages", None)
                 task.pop("steps", None)
                 task.pop("plan", None)
+
+    def show_tools(self):
+        from .desktop_ui import ToolsDialog
+
+        if self.tools_dialog is not None:
+            self.tools_dialog.show()
+            self.tools_dialog.raise_()
+            return
+        dialog = ToolsDialog(self._ensure_results())
+        self.tools_dialog = dialog
+
+        def finished(*_):
+            if self.tools_dialog is dialog:
+                self.tools_dialog = None
+            dialog.deleteLater()
+
+        dialog.finished.connect(finished)
+        dialog.show()
+        if not self.ready or self.client is None:
+            dialog.notice.setText("任务服务尚未就绪，稍后重新打开即可查看工具。")
+            return
+
+        def ready(payload):
+            if self.tools_dialog is dialog:
+                dialog.set_tools(payload.get("tools", []))
+
+        def failed(message):
+            if self.tools_dialog is dialog:
+                dialog.notice.setText(message)
+
+        self.client.request("GET", "/api/tools", callback=ready, error=failed)
 
     def _status_text(self):
         if self.errors:
@@ -1728,6 +2113,8 @@ class DesktopController(QObject):
             self.results.hide()
         if self.settings_dialog:
             self.settings_dialog.close()
+        if self.tools_dialog:
+            self.tools_dialog.close()
         self.tile.hide()
         if self._media_directory is not None:
             self._media_directory.cleanup()

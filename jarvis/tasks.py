@@ -90,18 +90,28 @@ class TaskManager:
         if len(self.pending) + (1 if self.active_id else 0) >= total_limit:
             raise TaskQueueFull("任务队列已满，请等待当前任务完成后再提交。")
 
-    async def submit(self, message, client_request_id=None, parent_task_id=None):
+    async def submit(
+        self, message, client_request_id=None, parent_task_id=None, session_id=None
+    ):
         if self._closing:
             raise TaskConflict("服务正在退出，暂不接收新任务。")
+        session_id = session_id or self.store.current_session()["session_id"]
+        if self.store.get_session(session_id) is None:
+            raise TaskConflict("找不到该对话，请选择现有对话或新建对话。")
         if client_request_id:
             existing = self.store.find_request(client_request_id)
             if existing:
                 if (
                     existing["message"] != message
                     or existing.get("parent_task_id") != parent_task_id
+                    or existing["session_id"] != session_id
                 ):
                     raise TaskConflict("同一请求标识不能用于不同指令或前序任务。")
                 return existing
+        if parent_task_id:
+            parent = self.store.get_task(parent_task_id)
+            if parent and parent["session_id"] != session_id:
+                raise TaskConflict("不能引用其他对话的任务，请先切换到该对话。")
         context = self._parent_context(parent_task_id) if parent_task_id else {}
         self._capacity()
         task = self.store.create_task(
@@ -109,17 +119,20 @@ class TaskManager:
             client_request_id,
             parent_task_id=parent_task_id,
             parent_context=context,
+            session_id=session_id,
         )
         self.pending.append(task["task_id"])
         self._wake.set()
         await self._notify()
         return task
 
-    def _parent_context(self, task_id):
+    def _parent_context(self, task_id, *, allow_waiting=False):
         parent = self.store.get_task(task_id)
         if parent is None:
             raise TaskConflict("找不到需要承接的前序任务。")
-        if parent["status"] not in TERMINAL_STATUSES:
+        if parent["status"] not in TERMINAL_STATUSES and not (
+            allow_waiting and parent["status"] == "awaiting_input"
+        ):
             raise TaskConflict("前序任务尚未结束；待补充问题请使用该任务的补充入口。")
         artifacts = []
         candidates = self.store.list_artifacts(task_id)
@@ -172,26 +185,39 @@ class TaskManager:
             raise KeyError(task_id)
         return task
 
-    async def provide_input(self, task_id, message):
+    async def provide_input(
+        self, task_id, message, client_request_id=None, session_id=None
+    ):
         if self.store.expire_waiting():
             await self._notify()
         task = self.require(task_id)
-        if task["status"] != "awaiting_input":
+        if session_id is not None and session_id != task["session_id"]:
+            raise TaskConflict("补充输入不属于当前对话，请切换到原对话后再发送。")
+        if client_request_id:
+            existing = self.store.find_request(client_request_id)
+            if existing:
+                if (
+                    existing["message"] != message
+                    or existing["parent_task_id"] != task_id
+                    or existing["session_id"] != task["session_id"]
+                ):
+                    raise TaskConflict("同一请求标识不能用于不同指令或前序任务。")
+                return existing
+        if task["status"] != "awaiting_input" or task["continued_by_run_id"]:
             raise TaskConflict("该任务当前没有等待补充信息。")
         self._capacity()
-        self.store.add_message("user", message, task_id)
-        self.store.update_task(
-            task_id,
-            "task.queued",
-            {"status": "queued", "message": message, "resumed": True},
-            status="queued",
-            held=False,
-            error="",
+        continuation = self.store.create_task(
+            message,
+            client_request_id,
+            parent_task_id=task_id,
+            parent_context=self._parent_context(task_id, allow_waiting=True),
+            session_id=task["session_id"],
+            continued_from=task_id,
         )
-        self.pending.append(task_id)
+        self.pending.append(continuation["task_id"])
         self._wake.set()
         await self._notify()
-        return self.require(task_id)
+        return continuation
 
     async def resume(self, task_id):
         task = self.require(task_id)
@@ -213,7 +239,7 @@ class TaskManager:
 
     async def cancel(self, task_id):
         task = self.require(task_id)
-        if task["status"] in TERMINAL_STATUSES:
+        if task["status"] in TERMINAL_STATUSES or task["continued_by_run_id"]:
             return task
         if self.active_id == task_id and self._active:
             if task_id not in self._cancel_requested:

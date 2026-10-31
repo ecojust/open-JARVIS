@@ -1,0 +1,129 @@
+{
+  "recorded_at": "2026-10-31T16:07:41.826847+00:00",
+  "scope": "Actual network GET/content extraction against public official pages, including concrete Fed/ECB/UN articles. Model was not called; no browser JavaScript, login, production LLM task, or desktop/microphone validation. Dynamic indexes may expose only server-rendered headings and require specific article links.",
+  "input_provenance": "Fed/ECB article URLs from existing verified repository research-input.json; UN article from live UN News index link; remaining URLs are official indexes.",
+  "results": [
+    {
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+      "title": "Federal Reserve issues FOMC statement",
+      "status_code": 200,
+      "content_type": "text/html",
+      "encoding": "utf-8-sig",
+      "extraction": "main",
+      "total_chars": 1535,
+      "next_offset": 1000,
+      "truncated": true,
+      "extraction_truncated": false,
+      "warnings": [],
+      "redirects": [],
+      "kind": "financial_article",
+      "requested_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+      "elapsed_seconds": 0.481,
+      "content_sample": "##\nPress Release\n\nOctober 28, 2026\n\n### Federal Reserve issues FOMC statement\n\nFor release at 2:00 p.m. EDT\n\nThe Federal Open Market Committee approved the following statement for release by a 10 – 2 vote:\n\nThe Committee decided to maintain the target range for the federal funds rate at 3-3/4 to 4 percent, in support of the Federal Reserve's dual mandate. The Committee is continuing its policy of maintaining ample reserves in the banking system.\n\nEconomic activity is expanding at a strong pace. While uncertainty remains elevated owing, in part, to geopolitical developments, domestic spending has been resilient. Productivity growth is strong, ",
+      "second_page": {
+        "offset": 1000,
+        "next_offset": null,
+        "error": null
+      },
+      "same_snapshot": true
+    },
+    {
+      "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+      "title": "Monetary policy decisions",
+      "status_code": 200,
+      "content_type": "text/html",
+      "encoding": "utf-8",
+      "extraction": "main",
+      "total_chars": 3888,
+      "next_offset": 1000,
+      "truncated": true,
+      "extraction_truncated": false,
+      "warnings": [],
+      "redirects": [],
+      "kind": "financial_article",
+      "requested_url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+      "elapsed_seconds": 0.942,
+      "content_sample": "- PRESS RELEASE\n\n# Monetary policy decisions\n\n29 October 2026\n\nThe Governing Council today decided to keep the three key ECB interest rates unchanged. Energy prices have continued to rise, posing upside risks to the inflation outlook and downside risks to the growth outlook. While the full effects of the energy shock are still unfolding, underlying inflation has remained broadly stable so far and wages do not show a material response at this stage. The increased magnitude and duration of the energy shock, as well as the implications for indirect and second-round effects, are likely to drive up inflation and lower growth. Financing conditions ",
+      "second_page": {
+        "offset": 1000,
+        "next_offset": 2000,
+        "error": null
+      },
+      "same_snapshot": true
+    },
+    {
+      "url": "https://www.imf.org/en/News",
+      "title": "IMF News",
+      "status_code": 200,
+      "content_type": "text/html",
+      "encoding": "utf-8",
+      "extraction": "article",
+      "total_chars": 7869,
+      "next_offset": 1000,
+      "truncated": true,
+      "extraction_truncated": false,
+      "warnings": [],
+      "redirects": [],
+      "kind": "news_index",
+      "requested_url": "https://www.imf.org/en/News",
+      "elapsed_seconds": 0.947,
+      "content_sample": "# IMF News\n\nIMF News\n\n## Source details\n\nCanonical URL\n\n[IMF News](https://www.imf.org/en/news)\n\n## Other formats\n\n- [Markdown version](https://www.imf.org/en/news/index.md)\n\n- [Structured JSON version](https://www.imf.org/en/news/index.json)\n\n- [Bundle manifest](https://www.imf.org/en/news/bundle-manifest.json)\n\n### Overview\n\n- The IMF presents the latest news, blogs, podcasts, videos, live events, and more.\n\n- Highlighted content and features:\n\n- \"Africa Can Grow Faster With AI—If It Moves Now\" — Artificial intelligence can boost productivity, create better jobs, and improve public services in sub-Saharan Africa.\n\n- \"Listen to Dani Rodrik o",
+      "second_page": {
+        "offset": 1000,
+        "next_offset": 2000,
+        "error": null
+      },
+      "same_snapshot": true
+    },
+    {
+      "url": "https://news.un.org/en/story/2026/10/1168714",
+      "title": "Somalia looks to the future as the UN's political mission closes",
+      "status_code": 200,
+      "content_type": "text/html",
+      "encoding": "utf-8",
+      "extraction": "main",
+      "total_chars": 6447,
+      "next_offset": 1000,
+      "truncated": true,
+      "extraction_truncated": false,
+      "warnings": [],
+      "redirects": [],
+      "kind": "international_article",
+      "requested_url": "https://news.un.org/en/story/2026/10/1168714",
+      "elapsed_seconds": 1.46,
+      "content_sample": "# Somalia looks to the future as the UN's political mission closes\n\nBy Daniel Dickinson\n\n31 October 2026\n[Peace and Security](https://news.un.org/en/news/topic/peace-and-security)\n\n“The story of the UN's political engagement in Somalia has been one of persistence, partnership and adaptation,” [Raisedon Zenenga](https://untmis.unmissions.org/en/press-releases/remarks-by-the-officer-in-charge-of-the-un-transitional-assistance-mission-in), the UN Secretary-General's Deputy Special Representative for Somalia has said, as three decades of UN political missions in the Horn of Africa country comes to an end on 31 October.\n\nThe UN Transitional Assist",
+      "second_page": {
+        "offset": 1000,
+        "next_offset": 2000,
+        "error": null
+      },
+      "same_snapshot": true
+    },
+    {
+      "url": "https://www.ecb.europa.eu/press/pubbydate/html/index.en.html",
+      "title": "Publications by date",
+      "status_code": 200,
+      "content_type": "text/html",
+      "encoding": "utf-8",
+      "extraction": "main",
+      "total_chars": 56,
+      "next_offset": null,
+      "truncated": false,
+      "extraction_truncated": false,
+      "warnings": [
+        "正文很少；页面可能依赖 JavaScript 或登录，当前工具不执行脚本。"
+      ],
+      "redirects": [
+        {
+          "url": "https://www.ecb.europa.eu/press/html/index.en.html",
+          "status_code": 301,
+          "location": "https://www.ecb.europa.eu/press/pubbydate/html/index.en.html"
+        }
+      ],
+      "kind": "dynamic_index",
+      "requested_url": "https://www.ecb.europa.eu/press/html/index.en.html",
+      "elapsed_seconds": 1.789,
+      "content_sample": "# All news & publications\n\n### All pages in this section"
+    }
+  ]
+}

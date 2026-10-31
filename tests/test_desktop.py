@@ -258,14 +258,16 @@ assert time.monotonic()-started<1, time.monotonic()-started
         )
         self.assertEqual(self.controller.tile.audio_level, 0.5)
 
-    def test_question_answer_routes_to_same_task_and_new_task_resets_it(self):
+    def test_question_answer_routes_to_input_with_request_id_and_new_task_resets_it(
+        self,
+    ):
         self.ready()
         self.controller.awaiting_task = "waiting-1"
         self.assertTrue(self.controller.submit("明天"))
         call = self.controller.client.calls[-1]
-        self.assertEqual(
-            call[:3], ("POST", "/api/tasks/waiting-1/input", {"message": "明天"})
-        )
+        self.assertEqual(call[:2], ("POST", "/api/tasks/waiting-1/input"))
+        self.assertEqual(call[2]["message"], "明天")
+        self.assertTrue(call[2]["client_request_id"])
         self.controller.submit("新任务：分析销售数据")
         call = self.controller.client.calls[-1]
         self.assertEqual(call[1], "/api/tasks")

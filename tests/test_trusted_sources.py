@@ -116,7 +116,7 @@ class TrustedSourceTests(unittest.IsolatedAsyncioTestCase):
     async def test_declared_and_streamed_size_are_bounded(self):
         for declared in (True, False):
             with self.subTest(declared=declared):
-                stream = ChunkedBody([b"a" * 65536] * 18)
+                stream = ChunkedBody([b"a" * 65536] * (MAX_TRUSTED_BYTES // 65536 + 2))
 
                 def handler(request):
                     headers = (
@@ -127,15 +127,17 @@ class TrustedSourceTests(unittest.IsolatedAsyncioTestCase):
                     return httpx.Response(200, stream=stream, headers=headers)
 
                 with self.mocked_client(handler):
-                    with self.assertRaisesRegex(ValueError, "1 MB"):
+                    with self.assertRaisesRegex(ValueError, "4 MB"):
                         await get_trusted("https://news.un.org/en/story/2026/test")
-                self.assertEqual(stream.read_count, 0 if declared else 17)
+                self.assertEqual(
+                    stream.read_count, 0 if declared else MAX_TRUSTED_BYTES // 65536 + 1
+                )
 
     async def test_compression_and_http_failures_are_explicit(self):
         for code, headers, message in (
             (403, {}, "HTTP 403"),
             (429, {}, "HTTP 429"),
-            (200, {"content-encoding": "gzip"}, "无压缩"),
+            (200, {"content-encoding": "br"}, "压缩格式"),
         ):
             with self.subTest(code=code, headers=headers):
                 with self.mocked_client(

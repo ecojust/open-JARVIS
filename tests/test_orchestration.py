@@ -521,8 +521,10 @@ class MAFIntegrationTests(unittest.IsolatedAsyncioTestCase):
             release.set()
             await manager.close()
 
-    async def test_persisted_model_budget_spans_awaiting_input_turns(self):
-        server, _ = self.setup_model([final("需要哪个文件？", "awaiting_input")])
+    async def test_followup_is_a_new_run_with_its_own_budget_and_shared_session(self):
+        server, _ = self.setup_model(
+            [final("需要哪个文件？", "awaiting_input"), final("已收到文件名。")]
+        )
         settings = Settings(
             api_key="local-test-key",
             base_url=server.url,
@@ -541,15 +543,20 @@ class MAFIntegrationTests(unittest.IsolatedAsyncioTestCase):
                 ):
                     await asyncio.sleep(0.01)
             self.assertEqual(self.store.get_task(task["task_id"])["model_calls"], 1)
-            await manager.provide_input(task["task_id"], "example.csv")
+            followup = await manager.provide_input(task["task_id"], "example.csv")
+            self.assertNotEqual(followup["run_id"], task["run_id"])
+            self.assertEqual(followup["session_id"], task["session_id"])
             async with asyncio.timeout(10):
-                while self.store.get_task(task["task_id"])["status"] not in {
-                    "failed",
-                    "partially_succeeded",
-                }:
+                while self.store.get_task(followup["task_id"])["status"] != "succeeded":
                     await asyncio.sleep(0.01)
-            self.assertEqual(len(server.requests), 1)
-            self.assertEqual(self.store.get_task(task["task_id"])["model_calls"], 1)
+            self.assertEqual(len(server.requests), 2)
+            previous = self.store.get_task(task["task_id"])
+            self.assertEqual(previous["model_calls"], 1)
+            self.assertEqual(previous["continued_by_run_id"], followup["run_id"])
+            self.assertEqual(self.store.get_task(followup["task_id"])["model_calls"], 1)
+            messages = json.dumps(server.requests[1][1]["messages"], ensure_ascii=False)
+            self.assertIn("需要哪个文件", messages)
+            self.assertIn("example.csv", messages)
         finally:
             await manager.close()
 

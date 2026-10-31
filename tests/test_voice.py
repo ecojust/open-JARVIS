@@ -8,6 +8,24 @@ def frame(value=0):
 
 
 class SegmenterTests(unittest.TestCase):
+    def test_preview_snapshot_keeps_the_final_sentence_and_ignores_short_noise(self):
+        segmenter = Segmenter(pre_roll_ms=0)
+        for _ in range(9):
+            segmenter.feed(frame(7), True)
+        self.assertTrue(segmenter.active)
+        self.assertIsNone(segmenter.snapshot())
+        segmenter.feed(frame(7), True)
+        self.assertEqual(segmenter.snapshot(), frame(7) * 10)
+        for _ in range(10):
+            segmenter.feed(frame(8), True)
+        self.assertEqual(segmenter.snapshot(), frame(7) * 10 + frame(8) * 10)
+        result = None
+        for _ in range(30):
+            result = segmenter.feed(frame(), False)
+        self.assertEqual(result, frame(7) * 10 + frame(8) * 10 + frame() * 30)
+        self.assertFalse(segmenter.active)
+        self.assertIsNone(segmenter.snapshot())
+
     def test_waits_for_full_ending_silence_and_preserves_audio(self):
         segmenter = Segmenter()
         speech = [frame(value) for value in range(1, 11)]

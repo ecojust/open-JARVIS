@@ -65,6 +65,21 @@ class Segmenter:
         self._voiced = 0
         self._silent = 0
 
+    @property
+    def active(self) -> bool:
+        """Whether an utterance is being collected, including its ending silence."""
+        return bool(self._frames)
+
+    def snapshot(self) -> bytes | None:
+        """Copy an eligible prefix only when a throttled preview is requested.
+
+        The capture consumer calls this at most once per preview interval, not
+        per audio frame. Short noise and idle pre-roll never trigger decoding.
+        """
+        if self._voiced < self._min_speech_frames:
+            return None
+        return b"".join(self._frames)
+
     def feed(self, pcm: bytes, is_speech: bool) -> bytes | None:
         if not isinstance(pcm, bytes) or len(pcm) != self.frame_bytes:
             raise ValueError(

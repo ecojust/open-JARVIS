@@ -367,6 +367,23 @@ class AppTests(unittest.TestCase):
             self.assertNotIn("private-model-secret", response.text)
             self.assertNotIn("private-search-secret", response.text)
 
+    def test_tool_catalog_matches_runtime_registry_without_provider_secrets(self):
+        with self.app_client(
+            api_key="private-model-secret", brave_api_key="private-search-secret"
+        ) as (client, app, _):
+            response = client.get("/api/tools")
+            self.assertEqual(response.status_code, 200)
+            tools = response.json()["tools"]
+            self.assertEqual(
+                {tool["name"] for tool in tools},
+                {item["function"]["name"] for item in app.state.registry.definitions},
+            )
+            self.assertTrue(
+                all(tool["parameters"]["type"] == "object" for tool in tools)
+            )
+            self.assertNotIn("private-model-secret", response.text)
+            self.assertNotIn("private-search-secret", response.text)
+
     def wait_for_task(self, client, task_id, headers=None):
         deadline = time.monotonic() + 3
         while time.monotonic() < deadline:
@@ -442,6 +459,9 @@ class AppTests(unittest.TestCase):
                 "/api/events",
                 "/api/files?path=example-sales.csv",
                 "/api/history",
+                "/api/sessions",
+                "/api/sessions/current",
+                "/api/tools",
             ]:
                 self.assertEqual(client.get(path).status_code, 401, path)
             self.assertEqual(
