@@ -1,6 +1,7 @@
 """Persistent conversation sessions and independent, ordered turn executions."""
 
 import asyncio
+from contextlib import closing
 from dataclasses import replace
 import json
 from pathlib import Path
@@ -45,7 +46,7 @@ class SessionStoreTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
             database = directory / "jarvis.sqlite3"
-            with sqlite3.connect(database) as db:
+            with closing(sqlite3.connect(database)) as db, db:
                 db.executescript("""
                     CREATE TABLE messages(id INTEGER PRIMARY KEY AUTOINCREMENT, role TEXT NOT NULL,
                     content TEXT NOT NULL, created_at TEXT NOT NULL);
