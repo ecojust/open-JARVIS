@@ -1,0 +1,38 @@
+{
+  "version": "0.1.0-alpha.8",
+  "head_sha": "d7e9f1559528f8dae226ca1f756ff460843ccdfc",
+  "ci": {
+    "run_id": 41201692974,
+    "run_attempt": 1,
+    "conclusion": "success"
+  },
+  "candidate": {
+    "run_id": 41201695411,
+    "run_attempt": 1,
+    "conclusion": "success",
+    "signed": false,
+    "draft": "skipped",
+    "release_published": false
+  },
+  "artifacts": [
+    {
+      "id": 13043310922,
+      "name": "candidate-windows-x64",
+      "size_in_bytes": 109396619,
+      "expired": false
+    },
+    {
+      "id": 13042922500,
+      "name": "candidate-macos-x64",
+      "size_in_bytes": 140342569,
+      "expired": false
+    },
+    {
+      "id": 13042288721,
+      "name": "candidate-macos-arm64",
+      "size_in_bytes": 126860314,
+      "expired": false
+    }
+  ],
+  "scope": "GitHub Actions API and native CI/build results; installers not reopened in this development environment"
+}

@@ -8,6 +8,16 @@
 
 [对照截图与验收](validation/download-progress-2026-10-31/README.md) 包含真实 Qt 合成进度回放（同一来源下行高从 163/139 px 来回变化变成恒定 163 px）、使用完整 377 文件名布局的真实本机 HTTP 验证，以及实际 Qt/QProcess 的半途断流续传与 ETA 再验收。内容使用明确的合成测试字节，没有重复下载全部权重或启动测试权重推理。
 
+提交 `d7e9f1559528f8dae226ca1f756ff460843ccdfc` 的 [alpha.8 三端 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41201692974) 与 [未签名候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411) 均首次通过，无重试。每端执行测试、实际桌面/后端冒烟与冻结程序自检，再生成安装包；Windows 无权限的符号链接用例继续明确跳过。
+
+| alpha.8 目标 | Actions artifact | ZIP 大小 |
+| --- | --- | --- |
+| macOS Intel | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411/artifacts/13042922500) | 140,342,569 bytes |
+| macOS Apple Silicon | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411/artifacts/13042288721) | 126,860,314 bytes |
+| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411/artifacts/13043310922) | 109,396,619 bytes |
+
+产物保留 14 天，未创建或发布 Release；安装器未签名。当前开发环境无法访问 Actions 产物存储域，没有在此重新打开安装器；真实设备和干净系统安装仍待验收。[构建元数据](validation/download-progress-2026-10-31/native-build.json) 保留源码提交、运行编号和产物身份。
+
 ## 设置加宽、厂商帮助与 DeepSeek 适配
 
 本地 **301 项测试通过**，ruff 通过。设置窗口在常规屏幕宽 900 px，800 px 屏幕自动缩至 768 px；输入框分别宽 784 / 652 px。ⓘ 默认收起，点击后在原页面展示 DeepSeek、OpenAI、阿里云百炼、Ollama 的三个字段说明，支持复制示例和官方密钥入口。切换示例不修改已有配置，展开后可滚动且底部操作固定。

@@ -37,3 +37,7 @@ Kokoro 有 377 个文件。此前每个文件下载结束都会强制发送 `ver
 真实 Qt、QProcess、限速 HTTP 的半途断流续传验收再次通过：[完整报告](resume-smoke-report.json)。源 1 在 50% 处断开，源 2 从 `Range: bytes=1725000-` 补齐，字节进度保持单调，ETA 重新估算并完成完整哈希核验。测试只使用临时合成文件，没有修改已有模型或启动语音推理。
 
 本地 303 项测试和 ruff 通过。真实麦克风、扬声器与三端干净系统安装仍不在本轮验证范围。
+
+## 三端构建
+
+`d7e9f15` 的 [原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41201692974) 与 [alpha.8 候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411) 均首次通过，包括实际桌面/后端冒烟和冻结程序自检。[元数据](native-build.json) 记录三个未签名测试包的身份和大小，正式 Release 未发布。
