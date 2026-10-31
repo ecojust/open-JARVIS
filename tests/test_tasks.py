@@ -1,6 +1,7 @@
 """Task scheduling, persistence and cancellation semantics without remote models."""
 
 import asyncio
+from contextlib import closing
 from dataclasses import replace
 import json
 from pathlib import Path
@@ -391,7 +392,7 @@ class TaskTests(unittest.IsolatedAsyncioTestCase):
         directory = Path(self.temp.name) / "legacy-data"
         directory.mkdir()
         database = directory / "jarvis.sqlite3"
-        with sqlite3.connect(database) as connection:
+        with closing(sqlite3.connect(database)) as connection:
             connection.executescript("""
                 CREATE TABLE tasks (
                     task_id TEXT PRIMARY KEY, client_request_id TEXT UNIQUE,

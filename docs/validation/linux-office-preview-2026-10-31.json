@@ -1,0 +1,264 @@
+{
+  "recorded_at": "2026-10-31T08:38:09.164210+00:00",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "architecture": "x86_64",
+  "python": "3.12.14",
+  "logical_cpus": 3,
+  "machine_memory_gib": 9.73,
+  "qt_platform": "offscreen",
+  "release_acceptance": false,
+  "widget_samples": [
+    {
+      "startup_to_processed_events_ms": 218.854061,
+      "rss_mib": 73.9609375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 196.087334,
+      "rss_mib": 73.6875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 194.759284,
+      "rss_mib": 73.734375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 193.824232,
+      "rss_mib": 72.80859375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 222.136901,
+      "rss_mib": 73.22265625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 231.406287,
+      "rss_mib": 73.24609375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 249.128055,
+      "rss_mib": 71.9296875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 246.957396,
+      "rss_mib": 73.515625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 212.599638,
+      "rss_mib": 71.9296875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 214.176108,
+      "rss_mib": 72.55859375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 208.940922,
+      "rss_mib": 72.87890625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 224.913217,
+      "rss_mib": 73.05078125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 211.48496,
+      "rss_mib": 72.5546875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 211.609959,
+      "rss_mib": 73.17578125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 210.961254,
+      "rss_mib": 73.453125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 211.014864,
+      "rss_mib": 72.75,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 194.461524,
+      "rss_mib": 71.88671875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 196.545522,
+      "rss_mib": 72.5546875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 190.981428,
+      "rss_mib": 72.6875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 200.820103,
+      "rss_mib": 73.59765625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 193.304487,
+      "rss_mib": 73.2734375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 199.42454,
+      "rss_mib": 71.640625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 209.883217,
+      "rss_mib": 73.6171875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 194.719153,
+      "rss_mib": 72.625,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 204.034388,
+      "rss_mib": 72.83203125,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 212.985714,
+      "rss_mib": 72.4296875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 273.126511,
+      "rss_mib": 72.99609375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 244.248986,
+      "rss_mib": 73.62109375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 211.106993,
+      "rss_mib": 71.7421875,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    },
+    {
+      "startup_to_processed_events_ms": 196.844484,
+      "rss_mib": 72.609375,
+      "tile_visible": true,
+      "result_window_created": false,
+      "webengine_loaded": false,
+      "scope": "widget_only_no_backend_or_speech_models"
+    }
+  ],
+  "widget_startup_ms": {
+    "count": 30,
+    "p50": 210.961254,
+    "p95": 249.128055,
+    "max": 273.126511
+  },
+  "widget_rss_mib": {
+    "count": 30,
+    "p50": 72.83203125,
+    "p95": 73.734375,
+    "max": 73.9609375
+  }
+}

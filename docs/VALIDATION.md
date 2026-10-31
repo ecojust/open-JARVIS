@@ -10,6 +10,8 @@
 
 这次验收明确为 `scripted_tool_workflow`，资料经事先检索核对；没有生产任务模型，不能代替自由自然语言规划验收。Linux offscreen 也不替代三端显示器、真实音频设备或系统播放器验收。新版 [三端 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41185289970) 与 [alpha.2 未签名候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41185293675) 已启动；下方三端结果描述的是此前 alpha.1。
 
+新增 Office/视频能力后的 [30 次方块启动复测](validation/linux-office-preview-2026-10-31.json)：P95 **249.1 ms**、方块 RSS P95 **73.7 MiB**，与此前约 248 ms/73.6 MiB 相近。测量仍只覆盖 Linux offscreen 方块，不含后端、语音模型或结果窗口，不能代替全软件性能验收。
+
 ## 功能与协议
 
 本地环境为 Linux x86_64、Python 3.12.14，Qt 使用 offscreen 插件，无可用麦克风/扬声器，系统缺少 PortAudio。它不属于本项目首版安装包发布目标。
