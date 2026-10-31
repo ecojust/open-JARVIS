@@ -128,7 +128,7 @@ Public publication is a separate explicit action after checking the uploaded
 assets and tag target. An explicitly requested unsigned preview remains marked
 as a prerelease and retains its uncompleted hardware/signing acceptance scope.
 
-The draft is held for the hardware and performance gates in the root design.
+Stable releases remain gated on the hardware and performance requirements in the root design.
 The license collector saves installed dependency license files and an inventory;
 missing or embedded-native licenses still need distribution review before
 publication. In particular, the `imageio-ffmpeg` wheel's BSD license covers its

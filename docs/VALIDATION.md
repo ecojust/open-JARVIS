@@ -2,6 +2,14 @@
 
 日期：2026-10-31。此记录区分已经执行的检查与发布前仍需完成的验收。
 
+## 首个公开预览 Release
+
+已于 `2026-10-31T12:46:33Z` 发布 [v0.1.0-alpha.8](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.8)，`draft=false`、`prerelease=true`。三个安装器、三个 SHA-256 文件和三个构建清单均已上传。Git tag 指向原构建源码 `d7e9f1559528f8dae226ca1f756ff460843ccdfc`，没有重新构建或更改安装包版本。
+
+[发布流程](https://github.com/ecojust/open-JARVIS/actions/runs/41202456350) 复用成功构建 `41201695411` 的三个固定 artifact，核对原 run 与原生 CI 后下载产物，再验证完整目标矩阵、严格文件名、全部 SHA-256、校验文本及冻结自检。上传草稿的 9 个附件全部为 `uploaded` 后，按用户明确的发布请求公开。[发布元数据与附件摘要](validation/release-alpha8-2026-10-31.json) 保留 Release ID、tag、源码提交和 GitHub 资产 digest。新发布工具的 5 项专项测试通过；客户端本身仍为此前通过 303 项测试的同一构建。
+
+这是未签名公开预览，真实音频设备、干净系统安装、签名/公证和完整性能预算仍待验收。下方历史构建记录中的“当时未发布 Release”保留原样，发布行为以上述新记录为准。
+
 ## 下载进度稳定性
 
 本地 **303 项测试通过**，ruff 通过。修复 Kokoro 多文件下载中逐个切换 `downloading / verifying` 导致的滚动条闪烁和 ETA 布局跳动；保留每个文件和最终清单的完整性检查，将普通文件边界纳入 0.2 秒刷新限制，真实失败与换源仍即时显示。

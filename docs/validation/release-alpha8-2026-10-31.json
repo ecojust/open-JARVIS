@@ -1,0 +1,86 @@
+{
+  "release_id": 429932231,
+  "tag": "v0.1.0-alpha.8",
+  "source_commit": "d7e9f1559528f8dae226ca1f756ff460843ccdfc",
+  "url": "https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.8",
+  "draft": false,
+  "prerelease": true,
+  "published_at": "2026-10-31T12:46:33Z",
+  "build_run_id": 41201695411,
+  "promotion_run_id": 41202456350,
+  "verification": "Original successful build and native CI, exact three targets, nine regular files, full SHA-256/checksum matches, frozen self-tests and uploaded asset states checked before publication.",
+  "assets": [
+    {
+      "id": 695366158,
+      "name": "open-JARVIS-0.1.0-alpha.8-macos-arm64.dmg",
+      "size": 129428360,
+      "digest": "sha256:93366a5969d95fe0f74082f94af2c6d4d4643e42cdfad50283d8551889c3c75b",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-macos-arm64.dmg"
+    },
+    {
+      "id": 695366192,
+      "name": "open-JARVIS-0.1.0-alpha.8-macos-arm64.dmg.sha256",
+      "size": 108,
+      "digest": "sha256:8dd14fbc2f6e0130b855d97abe6c1628fd67d6806c1dfab0f8de464ff711715a",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-macos-arm64.dmg.sha256"
+    },
+    {
+      "id": 695366156,
+      "name": "open-JARVIS-0.1.0-alpha.8-macos-arm64.manifest.json",
+      "size": 3037,
+      "digest": "sha256:caff0c07f19fd1569e4e31c1f1ce6246b64f9aefc91036808d93728a4b01f4cd",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-macos-arm64.manifest.json"
+    },
+    {
+      "id": 695366159,
+      "name": "open-JARVIS-0.1.0-alpha.8-macos-x64.dmg",
+      "size": 143416774,
+      "digest": "sha256:f4b581d724cef78546a5da4929393cc5eaf9419632f68d4f800d2b9a9f3321a8",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-macos-x64.dmg"
+    },
+    {
+      "id": 695366181,
+      "name": "open-JARVIS-0.1.0-alpha.8-macos-x64.dmg.sha256",
+      "size": 106,
+      "digest": "sha256:7c1cfb9d91885baedf368cf34be0eb8dd78ed2dbe225221ebb20cfc7fffc4085",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-macos-x64.dmg.sha256"
+    },
+    {
+      "id": 695366157,
+      "name": "open-JARVIS-0.1.0-alpha.8-macos-x64.manifest.json",
+      "size": 3036,
+      "digest": "sha256:95d47c8edeab0ecc36d5cd2ef97fe30be446859ad240d0f789908b9110fd05f3",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-macos-x64.manifest.json"
+    },
+    {
+      "id": 695366193,
+      "name": "open-JARVIS-0.1.0-alpha.8-windows-x64-setup.exe",
+      "size": 109921145,
+      "digest": "sha256:64ea9aa0ffd98dbb75ff2a2791dc2f0563be31f1836b12404b0bb46a754f08e0",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-windows-x64-setup.exe"
+    },
+    {
+      "id": 695366206,
+      "name": "open-JARVIS-0.1.0-alpha.8-windows-x64-setup.exe.sha256",
+      "size": 115,
+      "digest": "sha256:159ca383a44c52ee6fa41f5098952ba76c600d6533f574f175ac52de18cc86a7",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-windows-x64-setup.exe.sha256"
+    },
+    {
+      "id": 695366201,
+      "name": "open-JARVIS-0.1.0-alpha.8-windows-x64-setup.manifest.json",
+      "size": 3198,
+      "digest": "sha256:f1d83028c62a126a9200b7bae9d64bac85a08e7c7faf09f40285ed00fe075324",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-windows-x64-setup.manifest.json"
+    }
+  ]
+}

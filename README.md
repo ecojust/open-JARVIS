@@ -11,7 +11,7 @@
 **实现原则：以性能作为第一性原则。** 常驻开销、交互延迟与资源可回收性是架构约束和发布门槛，从第一阶段测量；既有原型、框架和组件选择都必须接受验证。正确性、语音可用性和数据完整性仍须同时满足。
 
 > **当前版本：0.1.0 开发预览，2026-10-31。**
-> 已实现原生桌面、持久化任务、MAF 专业 Agent 编排及本地 STT/TTS 管线；下文保留整体架构和发布验收要求。三端原生 CI 与未签名安装包构建已通过；真实音频设备、签名安装和性能预算尚未完成验收，当前不是正式发行版。详细证据见 [验证记录](docs/VALIDATION.md)。
+> 已实现原生桌面、持久化任务、MAF 专业 Agent 编排及本地 STT/TTS 管线；下文保留整体架构和发布验收要求。三端原生 CI 与未签名安装包构建已通过；真实音频设备、签名安装和性能预算尚未完成验收，当前是公开预览版。详细证据见 [验证记录](docs/VALIDATION.md)。
 
 ## 桌面语音条与模型管理
 
@@ -33,15 +33,15 @@
 
 ## 下载开发预览
 
-**0.1.0-alpha.8，未签名测试包**，由相应系统和 CPU 架构的原生运行器构建。登录 GitHub 后从下列 Actions artifact 下载 ZIP，解压后使用其中的 DMG 或 EXE；同时包含 SHA-256 与构建清单。该批产物保留 14 天，过期后可通过手动构建工作流重新生成。
+**v0.1.0-alpha.8，公开预览（未签名）**。从 [GitHub Releases](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.8) 直接下载对应平台安装器；同时提供 SHA-256 校验文件与构建清单。
 
-| 平台 | 测试安装包 | Actions ZIP 大小 |
+| 平台 | 安装器 | 安装器大小 |
 | --- | --- | --- |
-| macOS Intel，macOS 14+ | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411/artifacts/13042922500) | 约 140.3 MB |
-| macOS Apple Silicon，macOS 14+ | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411/artifacts/13042288721) | 约 126.9 MB |
-| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411/artifacts/13043310922) | 约 109.4 MB |
+| macOS Intel，macOS 14+ | [下载 Intel DMG](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-macos-x64.dmg) | 约 143.4 MB |
+| macOS Apple Silicon，macOS 14+ | [下载 Apple Silicon DMG](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-macos-arm64.dmg) | 约 129.4 MB |
+| Windows x64 | [下载 Windows EXE](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-windows-x64-setup.exe) | 约 109.9 MB |
 
-[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41201692974) · [安装包构建与自检记录](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411)。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。未完成签名/公证，系统可能阻止直接打开；这些产物用于开发试用，尚未发布正式 GitHub Release。首次运行后通过语音条右键菜单配置任务模型、下载两个语音模型。
+[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41201692974) · [安装包构建与自检](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411) · [发布校验](https://github.com/ecojust/open-JARVIS/actions/runs/41202456350)。本次发布复用已验证的 alpha.8 三端安装包，9 个附件全部校验后公开。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。尚未完成签名/公证，系统可能显示安装安全提示。首次运行后通过语音条右键菜单配置任务模型、下载两个语音模型。
 
 ## 源码运行
 
