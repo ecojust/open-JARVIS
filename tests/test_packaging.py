@@ -1,11 +1,13 @@
 import importlib.util
+import io
 import json
 from pathlib import Path
 import runpy
+import subprocess
 import tempfile
 import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,6 +19,46 @@ spec.loader.exec_module(build_release)
 
 
 class PackagingTests(unittest.TestCase):
+    def test_frozen_import_failure_preserves_diagnostic_and_blocks_installer(self):
+        payload = {
+            "ok": False,
+            "native_imports": {
+                "sherpa_onnx": {"ok": False, "error_type": "ImportError"}
+            },
+        }
+        result = subprocess.CompletedProcess(
+            ["worker"], 1, json.dumps(payload), "missing native library\n"
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            evidence = Path(temporary) / "frozen-self-test.json"
+            with (
+                patch.object(build_release.subprocess, "run", return_value=result),
+                patch.object(build_release, "annotate_failure") as annotate,
+            ):
+                with self.assertRaisesRegex(
+                    ValueError, "installer will not be created"
+                ):
+                    build_release.frozen_self_test(Path("worker"), evidence)
+            report = json.loads(evidence.read_text(encoding="utf-8"))
+            self.assertEqual(report["returncode"], 1)
+            self.assertEqual(report["self_test"], payload)
+            self.assertIn("missing native library", report["stderr"])
+            self.assertIn("sherpa_onnx", annotate.call_args.args[0])
+
+    def test_pyinstaller_failure_annotation_retains_error_tail(self):
+        process = MagicMock()
+        process.__enter__.return_value = process
+        process.stdout = io.StringIO("starting analysis\nImportError: missing hook\n")
+        process.wait.return_value = 1
+        with (
+            patch.object(build_release.subprocess, "Popen", return_value=process),
+            patch.object(build_release, "annotate_failure") as annotate,
+            patch("sys.stdout", new_callable=io.StringIO),
+        ):
+            with self.assertRaisesRegex(ValueError, "PyInstaller exited"):
+                build_release.run_pyinstaller(["python", "-m", "PyInstaller"], env={})
+        self.assertIn("ImportError: missing hook", annotate.call_args.args[0])
+
     def test_portaudio_hook_excludes_foreign_architecture_libraries(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

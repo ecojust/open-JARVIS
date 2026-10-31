@@ -8,6 +8,7 @@ test packages require --allow-unsigned and carry explicit manifest metadata.
 from __future__ import annotations
 
 import argparse
+from collections import deque
 import hashlib
 import importlib.metadata
 import json
@@ -102,6 +103,83 @@ def run(arguments, *, env=None, capture=False):
         text=True,
         capture_output=capture,
     )
+
+
+def annotate_failure(message: str) -> None:
+    """Make safe build diagnostics readable through the GitHub Checks API."""
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        escaped = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        print(f"::error title=Native packaging failed::{escaped}", flush=True)
+
+
+def run_pyinstaller(arguments, *, env) -> None:
+    """Stream the compiler log and retain a useful failure tail for annotations."""
+    recent = deque(maxlen=30)
+    with subprocess.Popen(
+        [str(arg) for arg in arguments],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    ) as process:
+        for line in process.stdout:
+            print(line, end="", flush=True)
+            recent.append(line)
+        returncode = process.wait()
+    if returncode:
+        annotate_failure("PyInstaller failed:\n" + "".join(recent)[-12000:])
+        raise ValueError(f"PyInstaller exited with status {returncode}.")
+
+
+def frozen_self_test(worker: Path, evidence: Path) -> dict:
+    """Validate the real bundled imports before producing any installer."""
+    try:
+        completed = subprocess.run(
+            [str(worker), "--role", "self-test"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=90,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        annotate_failure("Frozen runtime self-test exceeded 90 seconds.")
+        raise ValueError("Frozen runtime self-test timed out.") from exc
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        payload = {"ok": False, "error": "Frozen self-test returned invalid JSON."}
+    report = {
+        "returncode": completed.returncode,
+        "self_test": payload,
+        "stderr": completed.stderr[-12000:],
+    }
+    if not isinstance(payload, dict) or payload.get("ok") is not True:
+        report["stdout"] = completed.stdout[-12000:]
+    evidence.parent.mkdir(parents=True, exist_ok=True)
+    evidence.write_text(
+        json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    if (
+        completed.returncode != 0
+        or not isinstance(payload, dict)
+        or payload.get("ok") is not True
+    ):
+        annotate_failure(
+            "Frozen runtime self-test failed:\n"
+            + json.dumps(report, ensure_ascii=False)[-24000:]
+        )
+        raise ValueError(
+            "Frozen runtime self-test failed; installer will not be created. "
+            f"Diagnostic evidence: {evidence}"
+        )
+    print(json.dumps({"frozen_self_test": payload}, ensure_ascii=False), flush=True)
+    return payload
 
 
 def collect_license_inventory(output: Path) -> None:
@@ -408,7 +486,7 @@ def build(
     )
     if not sign:
         build_env.pop("JARVIS_MACOS_SIGN_IDENTITY", None)
-    run(
+    run_pyinstaller(
         [
             sys.executable,
             "-m",
@@ -427,16 +505,11 @@ def build(
         app = work / "dist" / "Open JARVIS.app"
         inspect_bundle(app)
         worker = app / "Contents" / "MacOS" / "open-JARVIS-worker"
-        payload = json.loads(run([worker, "--role", "self-test"], capture=True).stdout)
     else:
         bundle = work / "dist" / "open-JARVIS"
         inspect_bundle(bundle)
         worker = bundle / "open-JARVIS-worker.exe"
-        payload = json.loads(run([worker, "--role", "self-test"], capture=True).stdout)
-    if payload.get("ok") is not True:
-        raise ValueError(
-            "Frozen runtime self-test failed; installer will not be created."
-        )
+    payload = frozen_self_test(worker, work / "frozen-self-test.json")
     name = f"open-JARVIS-{version}-{target}"
     artifact = (
         package_macos(app, output, name, sign=sign, work=work)

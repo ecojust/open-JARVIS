@@ -60,7 +60,11 @@ def self_test() -> int:
             importlib.import_module(name)
             native_imports[name] = {"ok": True}
         except Exception as exc:
-            native_imports[name] = {"ok": False, "error_type": type(exc).__name__}
+            native_imports[name] = {
+                "ok": False,
+                "error_type": type(exc).__name__,
+                "error_message": str(exc)[:500],
+            }
     result = {
         "ok": all(assets.values())
         and all(modules.values())

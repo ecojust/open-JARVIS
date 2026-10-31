@@ -46,7 +46,7 @@ jobs:
       - name: Install application and build dependencies
         run: python -m pip install -r requirements-build.txt
       - name: Test deterministic logic and native UI without hardware
-        run: python -m unittest discover -s tests -v
+        run: python scripts/run_tests.py
       - name: Runtime self-test
         run: python -m jarvis --role self-test
       - name: Native desktop and real backend lifecycle smoke
