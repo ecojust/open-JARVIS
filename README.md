@@ -33,6 +33,8 @@
 
 ## 下载开发预览
 
+> alpha.8 已确认存在 MAF 适配器漏打包，会导致配置任务模型后报“MAF 组件未安装”。这是安装包问题，无需自行安装 Python 或执行 pip；alpha.9 已修复源码，正在进行三端打包验证。
+
 **v0.1.0-alpha.8，公开预览（未签名）**。从 [GitHub Releases](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.8) 直接下载对应平台安装器；同时提供 SHA-256 校验文件与构建清单。
 
 | 平台 | 安装器 | 安装器大小 |

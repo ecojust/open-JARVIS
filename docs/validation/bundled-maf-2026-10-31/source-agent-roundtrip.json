@@ -1,0 +1,38 @@
+{
+  "recorded_at": "2026-10-31T14:01:30.513118+00:00",
+  "scope": "source Python configured-MAF task against explicit local HTTP/SSE fixtures; not a frozen executable, installer, external model or hardware test",
+  "frozen": false,
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.12.14",
+  "base_commit": "d33215c7e31c98c9728c9d51eb92c99bc42a303b",
+  "working_tree_contains_uncommitted_fix": true,
+  "source_sha256": {
+    "jarvis/agent_self_test.py": "b93a899307f05ff8b9d4f532413370af0b6931f4db564e6b88c3da77acb7313d",
+    "jarvis/agent.py": "a1633c3cbc8e74f6e4b7e119935baabf38ab546d6e57194fea63eaca2abf2612",
+    "jarvis/orchestration.py": "307e5564aa1b8a43a46463a56d67b59cb4d2c806388def6deffeaa8c27f48130",
+    "jarvis/storage.py": "494b6821cec4bfa3f161681f4fcfbba22b75eda54404ea49ed90b56c686e5c9b",
+    "tests/test_agent_self_test.py": "72e14a4f99a94b4107e26fdf50a68d3ee731a4c72a6b27eec56be9380c6106e6"
+  },
+  "dependencies": {
+    "agent-framework-core": "1.24.0",
+    "agent-framework-openai": "1.18.0",
+    "openai": "3.42.0",
+    "httpx": "0.28.1"
+  },
+  "agent_roundtrip": {
+    "ok": true,
+    "mode": "configured-maf",
+    "provider_responses": "explicit local HTTP/SSE fixtures",
+    "external_services_used": false,
+    "user_configuration_used": false,
+    "model_requests": 4,
+    "tool_calls": 1,
+    "streaming_requests": 2,
+    "chinese_request_roundtrip": true,
+    "chinese_file_roundtrip": true,
+    "chinese_answer_roundtrip": true,
+    "coordinator_writer_delegation": true,
+    "local_server_stopped": true,
+    "elapsed_seconds": 0.647
+  }
+}

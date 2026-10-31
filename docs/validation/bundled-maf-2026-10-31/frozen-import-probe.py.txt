@@ -1,0 +1,22 @@
+import importlib
+import json
+import sys
+import traceback
+
+result={'frozen':bool(getattr(sys,'frozen',False))}
+try:
+    importlib.import_module('agent_framework.openai')
+    result['old_namespace_check']=True
+except Exception:
+    result['old_namespace_check']=False
+    result['namespace_error']=traceback.format_exc()
+try:
+    from agent_framework import Agent, FunctionTool, FunctionMiddleware, Message, MiddlewareFailure
+    from agent_framework.openai import OpenAIChatCompletionClient
+    from openai import AsyncOpenAI
+    result['exact_runtime_imports']=True
+    result['provider_module']=OpenAIChatCompletionClient.__module__
+except Exception:
+    result['exact_runtime_imports']=False
+    result['runtime_error']=traceback.format_exc()
+print(json.dumps(result,ensure_ascii=False))
