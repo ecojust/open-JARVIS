@@ -1206,13 +1206,17 @@ class DesktopController(QObject):
             caption = "正在聆听"
         else:
             caption = "准备语音"
-        self.tile.set_state(caption, self._status_text(), error=bool(self.errors))
-        self.tile.set_listening(
+        receiving = (
             self.listening
             and not self.user_paused
             and not self.speaking
             and not any(key in self.errors for key in ("audio", "stt", "microphone"))
         )
+        # A model-download/provider warning must not hide a working microphone.
+        self.tile.set_state(
+            caption, self._status_text(), error=bool(self.errors) and not receiving
+        )
+        self.tile.set_listening(receiving)
 
     def cancel_task(self, task_id):
         if task_id and self.ready:

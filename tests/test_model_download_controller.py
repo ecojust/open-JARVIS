@@ -192,9 +192,22 @@ class ModelDownloadControllerTests(unittest.TestCase):
             "audio.level", {"listening": True, "speech": True, "level": 0.9}
         )
         self.assertEqual(self.controller.tile.audio_level, 0)
+
         self.controller.user_paused = False
         self.controller.speaking = True
         self.controller.handle_audio_event(
             "audio.level", {"listening": True, "speech": True, "level": 0.9}
+        )
+        self.assertEqual(self.controller.tile.audio_level, 0)
+
+    def test_download_warning_keeps_wave_but_microphone_failure_clears_it(self):
+        self.controller.handle_audio_event("audio.ready", {"listening": True})
+        self.controller.notify("中文播报模型下载失败", "download.tts")
+        self.controller.handle_audio_event(
+            "audio.level", {"listening": True, "speech": True, "level": 0.75}
+        )
+        self.assertEqual(self.controller.tile.audio_level, 0.75)
+        self.controller.handle_audio_event(
+            "audio.error", {"component": "microphone", "message": "输入设备断开"}
         )
         self.assertEqual(self.controller.tile.audio_level, 0)
