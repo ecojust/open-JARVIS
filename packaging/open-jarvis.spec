@@ -22,7 +22,7 @@ datas = [
 binaries = []
 hiddenimports = [
     "uvicorn.logging", "uvicorn.loops.asyncio", "uvicorn.protocols.http.h11_impl",
-    "uvicorn.protocols.websockets.none", "uvicorn.lifespan.on", "sounddevice",
+    "uvicorn.lifespan.on", "sounddevice",
     "_sounddevice", "webrtcvad", "_webrtcvad", "numpy", "httpx", "openai",
 ]
 for package in ("sherpa_onnx",):

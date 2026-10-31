@@ -76,11 +76,13 @@ class ConfigurationTests(unittest.TestCase):
                 Path("/readonly/bundle/assets/icon.png"),
             )
             self.assertEqual(
-                paths.model_dir("kokoro"), Path(directory) / "models" / "kokoro"
+                paths.model_dir("kokoro"),
+                Path(directory).resolve() / "models" / "kokoro",
             )
             with patch.dict(os.environ, {"JARVIS_STT_MODEL_DIR": "custom-model"}):
                 self.assertEqual(
-                    paths.model_dir("sensevoice"), Path(directory) / "custom-model"
+                    paths.model_dir("sensevoice"),
+                    Path(directory).resolve() / "custom-model",
                 )
 
     def test_saved_settings_override_dotenv_defaults_after_restart(self):
@@ -167,8 +169,10 @@ class ConfigurationTests(unittest.TestCase):
             ),
         ):
             settings = Settings.from_env()
-            self.assertEqual(settings.workspace, Path(directory) / "workspace")
-            self.assertEqual(settings.data_dir, Path(directory))
+            self.assertEqual(
+                settings.workspace, Path(directory).resolve() / "workspace"
+            )
+            self.assertEqual(settings.data_dir, Path(directory).resolve())
             self.assertEqual(settings.max_model_calls, 100)
             self.assertEqual(settings.instance_token, "session-token")
             self.assertEqual(settings.orchestrator, "maf")
