@@ -1,0 +1,130 @@
+{
+  "passed": false,
+  "mode": "scripted_tool_workflow",
+  "natural_language_agent_execution_verified": false,
+  "started_at": "2026-10-31T08:28:20.000518+00:00",
+  "conditions": {
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "python": "3.12.14",
+    "qt_platform": "offscreen",
+    "real_backend_process": true,
+    "real_http_sse": true,
+    "real_qt_widgets": true,
+    "microphone_tested": false,
+    "desktop_speech_playback_tested": false,
+    "real_video_narration_required": true,
+    "audio_worker_enabled": false,
+    "published_to_bilibili": false,
+    "published_to_wechat": false
+  },
+  "limitations": [
+    "Six explicit scripted plans exercise real tools; no language-model key is configured and free-form model planning is not verified.",
+    "Offscreen native Qt verifies fullscreen state and actual-file content previews, not physical monitor behavior or Office pixel-perfect rendering.",
+    "The schedule is an anonymous example with stated constraints; user-specific staffing rules were not supplied.",
+    "The MP4 contains real local Kokoro narration; actual loudspeaker output and external-player launch are not part of this headless run."
+  ],
+  "cases": [
+    {
+      "case": "word",
+      "status": "succeeded",
+      "passed": true,
+      "fullscreen": true,
+      "preview_kind": "document",
+      "preview_source": "actual_file",
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "actual_web_sources_read": true,
+        "actual_search_results": true
+      }
+    },
+    {
+      "case": "excel",
+      "status": "succeeded",
+      "passed": true,
+      "fullscreen": true,
+      "preview_kind": "spreadsheet",
+      "preview_source": "actual_file",
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "actual_web_sources_read": true,
+        "actual_search_results": true
+      }
+    },
+    {
+      "case": "ppt",
+      "status": "succeeded",
+      "passed": true,
+      "fullscreen": true,
+      "preview_kind": "presentation",
+      "preview_source": "actual_file",
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "actual_web_sources_read": true,
+        "actual_search_results": true
+      }
+    },
+    {
+      "case": "schedule",
+      "status": "succeeded",
+      "passed": true,
+      "fullscreen": true,
+      "preview_kind": "spreadsheet",
+      "preview_source": "actual_file",
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "thirty_people_schedule_audited": true
+      }
+    },
+    {
+      "case": "video",
+      "status": "succeeded",
+      "passed": false,
+      "fullscreen": false,
+      "preview_kind": "video",
+      "preview_source": "actual_file",
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "fullscreen_matching_task": false,
+        "real_sse_tool_events": true,
+        "references_ppt_across_schedule_task": true,
+        "actual_video_and_audio_streams": true
+      }
+    },
+    {
+      "case": "article",
+      "status": "succeeded",
+      "passed": true,
+      "fullscreen": true,
+      "preview_kind": "markdown",
+      "preview_source": "actual_file",
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "actual_web_sources_read": true,
+        "actual_search_results": true
+      }
+    }
+  ],
+  "note": "首轮真实运行发现视频页面被长文件名和封面撑大；保留失败记录。修复布局后重新执行完整六项，最终结果见同目录report.json。"
+}

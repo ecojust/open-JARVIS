@@ -1,0 +1,1286 @@
+{
+  "passed": true,
+  "mode": "scripted_tool_workflow",
+  "natural_language_agent_execution_verified": false,
+  "started_at": "2026-10-31T08:34:27.576431+00:00",
+  "research_as_of": "2026-10-31",
+  "research_sha256": "113b7ab7e14108f99516919981e929928f096b54c7e314999d31db8584efd17b",
+  "conditions": {
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "python": "3.12.14",
+    "qt_platform": "offscreen",
+    "real_backend_process": true,
+    "real_http_sse": true,
+    "real_qt_widgets": true,
+    "microphone_tested": false,
+    "desktop_speech_playback_tested": false,
+    "real_video_narration_required": true,
+    "audio_worker_enabled": false,
+    "published_to_bilibili": false,
+    "published_to_wechat": false
+  },
+  "cases": [
+    {
+      "index": 1,
+      "case": "word",
+      "command": "帮我搜一下最近国际形势，用word总结一下我看看",
+      "task_id": "task_da235a553d244de9b56a3419038c3989",
+      "parent_task_id": null,
+      "status": "succeeded",
+      "mode": "scripted_tool_workflow",
+      "elapsed_seconds": 9.302,
+      "visible": true,
+      "fullscreen": true,
+      "window_size": [
+        800,
+        800
+      ],
+      "screen_size": [
+        800,
+        800
+      ],
+      "preview_kind": "document",
+      "preview_source": "actual_file",
+      "preview_error": null,
+      "source_urls_read": [
+        {
+          "url": "https://news.un.org/en/story/2026/10/1168712",
+          "title": "Ukraine: Oleshky ceasefire offers ‘hope’ for civilians as attacks on aid vehicles continue | UN News",
+          "content_sha256": "27654f79076fd6c96270bb2c05ec3c989351868482dccb59d89b0ca37a777d12",
+          "characters": 5963
+        },
+        {
+          "url": "https://news.un.org/en/story/2026/10/1168707",
+          "title": "UN rights office warns of deepening displacement ‘nightmare’ in Gaza | UN News",
+          "content_sha256": "7271e4582d7ac9f5d9f41222289396a54ee576b576299c672047fb2d8502776b",
+          "characters": 5415
+        },
+        {
+          "url": "https://news.un.org/en/story/2026/10/1168698",
+          "title": "Security Council LIVE: Can new technology keep the world’s sea lanes safe? | UN News",
+          "content_sha256": "9f21955b72e1e28a6603348663eae4ac7788900c6f2423d6642c206de2356bc8",
+          "characters": 4040
+        },
+        {
+          "url": "https://news.un.org/en/story/2026/10/1168708",
+          "title": "DR Congo: Hunger deepens for millions amid conflict, Ebola and climate shocks | UN News",
+          "content_sha256": "99da25868f55193f6b0bced5691066214d4973c34f93782c7ccd95f248aa1480",
+          "characters": 5684
+        },
+        {
+          "url": "https://news.un.org/en/story/2026/10/1168706",
+          "title": "Yemen war makes reaching assistance too dangerous for many | UN News",
+          "content_sha256": "57a7af1b58938091bdaac340a136a27573e314863f3db687ecee7ac0af14b55f",
+          "characters": 5565
+        },
+        {
+          "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+          "title": "Resilience Under Strain, Urgent Choices",
+          "content_sha256": "26b6cd4ed2af28fd713d1a99c911751c17fe9fe8a25dafa6bfca72ddd5d6e535",
+          "characters": 6009
+        }
+      ],
+      "search_result_count": 5,
+      "tool_events": [
+        "task.queued",
+        "task.planning",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "artifact.created",
+        "artifact.created",
+        "tool.completed",
+        "agent.tool_result",
+        "agent.answer",
+        "task.completed",
+        "task.execution_stopped"
+      ],
+      "tool_steps": [
+        {
+          "name": "search_web",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "create_document",
+          "status": "succeeded",
+          "error": null
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "国际形势总结.docx",
+          "size": 38891,
+          "sha256": "45060569ca217465e585b69b59b0cc22b92d10c3a4743a780d4fa6e26a7e149d",
+          "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "hidden": false
+        },
+        {
+          "path": "国际形势总结.docx.preview.json",
+          "size": 4348,
+          "sha256": "a13df45044d788830d8aee2517511d2556cfcf1eeddf8b11c84424ed3a74d110",
+          "media_type": "application/json",
+          "hidden": true
+        }
+      ],
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "preview_tab_selected": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "actual_web_sources_read": true,
+        "actual_search_results": true
+      },
+      "screenshot": "screenshots/01-word.png",
+      "passed": true
+    },
+    {
+      "index": 2,
+      "case": "excel",
+      "command": "帮我搜一下最近国际形势，用excel列举一下",
+      "task_id": "task_71dbc671e2d548f5a6c9254107968edd",
+      "parent_task_id": "task_da235a553d244de9b56a3419038c3989",
+      "status": "succeeded",
+      "mode": "scripted_tool_workflow",
+      "elapsed_seconds": 3.014,
+      "visible": true,
+      "fullscreen": true,
+      "window_size": [
+        800,
+        800
+      ],
+      "screen_size": [
+        800,
+        800
+      ],
+      "preview_kind": "spreadsheet",
+      "preview_source": "actual_file",
+      "preview_error": null,
+      "source_urls_read": [
+        {
+          "url": "https://news.un.org/en/story/2026/10/1168712",
+          "title": "Ukraine: Oleshky ceasefire offers ‘hope’ for civilians as attacks on aid vehicles continue | UN News",
+          "content_sha256": "27654f79076fd6c96270bb2c05ec3c989351868482dccb59d89b0ca37a777d12",
+          "characters": 5963
+        },
+        {
+          "url": "https://news.un.org/en/story/2026/10/1168707",
+          "title": "UN rights office warns of deepening displacement ‘nightmare’ in Gaza | UN News",
+          "content_sha256": "7271e4582d7ac9f5d9f41222289396a54ee576b576299c672047fb2d8502776b",
+          "characters": 5415
+        },
+        {
+          "url": "https://news.un.org/en/story/2026/10/1168698",
+          "title": "Security Council LIVE: Can new technology keep the world’s sea lanes safe? | UN News",
+          "content_sha256": "9f21955b72e1e28a6603348663eae4ac7788900c6f2423d6642c206de2356bc8",
+          "characters": 4040
+        },
+        {
+          "url": "https://news.un.org/en/story/2026/10/1168708",
+          "title": "DR Congo: Hunger deepens for millions amid conflict, Ebola and climate shocks | UN News",
+          "content_sha256": "99da25868f55193f6b0bced5691066214d4973c34f93782c7ccd95f248aa1480",
+          "characters": 5684
+        },
+        {
+          "url": "https://news.un.org/en/story/2026/10/1168706",
+          "title": "Yemen war makes reaching assistance too dangerous for many | UN News",
+          "content_sha256": "57a7af1b58938091bdaac340a136a27573e314863f3db687ecee7ac0af14b55f",
+          "characters": 5565
+        },
+        {
+          "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+          "title": "Resilience Under Strain, Urgent Choices",
+          "content_sha256": "26b6cd4ed2af28fd713d1a99c911751c17fe9fe8a25dafa6bfca72ddd5d6e535",
+          "characters": 6009
+        }
+      ],
+      "search_result_count": 5,
+      "tool_events": [
+        "task.queued",
+        "task.planning",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "artifact.created",
+        "artifact.created",
+        "tool.completed",
+        "agent.tool_result",
+        "agent.answer",
+        "task.completed",
+        "task.execution_stopped"
+      ],
+      "tool_steps": [
+        {
+          "name": "search_web",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "create_spreadsheet",
+          "status": "succeeded",
+          "error": null
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "国际形势清单.xlsx",
+          "size": 9135,
+          "sha256": "8ffe89194a6bfe847a6b59d53e233b305d259aaf3e5147bded5c5d7b832d767b",
+          "media_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "hidden": false
+        },
+        {
+          "path": "国际形势清单.xlsx.preview.json",
+          "size": 4181,
+          "sha256": "feec691286f5d438bfd3f457ea3e4b4e0a0774b4ea3d59bc4e07677d63160515",
+          "media_type": "application/json",
+          "hidden": true
+        }
+      ],
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "preview_tab_selected": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "actual_web_sources_read": true,
+        "actual_search_results": true
+      },
+      "screenshot": "screenshots/02-excel.png",
+      "passed": true
+    },
+    {
+      "index": 3,
+      "case": "ppt",
+      "command": "帮我搜一下最近金融趋势，做一个ppt我看看",
+      "task_id": "task_7767e3643b2d47828d9bfbfec35f3279",
+      "parent_task_id": "task_71dbc671e2d548f5a6c9254107968edd",
+      "status": "succeeded",
+      "mode": "scripted_tool_workflow",
+      "elapsed_seconds": 8.373,
+      "visible": true,
+      "fullscreen": true,
+      "window_size": [
+        800,
+        800
+      ],
+      "screen_size": [
+        800,
+        800
+      ],
+      "preview_kind": "presentation",
+      "preview_source": "actual_file",
+      "preview_error": null,
+      "source_urls_read": [
+        {
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+          "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+          "content_sha256": "e1a0f07460bedf03794253d54d5567714f3052ae426b00dfbccefa8b6e144ac5",
+          "characters": 9772
+        },
+        {
+          "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+          "title": "Monetary policy decisions",
+          "content_sha256": "7db15da2318f14a1ce91b68455fdd8d9f400f2d93d82087164e9e765c69185af",
+          "characters": 15857
+        },
+        {
+          "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+          "title": "Resilience Under Strain, Urgent Choices",
+          "content_sha256": "26b6cd4ed2af28fd713d1a99c911751c17fe9fe8a25dafa6bfca72ddd5d6e535",
+          "characters": 6009
+        },
+        {
+          "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+          "title": "Resilience, Risk, and Transformation",
+          "content_sha256": "1e0f14d41fc27b482273ffd0ea4b1fd196fdef62f83c500dae826b8760a9e085",
+          "characters": 6094
+        },
+        {
+          "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+          "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+          "content_sha256": "0bce2a53e223198233e8d5e98f90e0ad2b9587d87c5f9b103ecfed9d9f58b02c",
+          "characters": 8221
+        },
+        {
+          "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+          "title": "October 2026 euro area bank lending survey",
+          "content_sha256": "dedb35b6bee6705a9e6c2bc210b2f6488210644631895ea09d3520ef835854c8",
+          "characters": 23363
+        }
+      ],
+      "search_result_count": 5,
+      "tool_events": [
+        "task.queued",
+        "task.planning",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "artifact.created",
+        "artifact.created",
+        "tool.completed",
+        "agent.tool_result",
+        "agent.answer",
+        "task.completed",
+        "task.execution_stopped"
+      ],
+      "tool_steps": [
+        {
+          "name": "search_web",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "create_presentation",
+          "status": "succeeded",
+          "error": null
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "近期金融趋势.pptx",
+          "size": 49223,
+          "sha256": "0ec5b6b794ef89e3db290c36cc4a5dc7336f2be4ec52278dde33b47d5f1271c3",
+          "media_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "hidden": false
+        },
+        {
+          "path": "近期金融趋势.pptx.preview.json",
+          "size": 7932,
+          "sha256": "4a52f6be99c7653baf7cbeacfe9bacae053266615e101dc950fe550da265030c",
+          "media_type": "application/json",
+          "hidden": true
+        }
+      ],
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "preview_tab_selected": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "actual_web_sources_read": true,
+        "actual_search_results": true
+      },
+      "screenshot": "screenshots/03-ppt.png",
+      "passed": true
+    },
+    {
+      "index": 4,
+      "case": "schedule",
+      "command": "帮我排一个30人的排班计划",
+      "task_id": "task_ec560829001a4c11837a50299b04f050",
+      "parent_task_id": "task_7767e3643b2d47828d9bfbfec35f3279",
+      "status": "succeeded",
+      "mode": "scripted_tool_workflow",
+      "elapsed_seconds": 0.425,
+      "visible": true,
+      "fullscreen": true,
+      "window_size": [
+        800,
+        800
+      ],
+      "screen_size": [
+        800,
+        800
+      ],
+      "preview_kind": "spreadsheet",
+      "preview_source": "actual_file",
+      "preview_error": null,
+      "source_urls_read": [],
+      "search_result_count": 0,
+      "tool_events": [
+        "task.queued",
+        "task.planning",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "artifact.created",
+        "artifact.created",
+        "artifact.created",
+        "tool.completed",
+        "agent.tool_result",
+        "agent.answer",
+        "task.completed",
+        "task.execution_stopped"
+      ],
+      "tool_steps": [
+        {
+          "name": "create_schedule",
+          "status": "succeeded",
+          "error": null
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "30人一周示例排班.xlsx",
+          "size": 8608,
+          "sha256": "826d562fc99609f2dfddf89856e16106e1837a88d804eef6b00219444022909a",
+          "media_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "hidden": false
+        },
+        {
+          "path": "30人一周示例排班.xlsx.preview.json",
+          "size": 7009,
+          "sha256": "ffc14b593b698e634a72812b2b6f7db2f43c2cd74557c63701f5b7907dcd9308",
+          "media_type": "application/json",
+          "hidden": true
+        },
+        {
+          "path": "30人一周示例排班.xlsx.schedule.json",
+          "size": 13809,
+          "sha256": "2b6f650c2d4006f2fceb385c7cdb482deec3dd0487cf62a9e2b747a382367ace",
+          "media_type": "application/json",
+          "hidden": false
+        }
+      ],
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "preview_tab_selected": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "thirty_people_schedule_audited": true
+      },
+      "schedule_audit": {
+        "passed": true,
+        "violations": [],
+        "employees": [
+          {
+            "employee": "员工01",
+            "shifts": 5,
+            "hours": 40.0,
+            "rest_days": 2,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工02",
+            "shifts": 5,
+            "hours": 40.0,
+            "rest_days": 2,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工03",
+            "shifts": 5,
+            "hours": 40.0,
+            "rest_days": 2,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工04",
+            "shifts": 5,
+            "hours": 40.0,
+            "rest_days": 2,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工05",
+            "shifts": 5,
+            "hours": 40.0,
+            "rest_days": 2,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工06",
+            "shifts": 5,
+            "hours": 40.0,
+            "rest_days": 2,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工07",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工08",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工09",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工10",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工11",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工12",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工13",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工14",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工15",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工16",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工17",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工18",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工19",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工20",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工21",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工22",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工23",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工24",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工25",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工26",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工27",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工28",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工29",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          },
+          {
+            "employee": "员工30",
+            "shifts": 4,
+            "hours": 32.0,
+            "rest_days": 3,
+            "max_consecutive_days": 2,
+            "shortest_rest_hours": 32.0
+          }
+        ],
+        "total_assignments": 126,
+        "checked_constraints": [
+          "每班人数",
+          "员工有效且不重复",
+          "每天最多一班",
+          "最大班次数",
+          "班间休息",
+          "连续工作天数"
+        ]
+      },
+      "schedule_assumptions": [
+        "匿名员工示例，须替换为实际人员名单",
+        "所有员工技能相同，无请假或不可用日期输入",
+        "仅检查计划区间内的休息；不包含区间前后的已有班次",
+        "跨午夜班次按开始日期计入当天",
+        "不代表满足未提供的行业、合同或法定排班规定"
+      ],
+      "screenshot": "screenshots/04-schedule.png",
+      "passed": true
+    },
+    {
+      "index": 5,
+      "case": "video",
+      "command": "刚才的ppt你帮我剪一个讲解视频，用于发布b站的",
+      "task_id": "task_9d825d0460664f19ab9efde3ede12432",
+      "parent_task_id": "task_7767e3643b2d47828d9bfbfec35f3279",
+      "status": "succeeded",
+      "mode": "scripted_tool_workflow",
+      "elapsed_seconds": 84.615,
+      "visible": true,
+      "fullscreen": true,
+      "window_size": [
+        800,
+        800
+      ],
+      "screen_size": [
+        800,
+        800
+      ],
+      "preview_kind": "video",
+      "preview_source": "actual_file",
+      "preview_error": null,
+      "source_urls_read": [],
+      "search_result_count": 0,
+      "tool_events": [
+        "task.queued",
+        "task.planning",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "artifact.created",
+        "artifact.created",
+        "artifact.created",
+        "artifact.created",
+        "artifact.created",
+        "tool.completed",
+        "agent.tool_result",
+        "agent.answer",
+        "task.completed",
+        "task.execution_stopped"
+      ],
+      "tool_steps": [
+        {
+          "name": "get_file_preview",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "create_explainer_video",
+          "status": "succeeded",
+          "error": null
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "金融趋势讲解.mp4",
+          "size": 2021397,
+          "sha256": "d3419f354e747880083609cc69f98dc80b5af7210211f087152de66957c1ec64",
+          "media_type": "video/mp4",
+          "hidden": false
+        },
+        {
+          "path": "金融趋势讲解.mp4.srt",
+          "size": 1976,
+          "sha256": "3f11718514323fadd0ea330afa2cc0a2877ca2c130386f511750c3e30a24dd81",
+          "media_type": "text/plain",
+          "hidden": false
+        },
+        {
+          "path": "金融趋势讲解.mp4.narration.md",
+          "size": 2429,
+          "sha256": "202d3647abe280d12ffc249d3d4d018d8386e6d62a7bc588c5c9a1bf9d19b115",
+          "media_type": "text/markdown",
+          "hidden": false
+        },
+        {
+          "path": "金融趋势讲解.mp4.video.json",
+          "size": 1554,
+          "sha256": "b175eaae8b060a9e3f4030d789e41d84218c99a95e1b4a5b96ad121596883d1e",
+          "media_type": "application/json",
+          "hidden": false
+        },
+        {
+          "path": "金融趋势讲解.mp4.poster.png",
+          "size": 58994,
+          "sha256": "3b01376dfa3981c1c1dd6baa5c873dd3d706c1c18ff179e027651af3f9844fbe",
+          "media_type": "image/png",
+          "hidden": false
+        }
+      ],
+      "video_source_presentation": "近期金融趋势.pptx",
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "preview_tab_selected": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "references_ppt_across_schedule_task": true,
+        "actual_video_and_audio_streams": true
+      },
+      "video_probe": {
+        "duration_seconds": 99.958333,
+        "width": 1280,
+        "height": 720,
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "has_audio": true,
+        "verification_source": "ffprobe_container"
+      },
+      "screenshot": "screenshots/05-video.png",
+      "passed": true
+    },
+    {
+      "index": 6,
+      "case": "article",
+      "command": "帮我写一个最近金融的总结性文章，后面会用于发布到微信公众号的",
+      "task_id": "task_c265b4a080764d73872b0ad60e9f7a86",
+      "parent_task_id": "task_9d825d0460664f19ab9efde3ede12432",
+      "status": "succeeded",
+      "mode": "scripted_tool_workflow",
+      "elapsed_seconds": 4.531,
+      "visible": true,
+      "fullscreen": true,
+      "window_size": [
+        800,
+        800
+      ],
+      "screen_size": [
+        800,
+        800
+      ],
+      "preview_kind": "markdown",
+      "preview_source": "actual_file",
+      "preview_error": null,
+      "source_urls_read": [
+        {
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+          "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+          "content_sha256": "e1a0f07460bedf03794253d54d5567714f3052ae426b00dfbccefa8b6e144ac5",
+          "characters": 9772
+        },
+        {
+          "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+          "title": "Monetary policy decisions",
+          "content_sha256": "7db15da2318f14a1ce91b68455fdd8d9f400f2d93d82087164e9e765c69185af",
+          "characters": 15857
+        },
+        {
+          "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+          "title": "Resilience Under Strain, Urgent Choices",
+          "content_sha256": "26b6cd4ed2af28fd713d1a99c911751c17fe9fe8a25dafa6bfca72ddd5d6e535",
+          "characters": 6009
+        },
+        {
+          "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+          "title": "Resilience, Risk, and Transformation",
+          "content_sha256": "1e0f14d41fc27b482273ffd0ea4b1fd196fdef62f83c500dae826b8760a9e085",
+          "characters": 6094
+        },
+        {
+          "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+          "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+          "content_sha256": "0bce2a53e223198233e8d5e98f90e0ad2b9587d87c5f9b103ecfed9d9f58b02c",
+          "characters": 8221
+        },
+        {
+          "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+          "title": "October 2026 euro area bank lending survey",
+          "content_sha256": "dedb35b6bee6705a9e6c2bc210b2f6488210644631895ea09d3520ef835854c8",
+          "characters": 23363
+        }
+      ],
+      "search_result_count": 5,
+      "tool_events": [
+        "task.queued",
+        "task.planning",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "tool.completed",
+        "agent.tool_result",
+        "task.usage",
+        "agent.status",
+        "task.progress",
+        "agent.tool_start",
+        "tool.started",
+        "artifact.created",
+        "tool.completed",
+        "agent.tool_result",
+        "agent.answer",
+        "task.completed",
+        "task.execution_stopped"
+      ],
+      "tool_steps": [
+        {
+          "name": "search_web",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "fetch_page",
+          "status": "succeeded",
+          "error": null
+        },
+        {
+          "name": "write_file",
+          "status": "succeeded",
+          "error": null
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "金融趋势公众号文章.md",
+          "size": 4808,
+          "sha256": "e9341aa548eadd1648166e93571cd9f4ae6658805b29f9e9e40e29e8b9272871",
+          "media_type": "text/markdown",
+          "hidden": false
+        }
+      ],
+      "checks": {
+        "task_succeeded": true,
+        "expected_file_exists": true,
+        "actual_file_preview": true,
+        "preview_tab_selected": true,
+        "fullscreen_matching_task": true,
+        "real_sse_tool_events": true,
+        "actual_web_sources_read": true,
+        "actual_search_results": true
+      },
+      "screenshot": "screenshots/06-article.png",
+      "passed": true
+    }
+  ],
+  "checks": {
+    "tile_only_at_start": true,
+    "all_six_submitted_and_observed": true,
+    "owned_backend_stopped": true,
+    "no_webengine_loaded": true,
+    "qt_exit_code_zero": true
+  },
+  "limitations": [
+    "Six explicit scripted plans exercise real tools; no language-model key is configured and free-form model planning is not verified.",
+    "Offscreen native Qt verifies fullscreen state and actual-file content previews, not physical monitor behavior or Office pixel-perfect rendering.",
+    "The schedule is an anonymous example with stated constraints; user-specific staffing rules were not supplied.",
+    "The MP4 contains real local Kokoro narration; actual loudspeaker output and external-player launch are not part of this headless run."
+  ],
+  "elapsed_seconds": 111.81,
+  "completed_at": "2026-10-31T08:36:19.385974+00:00"
+}

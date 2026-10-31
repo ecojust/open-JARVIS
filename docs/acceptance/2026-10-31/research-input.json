@@ -1,0 +1,1108 @@
+{
+  "status": "verified_recent_public_sources",
+  "retrieved_at": "2026-10-31T08:23:07.826166+00:00",
+  "coverage_date": "2026-10-31",
+  "requested_lookback_days": 30,
+  "included_source_dates": {
+    "earliest": "2026-10-13",
+    "latest": "2026-10-30"
+  },
+  "retrieval_method": "HTTPS requests through the execution environment default proxy; official RSS and public search used to discover pages",
+  "natural_language_agent_execution_verified": false,
+  "limitations": [
+    "未配置任务模型；本材料检索由研究子任务实际抓取，不代表JARVIS自然语言编排已通过端到端验收。",
+    "IMF资料为报告官方介绍/概述页，未声称已阅读全文PDF。",
+    "国际形势为选定议题，不是全球所有事件的全面清单。",
+    "机构预测和风险情景均明确与实际政策决定、已披露事实区分。",
+    "Reuters返回401，未绕过访问限制，也未引用其不可访问正文。",
+    "默认工具的固定IP直连与本次环境代理抓取是不同链路，需要单独验证。",
+    "原始网页仅保存在scratch研究目录；导出材料使用原创中文摘要、短证据摘录及来源链接。"
+  ],
+  "sources": [
+    {
+      "id": "INT-1",
+      "title": "Ukraine: Oleshky ceasefire offers ‘hope’ for civilians as attacks on aid vehicles continue | UN News",
+      "url": "https://news.un.org/en/story/2026/10/1168712",
+      "published_at": "2026-10-30",
+      "accessed_at": "2026-10-31T08:20:55.283816+00:00",
+      "published_at_basis": "RSS条目与正文明确日期",
+      "scope": "official_article_body_read",
+      "evidence": "The ceasefire aimed at relieving the humanitarian emergency faced by trapped residents on the Russian-controlled left bank of the Dnipro, was brokered by US First Lady Melania Trump and announced by the White House on 23 October. It is due to end on the evening of 1 November.",
+      "summary_zh": "联合国10月30日报道，奥列什基的局部停火为平民撤离提供窗口；同一报道记录了援助车辆遭无人机袭击。局部人道安排不能等同于整体冲突结束。",
+      "http_status": 200,
+      "raw_text_sha256": "27654f79076fd6c96270bb2c05ec3c989351868482dccb59d89b0ca37a777d12"
+    },
+    {
+      "id": "INT-2",
+      "title": "UN rights office warns of deepening displacement ‘nightmare’ in Gaza | UN News",
+      "url": "https://news.un.org/en/story/2026/10/1168707",
+      "published_at": "2026-10-30",
+      "accessed_at": "2026-10-31T08:20:55.284667+00:00",
+      "published_at_basis": "RSS条目与正文明确日期",
+      "scope": "official_article_body_read",
+      "evidence": "The relentless contraction of space has caused new displacement in areas adjacent to the “yellow line” demarcation boundary.",
+      "summary_zh": "联合国人权高专办10月30日警告，加沙民众可停留空间继续收缩，反复流离失所与避难物资进入受限加重人道压力。这是该机构的公开评估。",
+      "http_status": 200,
+      "raw_text_sha256": "7271e4582d7ac9f5d9f41222289396a54ee576b576299c672047fb2d8502776b"
+    },
+    {
+      "id": "INT-3",
+      "title": "Security Council LIVE: Can new technology keep the world’s sea lanes safe? | UN News",
+      "url": "https://news.un.org/en/story/2026/10/1168698",
+      "published_at": "2026-10-29",
+      "accessed_at": "2026-10-31T08:20:55.285410+00:00",
+      "published_at_basis": "RSS条目与正文明确日期",
+      "scope": "official_article_body_read",
+      "evidence": "Cheap drones, autonomous vessels and cyberattacks are changing the threats to the world’s shipping lanes – and the tools to counter them.",
+      "summary_zh": "联合国安理会10月29日围绕新技术与海上安全展开公开辩论，关注无人机、自主船舶和网络攻击对航运及食品、能源运输的影响；材料不代表已通过新的强制性决议。",
+      "http_status": 200,
+      "raw_text_sha256": "9f21955b72e1e28a6603348663eae4ac7788900c6f2423d6642c206de2356bc8"
+    },
+    {
+      "id": "INT-4",
+      "title": "DR Congo: Hunger deepens for millions amid conflict, Ebola and climate shocks | UN News",
+      "url": "https://news.un.org/en/story/2026/10/1168708",
+      "published_at": "2026-10-30",
+      "accessed_at": "2026-10-31T08:20:55.285782+00:00",
+      "published_at_basis": "RSS条目与正文明确日期",
+      "scope": "official_article_body_read",
+      "evidence": "Roughly 28.8 million people, or 23 per cent of the population analysed, are forecast to experience high levels of acute food insecurity (IPC Phase 3 or above) through December.",
+      "summary_zh": "联合国援引IPC分析称，刚果(金)约2880万人预计在截至12月的分析期面临IPC第3阶段或以上急性粮食不安全；冲突、疾病和气候冲击叠加。该数字是机构分析期估计/预测。",
+      "http_status": 200,
+      "raw_text_sha256": "99da25868f55193f6b0bced5691066214d4973c34f93782c7ccd95f248aa1480"
+    },
+    {
+      "id": "INT-5",
+      "title": "Yemen war makes reaching assistance too dangerous for many | UN News",
+      "url": "https://news.un.org/en/story/2026/10/1168706",
+      "published_at": "2026-10-30",
+      "accessed_at": "2026-10-31T08:20:55.286262+00:00",
+      "published_at_basis": "RSS条目与正文明确日期",
+      "scope": "official_article_body_read",
+      "evidence": "More than 280,000 people have now been displaced by fighting in Yemen and many vulnerable people are unable to access lifesaving relief because it is too dangerous to do so, the UN refugee agency (UNHCR) said on Friday.",
+      "summary_zh": "联合国难民署10月30日称，也门战事已导致超过28万人流离失所，危险的通行条件限制援助可及性，红海周边贸易与运输扰动进一步增加救援难度。",
+      "http_status": 200,
+      "raw_text_sha256": "57a7af1b58938091bdaac340a136a27573e314863f3db687ecee7ac0af14b55f"
+    },
+    {
+      "id": "FIN-1",
+      "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+      "published_at": "2026-10-28",
+      "accessed_at": "2026-10-31T08:20:55.286639+00:00",
+      "published_at_basis": "RSS条目与正文明确日期",
+      "scope": "official_article_body_read",
+      "evidence": "The Committee decided to maintain the target range for the federal funds rate at 3-3/4 to 4 percent, in support of the Federal Reserve's dual mandate.",
+      "summary_zh": "美联储10月28日决定维持联邦基金利率目标区间3.75%—4.00%，声明称通胀仍然偏高，后续政策需要更多信息判断。",
+      "http_status": 200,
+      "raw_text_sha256": "e1a0f07460bedf03794253d54d5567714f3052ae426b00dfbccefa8b6e144ac5"
+    },
+    {
+      "id": "FIN-2",
+      "title": "Monetary policy decisions",
+      "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+      "published_at": "2026-10-29",
+      "accessed_at": "2026-10-31T08:20:55.648844+00:00",
+      "published_at_basis": "RSS条目与正文明确日期",
+      "scope": "official_article_body_read",
+      "evidence": "The interest rates on the deposit facility, the main refinancing operations and the marginal lending facility will remain unchanged at 2.50%, 2.65% and 2.90% respectively.",
+      "summary_zh": "欧洲央行10月29日维持三项主要政策利率，其中存款便利利率为2.50%；声明强调能源冲击带来的通胀上行风险，并未预先承诺固定利率路径。",
+      "http_status": 200,
+      "raw_text_sha256": "7db15da2318f14a1ce91b68455fdd8d9f400f2d93d82087164e9e765c69185af"
+    },
+    {
+      "id": "FIN-3",
+      "title": "Resilience Under Strain, Urgent Choices",
+      "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+      "published_at": "2026-10-13",
+      "accessed_at": "2026-10-31T08:20:55.818479+00:00",
+      "published_at_basis": "报告网址与页面发布说明，未取得时分",
+      "scope": "official_report_landing_page_read",
+      "evidence": "The World Economic Outlook projects global growth to slow to 3.1 percent in 2026 and rebound to 3.4 percent in 2027.\nGlobal headline inflation is projected to rise to 4.7 percent in 2026 before easing to 4.1 percent in 2027.",
+      "summary_zh": "IMF《2026年10月世界经济展望》预计全球经济2026年增长3.1%、2027年增长3.4%；全球整体通胀相应为4.7%与4.1%。这是机构预测，统计信息截止10月1日。",
+      "http_status": 200,
+      "raw_text_sha256": "26b6cd4ed2af28fd713d1a99c911751c17fe9fe8a25dafa6bfca72ddd5d6e535"
+    },
+    {
+      "id": "FIN-4",
+      "title": "Resilience, Risk, and Transformation",
+      "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+      "published_at": "2026-10-13",
+      "accessed_at": "2026-10-31T08:20:55.838563+00:00",
+      "published_at_basis": "报告网址与页面发布说明，未取得时分",
+      "scope": "official_report_landing_page_read",
+      "evidence": "Financial markets have remained resilient, supported by solid economic growth and strong corporate earnings, but financial stability risks remain elevated.",
+      "summary_zh": "IMF《2026年10月全球金融稳定报告》介绍页认为金融市场仍有韧性，但AI相关资产重估、主权债收益率上升、网络威胁，以及非银行部门杠杆和流动性错配值得关注。风险描述不是确定会发生的事件。",
+      "http_status": 200,
+      "raw_text_sha256": "1e0f14d41fc27b482273ffd0ea4b1fd196fdef62f83c500dae826b8760a9e085"
+    },
+    {
+      "id": "FIN-5",
+      "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+      "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+      "published_at": "2026-10-28",
+      "accessed_at": "2026-10-31T08:20:55.951134+00:00",
+      "published_at_basis": "RSS条目与正文明确日期",
+      "scope": "official_article_body_read",
+      "evidence": "Commodity prices are set to rise 23% in 2026 as global shocks mount, according to the World Bank Group’s latest Commodity Markets Outlook, released today.\n[…]\nEnergy prices are projected to rise 32% in 2026, reversing three years of declines, before moderating in 2027.",
+      "summary_zh": "世界银行10月28日《大宗商品市场展望》新闻稿预测，2026年整体商品价格上涨23%、能源价格上涨32%；布伦特原油年均价预测为91美元/桶。基准预测假设相关冲突不出现重大升级。",
+      "http_status": 200,
+      "raw_text_sha256": "0bce2a53e223198233e8d5e98f90e0ad2b9587d87c5f9b103ecfed9d9f58b02c"
+    },
+    {
+      "id": "FIN-6",
+      "title": "October 2026 euro area bank lending survey",
+      "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+      "published_at": "2026-10-27",
+      "accessed_at": "2026-10-31T08:20:56.146263+00:00",
+      "published_at_basis": "RSS条目与正文明确日期",
+      "scope": "official_article_body_read",
+      "evidence": "Further tightening of credit standards for loans to firms and consumer credit, owing to higher risks\nDecline in loan demand across all segments, driven mainly by higher interest rates\nGradual but sustained increase in demand for loans to finance AI infrastructure",
+      "summary_zh": "ECB10月27日银行贷款调查显示，2026年第三季度企业贷款标准收紧的银行净比例为9%，企业贷款需求变化的净比例为-6%；这是调查差额指标，不是贷款余额增速。",
+      "http_status": 200,
+      "raw_text_sha256": "dedb35b6bee6705a9e6c2bc210b2f6488210644631895ea09d3520ef835854c8"
+    },
+    {
+      "id": "FIN-7",
+      "title": "Results of the ECB Survey of Professional Forecasters for the fourth quarter of 2026",
+      "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261030~e92c3c838c.en.html",
+      "published_at": "2026-10-30",
+      "accessed_at": "2026-10-31T08:20:56.411137+00:00",
+      "published_at_basis": "RSS条目与正文明确日期",
+      "scope": "official_article_body_read",
+      "evidence": "Respondents expected real GDP growth of 1.0% in 2026 and 1.3% in both 2027 and 2028.",
+      "summary_zh": "ECB10月30日公布的专业预测者调查中，受访者预测欧元区2026年通胀3.0%、GDP增长1.0%；这些是调查参与者的预期，不代表ECB决策机构或员工的预测。",
+      "http_status": 200,
+      "raw_text_sha256": "38ec65be2b607efde1c68ae910b5c7199c39f82e9abfdb0b1ae5fcb3ffdd0105"
+    }
+  ],
+  "failed_requests": [
+    {
+      "name": "reuters_world",
+      "url": "https://www.reuters.com/world/",
+      "accessed_at": "2026-10-31T08:20:23.365094+00:00",
+      "status": 401,
+      "final_url": "https://www.reuters.com/world/",
+      "content_type": "text/html;charset=utf-8",
+      "bytes": 771,
+      "preview": "<html lang=\"en\"><head><title>reuters.com</title><style>#cmsg{animation: A 1.5s;}@keyframes A{0%{opacity:0;}99%{opacity:0;}100%{opacity:1;}}</style></h"
+    }
+  ],
+  "retrieval_attempts": [
+    {
+      "name": "un_news",
+      "url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
+      "accessed_at": "2026-10-31T08:20:23.360804+00:00",
+      "status": 200,
+      "final_url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
+      "content_type": "application/rss+xml; charset=utf-8",
+      "bytes": 33761
+    },
+    {
+      "name": "fed_news",
+      "url": "https://www.federalreserve.gov/feeds/press_all.xml",
+      "accessed_at": "2026-10-31T08:20:23.361473+00:00",
+      "status": 200,
+      "final_url": "https://www.federalreserve.gov/feeds/press_all.xml",
+      "content_type": "text/xml",
+      "bytes": 14507
+    },
+    {
+      "name": "ecb_news",
+      "url": "https://www.ecb.europa.eu/rss/press.html",
+      "accessed_at": "2026-10-31T08:20:23.361966+00:00",
+      "status": 200,
+      "final_url": "https://www.ecb.europa.eu/rss/press.html",
+      "content_type": "application/rss+xml",
+      "bytes": 5813
+    },
+    {
+      "name": "imf_news",
+      "url": "https://www.imf.org/en/News",
+      "accessed_at": "2026-10-31T08:20:23.362485+00:00",
+      "status": 200,
+      "final_url": "https://www.imf.org/en/News",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 11216
+    },
+    {
+      "name": "worldbank_news",
+      "url": "https://www.worldbank.org/en/news",
+      "accessed_at": "2026-10-31T08:20:23.362876+00:00",
+      "status": 200,
+      "final_url": "https://www.worldbank.org/ext/en/news",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 41810
+    },
+    {
+      "name": "bbc_world",
+      "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "accessed_at": "2026-10-31T08:20:23.363332+00:00",
+      "status": 200,
+      "final_url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "content_type": "text/xml; charset=utf-8",
+      "bytes": 27165
+    },
+    {
+      "name": "reuters_world",
+      "url": "https://www.reuters.com/world/",
+      "accessed_at": "2026-10-31T08:20:23.365094+00:00",
+      "status": 401,
+      "final_url": "https://www.reuters.com/world/",
+      "content_type": "text/html;charset=utf-8",
+      "bytes": 771
+    },
+    {
+      "name": "bing_news",
+      "url": "https://www.bing.com/news/search?q=international+October+2026&format=rss",
+      "accessed_at": "2026-10-31T08:20:23.668183+00:00",
+      "status": 200,
+      "final_url": "https://www.bing.com/news/search?q=international+October+2026&format=rss&brdr=1",
+      "content_type": "application/xml; charset=utf-8",
+      "bytes": 6144
+    },
+    {
+      "name": "ddg_search",
+      "url": "https://html.duckduckgo.com/html/?q=international+finance+October+2026",
+      "accessed_at": "2026-10-31T08:20:23.967886+00:00",
+      "status": 200,
+      "final_url": "https://html.duckduckgo.com/html/?q=international+finance+October+2026",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 34379
+    }
+  ],
+  "international": {
+    "title": "国际形势速览：冲突外溢与经济压力并行",
+    "as_of": "2026-10-31",
+    "sections": [
+      {
+        "heading": "阅读口径",
+        "text": "截至2026年10月31日，选取最近30天可公开核查的联合国与国际金融机构材料。本简报是重点议题选编，不是对所有国家和事件的完整覆盖。事实陈述、机构预测与本稿分析分别标注。"
+      },
+      {
+        "heading": "一、冲突仍在持续，人道窗口值得关注",
+        "text": "联合国10月30日报道，奥列什基的局部停火为平民撤离提供窗口；同一报道记录了援助车辆遭无人机袭击。局部人道安排不能等同于整体冲突结束。\n\n联合国人权高专办10月30日警告，加沙民众可停留空间继续收缩，反复流离失所与避难物资进入受限加重人道压力。这是该机构的公开评估。 [INT-1][INT-2]"
+      },
+      {
+        "heading": "二、人道压力与供应链扰动互相叠加",
+        "text": "联合国难民署10月30日称，也门战事已导致超过28万人流离失所，危险的通行条件限制援助可及性，红海周边贸易与运输扰动进一步增加救援难度。\n\n联合国援引IPC分析称，刚果(金)约2880万人预计在截至12月的分析期面临IPC第3阶段或以上急性粮食不安全；冲突、疾病和气候冲击叠加。该数字是机构分析期估计/预测。 [INT-5][INT-4]"
+      },
+      {
+        "heading": "三、航运安全正在增加技术维度",
+        "text": "联合国安理会10月29日围绕新技术与海上安全展开公开辩论，关注无人机、自主船舶和网络攻击对航运及食品、能源运输的影响；材料不代表已通过新的强制性决议。 本稿观察：食品与能源跨境运输的风险管理，需要同时关注物理安全与数字基础设施。 [INT-3]"
+      },
+      {
+        "heading": "四、国际形势的经济传导",
+        "text": "IMF《2026年10月世界经济展望》预计全球经济2026年增长3.1%、2027年增长3.4%；全球整体通胀相应为4.7%与4.1%。这是机构预测，统计信息截止10月1日。 本稿观察：判断国际事件的经济影响时，应分别检查能源成本、供应链、融资与财政空间，避免只凭单一新闻推断所有市场方向。 [FIN-3]"
+      },
+      {
+        "heading": "后续跟踪",
+        "text": "1. 人道通行安排是否延续，平民与关键基础设施能否得到保护。\n2. 航道与商品运输是否出现新的实质性中断。\n3. 通胀、政策利率与融资条件是否印证或改变机构预测。\n资料获取时间为2026-10-31；事件变化较快，后续公开使用前应复核。"
+      }
+    ],
+    "sources": [
+      {
+        "id": "INT-1",
+        "title": "Ukraine: Oleshky ceasefire offers ‘hope’ for civilians as attacks on aid vehicles continue | UN News",
+        "url": "https://news.un.org/en/story/2026/10/1168712",
+        "published_at": "2026-10-30"
+      },
+      {
+        "id": "INT-2",
+        "title": "UN rights office warns of deepening displacement ‘nightmare’ in Gaza | UN News",
+        "url": "https://news.un.org/en/story/2026/10/1168707",
+        "published_at": "2026-10-30"
+      },
+      {
+        "id": "INT-3",
+        "title": "Security Council LIVE: Can new technology keep the world’s sea lanes safe? | UN News",
+        "url": "https://news.un.org/en/story/2026/10/1168698",
+        "published_at": "2026-10-29"
+      },
+      {
+        "id": "INT-4",
+        "title": "DR Congo: Hunger deepens for millions amid conflict, Ebola and climate shocks | UN News",
+        "url": "https://news.un.org/en/story/2026/10/1168708",
+        "published_at": "2026-10-30"
+      },
+      {
+        "id": "INT-5",
+        "title": "Yemen war makes reaching assistance too dangerous for many | UN News",
+        "url": "https://news.un.org/en/story/2026/10/1168706",
+        "published_at": "2026-10-30"
+      },
+      {
+        "id": "FIN-3",
+        "title": "Resilience Under Strain, Urgent Choices",
+        "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+        "published_at": "2026-10-13"
+      }
+    ],
+    "columns": [
+      "议题",
+      "区域",
+      "近期进展",
+      "发布日期",
+      "信息性质",
+      "潜在影响（分析）",
+      "跟踪事项",
+      "来源发布方",
+      "来源URL"
+    ],
+    "rows": [
+      [
+        "乌克兰",
+        "欧洲",
+        "局部停火为平民撤离创造窗口，援助车辆仍遇袭",
+        "2026-10-30",
+        "联合国报道",
+        "需区分局部人道安排与全面和平；基础设施风险仍需跟踪",
+        "停火是否延续、援助通道与冬季能源保障",
+        "联合国新闻",
+        "https://news.un.org/en/story/2026/10/1168712"
+      ],
+      [
+        "加沙",
+        "中东",
+        "人权高专办警告反复迁徙、居住空间收缩与援助限制",
+        "2026-10-30",
+        "联合国机构评估",
+        "平民保护、避难与援助可及性仍是重点",
+        "避难物资进入及平民安全",
+        "联合国新闻",
+        "https://news.un.org/en/story/2026/10/1168707"
+      ],
+      [
+        "也门",
+        "中东/红海",
+        "难民署称超过28万人因战事流离失所，援助通行危险",
+        "2026-10-30",
+        "联合国机构披露",
+        "冲突与运输扰动叠加人道压力",
+        "救援物资抵达、通行安全和资金缺口",
+        "联合国新闻",
+        "https://news.un.org/en/story/2026/10/1168706"
+      ],
+      [
+        "刚果(金)",
+        "非洲",
+        "IPC预计约2880万人在截至12月的分析期处于急性粮食不安全第3阶段或以上",
+        "2026-10-30",
+        "分析期估计/预测",
+        "冲突、疾病、价格与气候风险交织",
+        "援助覆盖、市场可达性与疫情进展",
+        "联合国新闻/IPC",
+        "https://news.un.org/en/story/2026/10/1168708"
+      ],
+      [
+        "海上安全",
+        "全球航运",
+        "安理会讨论无人机、自主船舶和网络威胁对航运的影响",
+        "2026-10-29",
+        "会议报道",
+        "食品和能源运输对安全及数字基础设施的依赖提高",
+        "航道安全、新技术治理及运输中断",
+        "联合国新闻",
+        "https://news.un.org/en/story/2026/10/1168698"
+      ],
+      [
+        "全球经济",
+        "全球",
+        "IMF预测2026年增长3.1%、通胀4.7%；地缘风险是下行风险之一",
+        "2026-10-13",
+        "机构预测",
+        "金融与实体经济承受不同程度的能源及财政压力",
+        "能源价格、通胀和融资条件；预测不可当成已实现数据",
+        "IMF",
+        "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026"
+      ]
+    ]
+  },
+  "financial_presentation": {
+    "title": "近期全球金融观察",
+    "as_of": "2026-10-31",
+    "slides": [
+      {
+        "title": "近期全球金融观察",
+        "bullets": [
+          "截至2026年10月31日",
+          "利率、能源与金融稳定三条线",
+          "基于美联储、ECB、IMF、世界银行公开材料"
+        ],
+        "notes": "这份简报梳理截至十月三十一日的近期全球金融信号。重点看利率、能源和金融稳定，同时区分已经公布的政策决定与尚未实现的机构预测。",
+        "source_ids": [
+          "FIN-1",
+          "FIN-2",
+          "FIN-3",
+          "FIN-4",
+          "FIN-5"
+        ],
+        "sources": [
+          {
+            "id": "FIN-1",
+            "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+            "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+            "published_at": "2026-10-28"
+          },
+          {
+            "id": "FIN-2",
+            "title": "Monetary policy decisions",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+            "published_at": "2026-10-29"
+          },
+          {
+            "id": "FIN-3",
+            "title": "Resilience Under Strain, Urgent Choices",
+            "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+            "published_at": "2026-10-13"
+          },
+          {
+            "id": "FIN-4",
+            "title": "Resilience, Risk, and Transformation",
+            "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+            "published_at": "2026-10-13"
+          },
+          {
+            "id": "FIN-5",
+            "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+            "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+            "published_at": "2026-10-28"
+          }
+        ]
+      },
+      {
+        "title": "增长有韧性，通胀压力仍在",
+        "bullets": [
+          "IMF预测：2026年全球增长3.1%，2027年3.4%",
+          "全球整体通胀预测：2026年4.7%，2027年4.1%",
+          "数据基础截至10月1日；以上均为预测"
+        ],
+        "notes": "IMF十月展望预计，今年全球增长百分之三点一，明年百分之三点四。整体通胀预测分别为百分之四点七和四点一。它们是预测，不是已经完成的经济成绩单。",
+        "source_ids": [
+          "FIN-3"
+        ],
+        "sources": [
+          {
+            "id": "FIN-3",
+            "title": "Resilience Under Strain, Urgent Choices",
+            "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+            "published_at": "2026-10-13"
+          }
+        ]
+      },
+      {
+        "title": "主要央行没有承诺统一转向",
+        "bullets": [
+          "美联储10月28日维持目标区间3.75%—4.00%",
+          "ECB10月29日维持存款便利利率2.50%",
+          "政策声明仍关注通胀与后续数据"
+        ],
+        "notes": "十月二十八日，美联储维持联邦基金利率目标区间在百分之三点七五到四。欧洲央行随后维持存款利率百分之二点五。两份声明都不能解读为已经承诺持续降息。",
+        "source_ids": [
+          "FIN-1",
+          "FIN-2"
+        ],
+        "sources": [
+          {
+            "id": "FIN-1",
+            "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+            "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+            "published_at": "2026-10-28"
+          },
+          {
+            "id": "FIN-2",
+            "title": "Monetary policy decisions",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+            "published_at": "2026-10-29"
+          }
+        ]
+      },
+      {
+        "title": "能源冲击仍是关键变量",
+        "bullets": [
+          "世行预测2026年整体商品价格上涨23%",
+          "能源价格预测上涨32%；布伦特年均价91美元/桶",
+          "基准假设：相关冲突不出现重大升级"
+        ],
+        "notes": "世界银行十月展望预测，今年整体商品价格上涨百分之二十三，能源价格上涨百分之三十二。预测依赖冲突不大幅升级等假设，因此应把基准情景和风险情景分开理解。",
+        "source_ids": [
+          "FIN-5"
+        ],
+        "sources": [
+          {
+            "id": "FIN-5",
+            "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+            "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+            "published_at": "2026-10-28"
+          }
+        ]
+      },
+      {
+        "title": "融资条件：看调查口径，不只看数字",
+        "bullets": [
+          "ECB调查：企业贷款标准收紧净比例9%",
+          "企业贷款需求变化净比例-6%",
+          "净比例是银行回答的差额，不是贷款余额增速"
+        ],
+        "notes": "欧洲央行银行调查显示，企业信贷标准继续收紧，贷款需求走弱。这里的净比例，衡量回答上升与下降的银行占比之差，不能误写成贷款余额下降了百分之六。",
+        "source_ids": [
+          "FIN-6"
+        ],
+        "sources": [
+          {
+            "id": "FIN-6",
+            "title": "October 2026 euro area bank lending survey",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+            "published_at": "2026-10-27"
+          }
+        ]
+      },
+      {
+        "title": "金融稳定：风险值得盯，结论不能跳",
+        "bullets": [
+          "IMF提醒关注AI相关资产重估",
+          "主权债收益率冲击与网络风险",
+          "杠杆和流动性错配可能放大压力"
+        ],
+        "notes": "IMF提醒关注人工智能相关资产重估、主权债收益率变化和网络风险。杠杆与流动性错配可能放大压力，但识别风险，并不等于断言金融危机必然发生。",
+        "source_ids": [
+          "FIN-4"
+        ],
+        "sources": [
+          {
+            "id": "FIN-4",
+            "title": "Resilience, Risk, and Transformation",
+            "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+            "published_at": "2026-10-13"
+          }
+        ]
+      },
+      {
+        "title": "下一步跟踪什么",
+        "bullets": [
+          "实际通胀是否偏离机构预测",
+          "能源供应与运输是否出现新增冲击",
+          "利率决定如何传导至融资与信用",
+          "把事实、预测和分析分别记录"
+        ],
+        "notes": "接下来可以跟踪实际通胀、能源与运输变化，以及利率向融资条件的传导。阅读金融新闻时，先问清数字的日期、范围和口径，再形成自己的判断。",
+        "source_ids": [
+          "FIN-1",
+          "FIN-2",
+          "FIN-3",
+          "FIN-5",
+          "FIN-6"
+        ],
+        "sources": [
+          {
+            "id": "FIN-1",
+            "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+            "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+            "published_at": "2026-10-28"
+          },
+          {
+            "id": "FIN-2",
+            "title": "Monetary policy decisions",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+            "published_at": "2026-10-29"
+          },
+          {
+            "id": "FIN-3",
+            "title": "Resilience Under Strain, Urgent Choices",
+            "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+            "published_at": "2026-10-13"
+          },
+          {
+            "id": "FIN-5",
+            "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+            "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+            "published_at": "2026-10-28"
+          },
+          {
+            "id": "FIN-6",
+            "title": "October 2026 euro area bank lending survey",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+            "published_at": "2026-10-27"
+          }
+        ]
+      },
+      {
+        "title": "来源与使用范围",
+        "bullets": [
+          "美联储与ECB：10月政策声明及银行调查",
+          "IMF：10月WEO与GFSR介绍页",
+          "世界银行：10月商品展望新闻稿",
+          "供公开资料梳理；不构成个股交易建议"
+        ],
+        "notes": "本片依据列出的公开资料整理，完整链接见配套文稿。它是宏观信息梳理，不提供个股买卖建议；发布前请再次核对最新消息。",
+        "source_ids": [
+          "FIN-1",
+          "FIN-2",
+          "FIN-3",
+          "FIN-4",
+          "FIN-5",
+          "FIN-6"
+        ],
+        "sources": [
+          {
+            "id": "FIN-1",
+            "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+            "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+            "published_at": "2026-10-28"
+          },
+          {
+            "id": "FIN-2",
+            "title": "Monetary policy decisions",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+            "published_at": "2026-10-29"
+          },
+          {
+            "id": "FIN-3",
+            "title": "Resilience Under Strain, Urgent Choices",
+            "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+            "published_at": "2026-10-13"
+          },
+          {
+            "id": "FIN-4",
+            "title": "Resilience, Risk, and Transformation",
+            "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+            "published_at": "2026-10-13"
+          },
+          {
+            "id": "FIN-5",
+            "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+            "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+            "published_at": "2026-10-28"
+          },
+          {
+            "id": "FIN-6",
+            "title": "October 2026 euro area bank lending survey",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+            "published_at": "2026-10-27"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "FIN-1",
+        "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+        "published_at": "2026-10-28"
+      },
+      {
+        "id": "FIN-2",
+        "title": "Monetary policy decisions",
+        "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+        "published_at": "2026-10-29"
+      },
+      {
+        "id": "FIN-3",
+        "title": "Resilience Under Strain, Urgent Choices",
+        "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+        "published_at": "2026-10-13"
+      },
+      {
+        "id": "FIN-4",
+        "title": "Resilience, Risk, and Transformation",
+        "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+        "published_at": "2026-10-13"
+      },
+      {
+        "id": "FIN-5",
+        "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+        "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+        "published_at": "2026-10-28"
+      },
+      {
+        "id": "FIN-6",
+        "title": "October 2026 euro area bank lending survey",
+        "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+        "published_at": "2026-10-27"
+      }
+    ]
+  },
+  "wechat_article": {
+    "title": "近期全球金融观察：把利率、能源和风险放在同一张图里",
+    "as_of": "2026-10-31",
+    "markdown": "# 近期全球金融观察：把利率、能源和风险放在同一张图里\n\n*资料截至2026年10月31日｜公开资料整理稿，供微信公众号编辑使用*\n\n金融新闻每天都有新数字，但“数字变了”和“趋势已经确定”不是同一件事。回看十月的主要机构材料，一条相对清晰的线索是：全球经济仍有韧性，通胀和融资压力却没有退场。理解这组信号，最好从利率、能源和金融稳定三个角度交叉观察，而不是只选一个最醒目的标题。\n\n## 一、增长预测不等于已经实现的增长\n\nIMF十月《世界经济展望》预计，全球经济在2026年增长3.1%，2027年增长3.4%；全球整体通胀预测分别为4.7%与4.1%。这些数字反映的是机构对未来的判断，相关统计信息以10月1日为截止点，并不保证涵盖此后的每一项变化。[FIN-3]\n\n因此，比记住单个预测更重要的，是理解预测背后的条件。如果冲突、能源供给或贸易环境变化，增长与通胀路径也可能改变。把预测写成“今年经济已经增长多少”，会省略最关键的不确定性。\n\n## 二、利率不动，也不代表压力已经消失\n\n10月28日，美联储维持联邦基金利率目标区间在3.75%至4.00%。10月29日，欧洲央行也维持主要政策利率，其中存款便利利率为2.50%。两者的声明仍然强调通胀和后续信息，不能据此推导出已经承诺某条固定的降息路线。[FIN-1][FIN-2]\n\n对企业而言，政策利率只是融资环境的一环。欧洲央行10月银行贷款调查显示，第三季度企业贷款标准收紧的银行净比例为9%，企业贷款需求变化的净比例为-6%。这里的“净比例”，是回答收紧与放松、上升与下降的银行占比差额，绝不是贷款余额下降了6%。[FIN-6]\n\n同样一个数字，统计口径不同，含义就完全不同。判断融资环境时，需要把央行决定、银行审批标准和企业实际需求放在一起看。\n\n## 三、能源变化可能同时影响物价和经营成本\n\n世界银行10月28日公布的商品展望新闻稿预计，2026年整体商品价格上涨23%，能源价格上涨32%，布伦特原油年均价格为每桶91美元。该基准预测以相关冲突不发生重大升级等条件为前提。[FIN-5]\n\n这意味着，讨论能源冲击时，不能只盯着油价当天涨跌。能源、运输、农业投入和企业成本之间存在传导关系；观察时既要记录最新变化，也要检查自己的判断依赖什么情景。机构给出的年均价预测，也不能直接拿来替代某一天的实际市场报价。\n\n## 四、有韧性，与需要防范风险可以同时成立\n\nIMF十月《全球金融稳定报告》介绍页认为，市场受到经济增长与企业盈利的支持，但金融稳定风险仍处高位。材料提示关注AI相关资产重估、主权债收益率冲击、网络威胁，以及杠杆和流动性错配对冲击的放大作用。[FIN-4]\n\n这些提醒有助于建立观察清单，却不能被改写成“某类资产必然崩盘”或“危机已经到来”。好的金融总结，需要说明哪些是发生过的事实，哪些是预测，哪些只是需要警惕的风险情景。\n\n## 可以继续跟踪的四个问题\n\n1. 实际通胀是否印证、还是偏离现有预测？\n2. 能源供给和关键运输通道是否出现新的实质变化？\n3. 利率与银行贷款标准怎样影响企业和家庭的融资？\n4. 杠杆、流动性和数字基础设施风险是否出现可验证的新证据？\n\n本文梳理的是截至上述日期的公开宏观资料，不提供个股或交易建议。文章发布前，应再次核对最新政策与来源链接，并保留事实、机构预测和编辑分析之间的边界。\n\n## 来源\n\n- [FIN-1] Federal Reserve Board - Federal Reserve issues FOMC statement（2026-10-28）：https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm\n\n- [FIN-2] Monetary policy decisions（2026-10-29）：https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html\n\n- [FIN-3] Resilience Under Strain, Urgent Choices（2026-10-13）：https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026\n\n- [FIN-4] Resilience, Risk, and Transformation（2026-10-13）：https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026\n\n- [FIN-5] Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount（2026-10-28）：https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026\n\n- [FIN-6] October 2026 euro area bank lending survey（2026-10-27）：https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html\n",
+    "sources": [
+      {
+        "id": "FIN-1",
+        "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+        "published_at": "2026-10-28"
+      },
+      {
+        "id": "FIN-2",
+        "title": "Monetary policy decisions",
+        "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+        "published_at": "2026-10-29"
+      },
+      {
+        "id": "FIN-3",
+        "title": "Resilience Under Strain, Urgent Choices",
+        "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+        "published_at": "2026-10-13"
+      },
+      {
+        "id": "FIN-4",
+        "title": "Resilience, Risk, and Transformation",
+        "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+        "published_at": "2026-10-13"
+      },
+      {
+        "id": "FIN-5",
+        "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+        "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+        "published_at": "2026-10-28"
+      },
+      {
+        "id": "FIN-6",
+        "title": "October 2026 euro area bank lending survey",
+        "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+        "published_at": "2026-10-27"
+      }
+    ]
+  },
+  "jarvis_registry_network_validation": {
+    "passed": false,
+    "tests": [
+      {
+        "name": "fetch_page",
+        "arguments": {
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm"
+        },
+        "seconds": 5.007,
+        "result": {
+          "error": "网络请求失败或超时，请稍后重试。"
+        }
+      },
+      {
+        "name": "search_web",
+        "arguments": {
+          "query": "IMF October 2026 world economic outlook"
+        },
+        "seconds": 5.004,
+        "result": {
+          "error": "网络请求失败或超时，请稍后重试。"
+        }
+      }
+    ],
+    "distinction": "研究子任务通过环境代理取得公开正文；当前工具固定IP直连在DNS阶段超时。未证明JARVIS内置检索链路可用。",
+    "scope": "baseline before trusted source integration"
+  },
+  "numeric_fact_checks": [
+    {
+      "source_id": "FIN-1",
+      "published_at": "2026-10-28",
+      "metric": "联邦基金利率目标区间",
+      "value": "3.75%—4.00%",
+      "nature": "该次政策决定",
+      "exact_source_token": "maintain the target range for the federal funds rate at 3-3/4 to 4 percent",
+      "date_token": "October 28, 2026",
+      "verified_in_fetched_body": true
+    },
+    {
+      "source_id": "FIN-2",
+      "published_at": "2026-10-29",
+      "metric": "ECB存款便利利率",
+      "value": "2.50%",
+      "nature": "该次政策决定",
+      "exact_source_token": "remain unchanged at 2.50%, 2.65% and 2.90% respectively",
+      "date_token": "29 October 2026",
+      "verified_in_fetched_body": true
+    },
+    {
+      "source_id": "FIN-5",
+      "published_at": "2026-10-28",
+      "metric": "2026年整体商品价格",
+      "value": "+23%",
+      "nature": "年度预测，不是当日涨幅/已实现全年涨幅",
+      "exact_source_token": "Commodity prices are set to rise 23% in 2026",
+      "date_token": "October 28, 2026",
+      "verified_in_fetched_body": true
+    },
+    {
+      "source_id": "FIN-5",
+      "published_at": "2026-10-28",
+      "metric": "2026年能源价格",
+      "value": "+32%",
+      "nature": "年度预测，不是当日涨幅/已实现全年涨幅",
+      "exact_source_token": "Energy prices are projected to rise 32% in 2026",
+      "date_token": "October 28, 2026",
+      "verified_in_fetched_body": true
+    }
+  ],
+  "financial_presentation_six": {
+    "title": "近期全球金融观察：六页核心版",
+    "as_of": "2026-10-31",
+    "slides": [
+      {
+        "title": "近期全球金融：增长与通胀并看",
+        "bullets": [
+          "截至2026年10月31日的公开资料",
+          "IMF预测2026年全球增长3.1%、整体通胀4.7%",
+          "预测基于截至10月1日的信息，不是全年已实现结果"
+        ],
+        "notes": "截至十月三十一日，全球金融仍需同时观察增长与通胀。IMF十月报告预测，今年全球增长百分之三点一，整体通胀百分之四点七。这是机构预测，不是已经实现的全年结果。",
+        "source_ids": [
+          "FIN-3"
+        ],
+        "sources": [
+          {
+            "id": "FIN-3",
+            "title": "Resilience Under Strain, Urgent Choices",
+            "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+            "published_at": "2026-10-13"
+          }
+        ]
+      },
+      {
+        "title": "利率：本次不动，不承诺固定路径",
+        "bullets": [
+          "Fed 10月28日：目标区间3.75%—4.00%",
+          "ECB 10月29日：存款便利利率2.50%",
+          "两者均维持；后续决策仍取决于数据"
+        ],
+        "notes": "十月二十八日，美联储维持目标利率区间在百分之三点七五到四。次日，欧洲央行维持存款利率百分之二点五。这些是已公布的政策决定，但不能推导为承诺持续降息。",
+        "source_ids": [
+          "FIN-1",
+          "FIN-2"
+        ],
+        "sources": [
+          {
+            "id": "FIN-1",
+            "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+            "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+            "published_at": "2026-10-28"
+          },
+          {
+            "id": "FIN-2",
+            "title": "Monetary policy decisions",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+            "published_at": "2026-10-29"
+          }
+        ]
+      },
+      {
+        "title": "能源：看预测，也看情景假设",
+        "bullets": [
+          "世行10月28日预测：2026年商品价格+23%",
+          "2026年能源价格预测+32%",
+          "基准假设包含相关冲突不出现重大升级"
+        ],
+        "notes": "世界银行十月展望预测，二〇二六年整体商品价格上涨百分之二十三，能源价格上涨百分之三十二。它们是年度预测，依赖相关冲突不出现重大升级等条件，不能当成当日行情。",
+        "source_ids": [
+          "FIN-5"
+        ],
+        "sources": [
+          {
+            "id": "FIN-5",
+            "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+            "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+            "published_at": "2026-10-28"
+          }
+        ]
+      },
+      {
+        "title": "信用：净比例不等于贷款增速",
+        "bullets": [
+          "ECB调查：企业贷款标准收紧净比例9%",
+          "企业贷款需求变化净比例-6%",
+          "统计口径为银行回答差额，反映2026年第三季度"
+        ],
+        "notes": "欧洲央行银行调查显示，企业信贷标准继续收紧，贷款需求走弱。这里的净比例，是不同回答的银行占比之差，不代表贷款余额下降百分之六。阅读金融数字必须先核对口径。",
+        "source_ids": [
+          "FIN-6"
+        ],
+        "sources": [
+          {
+            "id": "FIN-6",
+            "title": "October 2026 euro area bank lending survey",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+            "published_at": "2026-10-27"
+          }
+        ]
+      },
+      {
+        "title": "稳定：韧性与风险可以并存",
+        "bullets": [
+          "IMF提示AI相关资产重估风险",
+          "关注主权债收益率冲击、网络威胁",
+          "杠杆和流动性错配可能放大波动"
+        ],
+        "notes": "IMF指出，市场仍有韧性，但人工智能相关资产重估、主权债收益率变化和网络风险值得关注。杠杆与流动性错配可能放大冲击，但提示风险不等于断言危机必然发生。",
+        "source_ids": [
+          "FIN-4"
+        ],
+        "sources": [
+          {
+            "id": "FIN-4",
+            "title": "Resilience, Risk, and Transformation",
+            "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+            "published_at": "2026-10-13"
+          }
+        ]
+      },
+      {
+        "title": "后续跟踪与来源",
+        "bullets": [
+          "跟踪实际通胀、能源运输、信贷传导",
+          "区分已披露事实、机构预测和编辑分析",
+          "来源：Fed、ECB、IMF、世界银行；链接见配套文稿",
+          "公开宏观资料整理，不提供个股交易建议"
+        ],
+        "notes": "接下来可以跟踪实际通胀、能源运输和信贷传导。资料来自美联储、欧洲央行、IMF和世界银行，完整链接见配套文稿。本文只作宏观信息梳理，发布前请复核最新进展。",
+        "source_ids": [
+          "FIN-1",
+          "FIN-2",
+          "FIN-3",
+          "FIN-4",
+          "FIN-5",
+          "FIN-6"
+        ],
+        "sources": [
+          {
+            "id": "FIN-1",
+            "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+            "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+            "published_at": "2026-10-28"
+          },
+          {
+            "id": "FIN-2",
+            "title": "Monetary policy decisions",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+            "published_at": "2026-10-29"
+          },
+          {
+            "id": "FIN-3",
+            "title": "Resilience Under Strain, Urgent Choices",
+            "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+            "published_at": "2026-10-13"
+          },
+          {
+            "id": "FIN-4",
+            "title": "Resilience, Risk, and Transformation",
+            "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+            "published_at": "2026-10-13"
+          },
+          {
+            "id": "FIN-5",
+            "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+            "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+            "published_at": "2026-10-28"
+          },
+          {
+            "id": "FIN-6",
+            "title": "October 2026 euro area bank lending survey",
+            "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+            "published_at": "2026-10-27"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "FIN-1",
+        "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+        "published_at": "2026-10-28"
+      },
+      {
+        "id": "FIN-2",
+        "title": "Monetary policy decisions",
+        "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+        "published_at": "2026-10-29"
+      },
+      {
+        "id": "FIN-3",
+        "title": "Resilience Under Strain, Urgent Choices",
+        "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+        "published_at": "2026-10-13"
+      },
+      {
+        "id": "FIN-4",
+        "title": "Resilience, Risk, and Transformation",
+        "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+        "published_at": "2026-10-13"
+      },
+      {
+        "id": "FIN-5",
+        "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+        "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+        "published_at": "2026-10-28"
+      },
+      {
+        "id": "FIN-6",
+        "title": "October 2026 euro area bank lending survey",
+        "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+        "published_at": "2026-10-27"
+      }
+    ],
+    "narration_characters": 458,
+    "duration_target_seconds": 240,
+    "duration_note": "真实合成后仍需按实际音频长度校验，不用字数估算冒充片长。"
+  },
+  "trusted_transport_validation": {
+    "passed": true,
+    "scope": "get_trusted module plus real parser, not yet full natural-language task execution",
+    "tests": [
+      {
+        "name": "search",
+        "url": "https://html.duckduckgo.com/html/?q=IMF+October+2026+world+economic+outlook",
+        "passed": true,
+        "seconds": 1.153,
+        "bytes": 36037,
+        "results": [
+          {
+            "title": "World Economic Outlook, October 2026: Resilience Under Strain ... - IMF",
+            "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+            "snippet": "The latest World Economic Outlook highlights widening growth divergences, renewed inflation pressures, and mounting downside risks. Fiscal space needs to be urgently rebuilt. Governments should favor targeted support over price controls and recognize the trade-offs involving corporate income tax policy."
+          },
+          {
+            "title": "World Economic Outlook, October 2026 - elibrary.imf.org",
+            "url": "https://www.elibrary.imf.org/display/book/9798229055079/9798229055079.xml",
+            "snippet": "Abstract The latest World Economic Outlook reports a split in growth performance and renewed inflationary pressures, with risks on the downside. The persistent and repeated shocks underscore the urgency to rebuild buffers, most notably fiscal. When addressing cost-of-living crises, governments should preserve price signals and rely primarily on temporary, targeted income support. On the ..."
+          },
+          {
+            "title": "World Economic Outlook Reports - IMF",
+            "url": "https://www.imf.org/en/publications/weo",
+            "snippet": "The World Economic Outlook (WEO) is a survey of prospects and policies by the IMF staff, usually published twice a year, with updates in between. It presents analyses and projections of the world economy in the near and medium term, which are integral elements of the IMF's surveillance of economic developments and policies in its member countries and of the global economic system. They ..."
+          }
+        ],
+        "count": 10
+      },
+      {
+        "name": "fed",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+        "passed": true,
+        "seconds": 0.366,
+        "bytes": 81941,
+        "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+        "has_2026": true,
+        "content_chars": 9772
+      },
+      {
+        "name": "ecb",
+        "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+        "passed": true,
+        "seconds": 1.597,
+        "bytes": 105801,
+        "title": "Monetary policy decisions",
+        "has_2026": true,
+        "content_chars": 15857
+      },
+      {
+        "name": "worldbank",
+        "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+        "passed": true,
+        "seconds": 0.762,
+        "bytes": 26562,
+        "title": "Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+        "has_2026": true,
+        "content_chars": 8221
+      }
+    ]
+  }
+}

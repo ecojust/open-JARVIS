@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "kind": "presentation",
+  "title": "近期全球金融观察：六页核心版",
+  "preview_notice": "内容预览；实际 Office 分页与排版以下载文件为准。",
+  "created_at": "2026-10-31T08:34:48.759987+00:00",
+  "sources": [
+    {
+      "title": "[FIN-1] Federal Reserve Board - Federal Reserve issues FOMC statement",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+      "published_at": "2026-10-28"
+    },
+    {
+      "title": "[FIN-2] Monetary policy decisions",
+      "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+      "published_at": "2026-10-29"
+    },
+    {
+      "title": "[FIN-3] Resilience Under Strain, Urgent Choices",
+      "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+      "published_at": "2026-10-13"
+    },
+    {
+      "title": "[FIN-4] Resilience, Risk, and Transformation",
+      "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+      "published_at": "2026-10-13"
+    },
+    {
+      "title": "[FIN-5] Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+      "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+      "published_at": "2026-10-28"
+    },
+    {
+      "title": "[FIN-6] October 2026 euro area bank lending survey",
+      "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+      "published_at": "2026-10-27"
+    }
+  ],
+  "slides": [
+    {
+      "title": "近期全球金融：增长与通胀并看",
+      "bullets": [
+        "截至2026年10月31日的公开资料",
+        "IMF预测2026年全球增长3.1%、整体通胀4.7%",
+        "预测基于截至10月1日的信息，不是全年已实现结果"
+      ],
+      "notes": "截至十月三十一日，全球金融仍需同时观察增长与通胀。IMF十月报告预测，今年全球增长百分之三点一，整体通胀百分之四点七。这是机构预测，不是已经实现的全年结果。",
+      "sources": [
+        {
+          "title": "[FIN-3] Resilience Under Strain, Urgent Choices",
+          "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+          "published_at": "2026-10-13"
+        }
+      ]
+    },
+    {
+      "title": "利率：本次不动，不承诺固定路径",
+      "bullets": [
+        "Fed 10月28日：目标区间3.75%—4.00%",
+        "ECB 10月29日：存款便利利率2.50%",
+        "两者均维持；后续决策仍取决于数据"
+      ],
+      "notes": "十月二十八日，美联储维持目标利率区间在百分之三点七五到四。次日，欧洲央行维持存款利率百分之二点五。这些是已公布的政策决定，但不能推导为承诺持续降息。",
+      "sources": [
+        {
+          "title": "[FIN-1] Federal Reserve Board - Federal Reserve issues FOMC statement",
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+          "published_at": "2026-10-28"
+        },
+        {
+          "title": "[FIN-2] Monetary policy decisions",
+          "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+          "published_at": "2026-10-29"
+        }
+      ]
+    },
+    {
+      "title": "能源：看预测，也看情景假设",
+      "bullets": [
+        "世行10月28日预测：2026年商品价格+23%",
+        "2026年能源价格预测+32%",
+        "基准假设包含相关冲突不出现重大升级"
+      ],
+      "notes": "世界银行十月展望预测，二〇二六年整体商品价格上涨百分之二十三，能源价格上涨百分之三十二。它们是年度预测，依赖相关冲突不出现重大升级等条件，不能当成当日行情。",
+      "sources": [
+        {
+          "title": "[FIN-5] Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+          "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+          "published_at": "2026-10-28"
+        }
+      ]
+    },
+    {
+      "title": "信用：净比例不等于贷款增速",
+      "bullets": [
+        "ECB调查：企业贷款标准收紧净比例9%",
+        "企业贷款需求变化净比例-6%",
+        "统计口径为银行回答差额，反映2026年第三季度"
+      ],
+      "notes": "欧洲央行银行调查显示，企业信贷标准继续收紧，贷款需求走弱。这里的净比例，是不同回答的银行占比之差，不代表贷款余额下降百分之六。阅读金融数字必须先核对口径。",
+      "sources": [
+        {
+          "title": "[FIN-6] October 2026 euro area bank lending survey",
+          "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+          "published_at": "2026-10-27"
+        }
+      ]
+    },
+    {
+      "title": "稳定：韧性与风险可以并存",
+      "bullets": [
+        "IMF提示AI相关资产重估风险",
+        "关注主权债收益率冲击、网络威胁",
+        "杠杆和流动性错配可能放大波动"
+      ],
+      "notes": "IMF指出，市场仍有韧性，但人工智能相关资产重估、主权债收益率变化和网络风险值得关注。杠杆与流动性错配可能放大冲击，但提示风险不等于断言危机必然发生。",
+      "sources": [
+        {
+          "title": "[FIN-4] Resilience, Risk, and Transformation",
+          "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+          "published_at": "2026-10-13"
+        }
+      ]
+    },
+    {
+      "title": "后续跟踪与来源",
+      "bullets": [
+        "跟踪实际通胀、能源运输、信贷传导",
+        "区分已披露事实、机构预测和编辑分析",
+        "来源：Fed、ECB、IMF、世界银行；链接见配套文稿",
+        "公开宏观资料整理，不提供个股交易建议"
+      ],
+      "notes": "接下来可以跟踪实际通胀、能源运输和信贷传导。资料来自美联储、欧洲央行、IMF和世界银行，完整链接见配套文稿。本文只作宏观信息梳理，发布前请复核最新进展。",
+      "sources": [
+        {
+          "title": "[FIN-1] Federal Reserve Board - Federal Reserve issues FOMC statement",
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+          "published_at": "2026-10-28"
+        },
+        {
+          "title": "[FIN-2] Monetary policy decisions",
+          "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html",
+          "published_at": "2026-10-29"
+        },
+        {
+          "title": "[FIN-3] Resilience Under Strain, Urgent Choices",
+          "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+          "published_at": "2026-10-13"
+        },
+        {
+          "title": "[FIN-4] Resilience, Risk, and Transformation",
+          "url": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026",
+          "published_at": "2026-10-13"
+        },
+        {
+          "title": "[FIN-5] Commodity Prices Set to Increase by 23% in 2026 as Global Shocks Mount",
+          "url": "https://www.worldbank.org/en/news/press-release/2026/10/28/commodity-markets-outlook-october-2026",
+          "published_at": "2026-10-28"
+        },
+        {
+          "title": "[FIN-6] October 2026 euro area bank lending survey",
+          "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html",
+          "published_at": "2026-10-27"
+        }
+      ]
+    }
+  ]
+}

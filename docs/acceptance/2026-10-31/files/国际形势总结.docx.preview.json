@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "kind": "document",
+  "title": "国际形势速览：冲突外溢与经济压力并行",
+  "preview_notice": "内容预览；实际 Office 分页与排版以下载文件为准。",
+  "created_at": "2026-10-31T08:34:36.997881+00:00",
+  "sources": [
+    {
+      "title": "[INT-1] Ukraine: Oleshky ceasefire offers ‘hope’ for civilians as attacks on aid vehicles continue | UN News",
+      "url": "https://news.un.org/en/story/2026/10/1168712",
+      "published_at": "2026-10-30"
+    },
+    {
+      "title": "[INT-2] UN rights office warns of deepening displacement ‘nightmare’ in Gaza | UN News",
+      "url": "https://news.un.org/en/story/2026/10/1168707",
+      "published_at": "2026-10-30"
+    },
+    {
+      "title": "[INT-3] Security Council LIVE: Can new technology keep the world’s sea lanes safe? | UN News",
+      "url": "https://news.un.org/en/story/2026/10/1168698",
+      "published_at": "2026-10-29"
+    },
+    {
+      "title": "[INT-4] DR Congo: Hunger deepens for millions amid conflict, Ebola and climate shocks | UN News",
+      "url": "https://news.un.org/en/story/2026/10/1168708",
+      "published_at": "2026-10-30"
+    },
+    {
+      "title": "[INT-5] Yemen war makes reaching assistance too dangerous for many | UN News",
+      "url": "https://news.un.org/en/story/2026/10/1168706",
+      "published_at": "2026-10-30"
+    },
+    {
+      "title": "[FIN-3] Resilience Under Strain, Urgent Choices",
+      "url": "https://www.imf.org/en/publications/weo/issues/2026/10/13/world-economic-outlook-october-2026",
+      "published_at": "2026-10-13"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "阅读口径",
+      "body": "截至2026年10月31日，选取最近30天可公开核查的联合国与国际金融机构材料。本简报是重点议题选编，不是对所有国家和事件的完整覆盖。事实陈述、机构预测与本稿分析分别标注。",
+      "bullets": []
+    },
+    {
+      "heading": "一、冲突仍在持续，人道窗口值得关注",
+      "body": "联合国10月30日报道，奥列什基的局部停火为平民撤离提供窗口；同一报道记录了援助车辆遭无人机袭击。局部人道安排不能等同于整体冲突结束。\n\n联合国人权高专办10月30日警告，加沙民众可停留空间继续收缩，反复流离失所与避难物资进入受限加重人道压力。这是该机构的公开评估。 [INT-1][INT-2]",
+      "bullets": []
+    },
+    {
+      "heading": "二、人道压力与供应链扰动互相叠加",
+      "body": "联合国难民署10月30日称，也门战事已导致超过28万人流离失所，危险的通行条件限制援助可及性，红海周边贸易与运输扰动进一步增加救援难度。\n\n联合国援引IPC分析称，刚果(金)约2880万人预计在截至12月的分析期面临IPC第3阶段或以上急性粮食不安全；冲突、疾病和气候冲击叠加。该数字是机构分析期估计/预测。 [INT-5][INT-4]",
+      "bullets": []
+    },
+    {
+      "heading": "三、航运安全正在增加技术维度",
+      "body": "联合国安理会10月29日围绕新技术与海上安全展开公开辩论，关注无人机、自主船舶和网络攻击对航运及食品、能源运输的影响；材料不代表已通过新的强制性决议。 本稿观察：食品与能源跨境运输的风险管理，需要同时关注物理安全与数字基础设施。 [INT-3]",
+      "bullets": []
+    },
+    {
+      "heading": "四、国际形势的经济传导",
+      "body": "IMF《2026年10月世界经济展望》预计全球经济2026年增长3.1%、2027年增长3.4%；全球整体通胀相应为4.7%与4.1%。这是机构预测，统计信息截止10月1日。 本稿观察：判断国际事件的经济影响时，应分别检查能源成本、供应链、融资与财政空间，避免只凭单一新闻推断所有市场方向。 [FIN-3]",
+      "bullets": []
+    },
+    {
+      "heading": "后续跟踪",
+      "body": "1. 人道通行安排是否延续，平民与关键基础设施能否得到保护。\n2. 航道与商品运输是否出现新的实质性中断。\n3. 通胀、政策利率与融资条件是否印证或改变机构预测。\n资料获取时间为2026-10-31；事件变化较快，后续公开使用前应复核。",
+      "bullets": []
+    }
+  ]
+}

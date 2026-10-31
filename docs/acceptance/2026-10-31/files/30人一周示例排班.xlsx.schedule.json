@@ -1,0 +1,645 @@
+{
+  "schema_version": 1,
+  "kind": "schedule",
+  "title": "人员排班计划",
+  "start_date": "2026-11-02",
+  "days": 7,
+  "employees": [
+    "员工01",
+    "员工02",
+    "员工03",
+    "员工04",
+    "员工05",
+    "员工06",
+    "员工07",
+    "员工08",
+    "员工09",
+    "员工10",
+    "员工11",
+    "员工12",
+    "员工13",
+    "员工14",
+    "员工15",
+    "员工16",
+    "员工17",
+    "员工18",
+    "员工19",
+    "员工20",
+    "员工21",
+    "员工22",
+    "员工23",
+    "员工24",
+    "员工25",
+    "员工26",
+    "员工27",
+    "员工28",
+    "员工29",
+    "员工30"
+  ],
+  "anonymous_example": true,
+  "shifts": [
+    {
+      "name": "夜班",
+      "start": "00:00",
+      "end": "08:00",
+      "required": 6
+    },
+    {
+      "name": "早班",
+      "start": "08:00",
+      "end": "16:00",
+      "required": 6
+    },
+    {
+      "name": "晚班",
+      "start": "16:00",
+      "end": "00:00",
+      "required": 6
+    }
+  ],
+  "constraints": {
+    "min_rest_hours": 12,
+    "max_consecutive_days": 5,
+    "max_shifts_per_employee": 5,
+    "max_shifts_per_day": 1
+  },
+  "assumptions": [
+    "匿名员工示例，须替换为实际人员名单",
+    "所有员工技能相同，无请假或不可用日期输入",
+    "仅检查计划区间内的休息；不包含区间前后的已有班次",
+    "跨午夜班次按开始日期计入当天",
+    "不代表满足未提供的行业、合同或法定排班规定"
+  ],
+  "assignments": [
+    {
+      "date": "2026-11-02",
+      "shift": "夜班",
+      "start": "2026-11-02T00:00",
+      "end": "2026-11-02T08:00",
+      "required": 6,
+      "employees": [
+        "员工01",
+        "员工02",
+        "员工03",
+        "员工04",
+        "员工05",
+        "员工06"
+      ]
+    },
+    {
+      "date": "2026-11-02",
+      "shift": "早班",
+      "start": "2026-11-02T08:00",
+      "end": "2026-11-02T16:00",
+      "required": 6,
+      "employees": [
+        "员工07",
+        "员工08",
+        "员工09",
+        "员工10",
+        "员工11",
+        "员工12"
+      ]
+    },
+    {
+      "date": "2026-11-02",
+      "shift": "晚班",
+      "start": "2026-11-02T16:00",
+      "end": "2026-11-03T00:00",
+      "required": 6,
+      "employees": [
+        "员工13",
+        "员工14",
+        "员工15",
+        "员工16",
+        "员工17",
+        "员工18"
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "shift": "夜班",
+      "start": "2026-11-03T00:00",
+      "end": "2026-11-03T08:00",
+      "required": 6,
+      "employees": [
+        "员工19",
+        "员工20",
+        "员工21",
+        "员工22",
+        "员工23",
+        "员工24"
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "shift": "早班",
+      "start": "2026-11-03T08:00",
+      "end": "2026-11-03T16:00",
+      "required": 6,
+      "employees": [
+        "员工25",
+        "员工26",
+        "员工27",
+        "员工28",
+        "员工29",
+        "员工30"
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "shift": "晚班",
+      "start": "2026-11-03T16:00",
+      "end": "2026-11-04T00:00",
+      "required": 6,
+      "employees": [
+        "员工01",
+        "员工02",
+        "员工03",
+        "员工04",
+        "员工05",
+        "员工06"
+      ]
+    },
+    {
+      "date": "2026-11-04",
+      "shift": "夜班",
+      "start": "2026-11-04T00:00",
+      "end": "2026-11-04T08:00",
+      "required": 6,
+      "employees": [
+        "员工07",
+        "员工08",
+        "员工09",
+        "员工10",
+        "员工11",
+        "员工12"
+      ]
+    },
+    {
+      "date": "2026-11-04",
+      "shift": "早班",
+      "start": "2026-11-04T08:00",
+      "end": "2026-11-04T16:00",
+      "required": 6,
+      "employees": [
+        "员工13",
+        "员工14",
+        "员工15",
+        "员工16",
+        "员工17",
+        "员工18"
+      ]
+    },
+    {
+      "date": "2026-11-04",
+      "shift": "晚班",
+      "start": "2026-11-04T16:00",
+      "end": "2026-11-05T00:00",
+      "required": 6,
+      "employees": [
+        "员工19",
+        "员工20",
+        "员工21",
+        "员工22",
+        "员工23",
+        "员工24"
+      ]
+    },
+    {
+      "date": "2026-11-05",
+      "shift": "夜班",
+      "start": "2026-11-05T00:00",
+      "end": "2026-11-05T08:00",
+      "required": 6,
+      "employees": [
+        "员工25",
+        "员工26",
+        "员工27",
+        "员工28",
+        "员工29",
+        "员工30"
+      ]
+    },
+    {
+      "date": "2026-11-05",
+      "shift": "早班",
+      "start": "2026-11-05T08:00",
+      "end": "2026-11-05T16:00",
+      "required": 6,
+      "employees": [
+        "员工01",
+        "员工02",
+        "员工03",
+        "员工04",
+        "员工05",
+        "员工06"
+      ]
+    },
+    {
+      "date": "2026-11-05",
+      "shift": "晚班",
+      "start": "2026-11-05T16:00",
+      "end": "2026-11-06T00:00",
+      "required": 6,
+      "employees": [
+        "员工07",
+        "员工08",
+        "员工09",
+        "员工10",
+        "员工11",
+        "员工12"
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "shift": "夜班",
+      "start": "2026-11-06T00:00",
+      "end": "2026-11-06T08:00",
+      "required": 6,
+      "employees": [
+        "员工13",
+        "员工14",
+        "员工15",
+        "员工16",
+        "员工17",
+        "员工18"
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "shift": "早班",
+      "start": "2026-11-06T08:00",
+      "end": "2026-11-06T16:00",
+      "required": 6,
+      "employees": [
+        "员工19",
+        "员工20",
+        "员工21",
+        "员工22",
+        "员工23",
+        "员工24"
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "shift": "晚班",
+      "start": "2026-11-06T16:00",
+      "end": "2026-11-07T00:00",
+      "required": 6,
+      "employees": [
+        "员工25",
+        "员工26",
+        "员工27",
+        "员工28",
+        "员工29",
+        "员工30"
+      ]
+    },
+    {
+      "date": "2026-11-07",
+      "shift": "夜班",
+      "start": "2026-11-07T00:00",
+      "end": "2026-11-07T08:00",
+      "required": 6,
+      "employees": [
+        "员工01",
+        "员工02",
+        "员工03",
+        "员工04",
+        "员工05",
+        "员工06"
+      ]
+    },
+    {
+      "date": "2026-11-07",
+      "shift": "早班",
+      "start": "2026-11-07T08:00",
+      "end": "2026-11-07T16:00",
+      "required": 6,
+      "employees": [
+        "员工07",
+        "员工08",
+        "员工09",
+        "员工10",
+        "员工11",
+        "员工12"
+      ]
+    },
+    {
+      "date": "2026-11-07",
+      "shift": "晚班",
+      "start": "2026-11-07T16:00",
+      "end": "2026-11-08T00:00",
+      "required": 6,
+      "employees": [
+        "员工13",
+        "员工14",
+        "员工15",
+        "员工16",
+        "员工17",
+        "员工18"
+      ]
+    },
+    {
+      "date": "2026-11-08",
+      "shift": "夜班",
+      "start": "2026-11-08T00:00",
+      "end": "2026-11-08T08:00",
+      "required": 6,
+      "employees": [
+        "员工19",
+        "员工20",
+        "员工21",
+        "员工22",
+        "员工23",
+        "员工24"
+      ]
+    },
+    {
+      "date": "2026-11-08",
+      "shift": "早班",
+      "start": "2026-11-08T08:00",
+      "end": "2026-11-08T16:00",
+      "required": 6,
+      "employees": [
+        "员工25",
+        "员工26",
+        "员工27",
+        "员工28",
+        "员工29",
+        "员工30"
+      ]
+    },
+    {
+      "date": "2026-11-08",
+      "shift": "晚班",
+      "start": "2026-11-08T16:00",
+      "end": "2026-11-09T00:00",
+      "required": 6,
+      "employees": [
+        "员工01",
+        "员工02",
+        "员工03",
+        "员工04",
+        "员工05",
+        "员工06"
+      ]
+    }
+  ],
+  "audit": {
+    "passed": true,
+    "violations": [],
+    "employees": [
+      {
+        "employee": "员工01",
+        "shifts": 5,
+        "hours": 40.0,
+        "rest_days": 2,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工02",
+        "shifts": 5,
+        "hours": 40.0,
+        "rest_days": 2,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工03",
+        "shifts": 5,
+        "hours": 40.0,
+        "rest_days": 2,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工04",
+        "shifts": 5,
+        "hours": 40.0,
+        "rest_days": 2,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工05",
+        "shifts": 5,
+        "hours": 40.0,
+        "rest_days": 2,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工06",
+        "shifts": 5,
+        "hours": 40.0,
+        "rest_days": 2,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工07",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工08",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工09",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工10",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工11",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工12",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工13",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工14",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工15",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工16",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工17",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工18",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工19",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工20",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工21",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工22",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工23",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工24",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工25",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工26",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工27",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工28",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工29",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      },
+      {
+        "employee": "员工30",
+        "shifts": 4,
+        "hours": 32.0,
+        "rest_days": 3,
+        "max_consecutive_days": 2,
+        "shortest_rest_hours": 32.0
+      }
+    ],
+    "total_assignments": 126,
+    "checked_constraints": [
+      "每班人数",
+      "员工有效且不重复",
+      "每天最多一班",
+      "最大班次数",
+      "班间休息",
+      "连续工作天数"
+    ]
+  }
+}
