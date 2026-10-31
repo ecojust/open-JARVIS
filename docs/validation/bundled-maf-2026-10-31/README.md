@@ -17,9 +17,9 @@
 | Linux 真实 PyInstaller 冻结导入对照 | 旧配置失败，补收 provider 后成功 | [comparison.json](comparison.json)；只检查实际运行时符号导入，不是完整客户端、任务执行或安装验收 |
 | Linux 源码 MAF 本地任务 | 通过 | [source-agent-roundtrip.json](source-agent-roundtrip.json)；真实 MAF、HTTP/SSE 和文件工具，模型回复为本地固定测试数据，未使用外部服务 |
 | 本地测试与静态检查 | 312 项测试、Ruff 通过 | 本轮源码检查；不代替三平台冻结程序执行 |
-| macOS Intel 冻结任务自检 | 通过 | [三端构建记录](native-build.json)，冻结 worker 实际执行 MAF 任务检查 |
-| macOS Apple Silicon 冻结任务自检 | 通过 | [三端构建记录](native-build.json)，冻结 worker 实际执行 MAF 任务检查 |
-| Windows x64 冻结任务自检 | 通过 | [三端构建记录](native-build.json)，冻结 worker 实际执行 MAF 任务检查 |
+| macOS Intel 冻结任务自检 | 通过 | [公开安装包构建清单](open-JARVIS-0.1.0-alpha.9-macos-x64.manifest.json)，`agent_roundtrip.ok=true` |
+| macOS Apple Silicon 冻结任务自检 | 通过 | [公开安装包构建清单](open-JARVIS-0.1.0-alpha.9-macos-arm64.manifest.json)，`agent_roundtrip.ok=true` |
+| Windows x64 冻结任务自检 | 通过 | [公开安装包构建清单](open-JARVIS-0.1.0-alpha.9-windows-x64-setup.manifest.json)，`agent_roundtrip.ok=true` |
 
 ### Linux 冻结导入对照
 
@@ -70,6 +70,12 @@ python -m PyInstaller --noconfirm --name maf-probe-new \
 同一检查已纳入冻结 worker 的 `--role self-test`。构建脚本要求 `agent_roundtrip.ok` 为真，否则停止生成安装器；发布提升脚本也要求三个构建清单均包含成功的任务自检，防止继续复用仅通过旧导入检查的构建。三端构建 `41208267210` 与原生 CI `41208266939` 均已成功，源码 `00020ea1e9048fd0627616502f968799d733c3a7`，首次运行无重试。[native-build.json](native-build.json) 保存 job 步骤和候选产物身份；安装器生成前均实际执行冻结 worker 的完整检查。
 
 本地固定回复仅提供可重复的模型协议测试输入；委派、MAF 执行、网络传输和文件写入均实际运行。它不验证生产模型自主规划质量、资料检索时效、六类业务产物、桌面预览、麦克风输入或扬声器输出。
+
+## 公开发布核验
+
+[alpha.9](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.9) 已于 `2026-10-31T14:08:02Z` 公开发布，`draft=false`、`prerelease=true`。源码 tag 指向 `00020ea1e9048fd0627616502f968799d733c3a7`。[发布流程](https://github.com/ecojust/open-JARVIS/actions/runs/41208624482) 核对原生构建与 CI 来源、三端清单及全部安装器 SHA-256 后上传 9 个附件。
+
+公开后通过匿名 API 确认可见，并实际下载三份 manifest 和三份 SHA-256 文件；它们的内容摘要与 GitHub asset digest 一致，清单中的安装器摘要也与公开安装器 digest 一致。三份原始 manifest 保存在本目录，其冻结任务检查均为真实的四次模型请求、两次流式请求、一次工具调用、中文文件与回答往返成功。[release.json](release.json) 保存发布 ID、时刻、资产大小和摘要。没有在本开发环境重新安装或运行三端安装器；冻结执行证据来自各自原生构建 runner。
 
 ## 升级与仍需配置的内容
 

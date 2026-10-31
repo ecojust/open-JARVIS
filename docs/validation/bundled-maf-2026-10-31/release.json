@@ -1,0 +1,87 @@
+{
+  "release_id": 429974622,
+  "tag": "v0.1.0-alpha.9",
+  "source_commit": "00020ea1e9048fd0627616502f968799d733c3a7",
+  "url": "https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.9",
+  "draft": false,
+  "prerelease": true,
+  "published_at": "2026-10-31T14:08:02Z",
+  "build_run_id": 41208267210,
+  "native_ci_run_id": 41208266939,
+  "promotion_run_id": 41208624482,
+  "verification": "Native frozen programs completed real MAF delegation and Chinese file writes against local HTTP/SSE fixtures; promotion verified all nine assets and installer SHA-256. Public anonymous Release visibility, manifest and checksum downloads, asset digests and exact tag commit verified after publication.",
+  "assets": [
+    {
+      "id": 695547894,
+      "name": "open-JARVIS-0.1.0-alpha.9-macos-arm64.dmg",
+      "size": 131588489,
+      "digest": "sha256:3904b3f74e0458a19bdf588f2e3986a7b632ad7d9506f0f0c2ef6c3bd7881734",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-macos-arm64.dmg"
+    },
+    {
+      "id": 695547924,
+      "name": "open-JARVIS-0.1.0-alpha.9-macos-arm64.dmg.sha256",
+      "size": 108,
+      "digest": "sha256:1e0084928b3fb54aefb96de2c5b1cd4f4bb4d54878b2e127f977034f36189289",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-macos-arm64.dmg.sha256"
+    },
+    {
+      "id": 695547901,
+      "name": "open-JARVIS-0.1.0-alpha.9-macos-arm64.manifest.json",
+      "size": 3635,
+      "digest": "sha256:cae58ea7acd78c0b219c3bbd9f5b8da46717e76264fba00327edbb320fb22956",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-macos-arm64.manifest.json"
+    },
+    {
+      "id": 695547896,
+      "name": "open-JARVIS-0.1.0-alpha.9-macos-x64.dmg",
+      "size": 144286738,
+      "digest": "sha256:31596d307515392df5e9660ee2953c05fded5985ee77f19851dfeff868094bba",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-macos-x64.dmg"
+    },
+    {
+      "id": 695547895,
+      "name": "open-JARVIS-0.1.0-alpha.9-macos-x64.dmg.sha256",
+      "size": 106,
+      "digest": "sha256:6c8c3c712a3af34f1469ebc64e0c34247a9e530b15f357948ee2d38862a94d00",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-macos-x64.dmg.sha256"
+    },
+    {
+      "id": 695547897,
+      "name": "open-JARVIS-0.1.0-alpha.9-macos-x64.manifest.json",
+      "size": 3635,
+      "digest": "sha256:586939b79fb483ee652cebdb34684ef5062bfaa8396781dba6935bbd3c946126",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-macos-x64.manifest.json"
+    },
+    {
+      "id": 695547925,
+      "name": "open-JARVIS-0.1.0-alpha.9-windows-x64-setup.exe",
+      "size": 110310133,
+      "digest": "sha256:5f0d5ebdb5c83159ce4e74ffdae312b9483a150c9535bf9835f35cd2f54cfb90",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-windows-x64-setup.exe"
+    },
+    {
+      "id": 695547942,
+      "name": "open-JARVIS-0.1.0-alpha.9-windows-x64-setup.exe.sha256",
+      "size": 115,
+      "digest": "sha256:387abf3773c54977511aa94877050875e674e66c06203e0811857949fbeb883d",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-windows-x64-setup.exe.sha256"
+    },
+    {
+      "id": 695547927,
+      "name": "open-JARVIS-0.1.0-alpha.9-windows-x64-setup.manifest.json",
+      "size": 3816,
+      "digest": "sha256:bb883ce13148992bd38f079188c0b71097d3d43bc873dfff938adcd4290983ef",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-windows-x64-setup.manifest.json"
+    }
+  ]
+}

@@ -17,7 +17,7 @@
 
 桌面入口为 **圆形山羊 Logo → 实际声浪 → 展开图标** 的 264×56 胶囊形语音条，两端圆润。点击中间声浪暂停/继续接听，右侧图标最大化结果窗口，避免主动进入 macOS 全屏 Space；拖动语音条或按钮只移动位置。声浪跟随实际音量，静音/暂停/播报时归零。模型直接在设置的语音识别、语音合成两行点击「下载」，原处显示进度和预计剩余时间，完成后自动加载；兼容的已下载模型可跨客户端版本复用。
 
-[新版界面截图与续传验收](docs/validation/workbench-resume-2026-10-31/README.md)。本地 **303 项测试通过**；最新源码包含浅色工作空间、主动查看回复、后台播报、模型换源续传，以及加宽的设置页与 ⓘ 厂商帮助。下方 **alpha.8** 三端安装包已包含这些功能和下载进度闪烁修复，原生 CI 与打包后自检均通过。
+[新版界面截图与续传验收](docs/validation/workbench-resume-2026-10-31/README.md)。本地 **312 项测试通过**；最新源码包含浅色工作空间、主动查看回复、后台播报、模型换源续传，以及加宽的设置页与 ⓘ 厂商帮助。下方 **alpha.9** 三端安装包已包含这些功能、下载进度闪烁修复与 MAF 依赖修复；原生 CI 与打包后的实际 MAF 任务自检均通过。
 
 ## 工作空间与后台播报
 
@@ -33,17 +33,17 @@
 
 ## 下载开发预览
 
-> alpha.8 已确认存在 MAF 适配器漏打包，会导致配置任务模型后报“MAF 组件未安装”。这是安装包问题，无需自行安装 Python 或执行 pip；alpha.9 已修复源码，正在进行三端打包验证。
+**v0.1.0-alpha.9，公开预览（未签名）**。从 [GitHub Releases](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.9) 直接下载对应平台安装器；同时提供 SHA-256 校验文件与构建清单。
 
-**v0.1.0-alpha.8，公开预览（未签名）**。从 [GitHub Releases](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.8) 直接下载对应平台安装器；同时提供 SHA-256 校验文件与构建清单。
+> 本版修复 alpha.8 发送任务时的“MAF 组件未安装”。这是旧安装包漏打包导致，请升级完整客户端，无需自行安装 Python、MAF 或执行 pip。已有设置和已下载语音模型继续沿用。
 
 | 平台 | 安装器 | 安装器大小 |
 | --- | --- | --- |
-| macOS Intel，macOS 14+ | [下载 Intel DMG](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-macos-x64.dmg) | 约 143.4 MB |
-| macOS Apple Silicon，macOS 14+ | [下载 Apple Silicon DMG](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-macos-arm64.dmg) | 约 129.4 MB |
-| Windows x64 | [下载 Windows EXE](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.8/open-JARVIS-0.1.0-alpha.8-windows-x64-setup.exe) | 约 109.9 MB |
+| macOS Intel，macOS 14+ | [下载 Intel DMG](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-macos-x64.dmg) | 约 144.3 MB |
+| macOS Apple Silicon，macOS 14+ | [下载 Apple Silicon DMG](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-macos-arm64.dmg) | 约 131.6 MB |
+| Windows x64 | [下载 Windows EXE](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.9/open-JARVIS-0.1.0-alpha.9-windows-x64-setup.exe) | 约 110.3 MB |
 
-[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41201692974) · [安装包构建与自检](https://github.com/ecojust/open-JARVIS/actions/runs/41201695411) · [发布校验](https://github.com/ecojust/open-JARVIS/actions/runs/41202456350)。本次发布复用已验证的 alpha.8 三端安装包，9 个附件全部校验后公开。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。尚未完成签名/公证，系统可能显示安装安全提示。首次运行后通过语音条右键菜单配置任务模型、下载两个语音模型。
+[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41208266939) · [安装包构建与自检](https://github.com/ecojust/open-JARVIS/actions/runs/41208267210) · [发布校验](https://github.com/ecojust/open-JARVIS/actions/runs/41208624482)。三个平台的打包程序均通过真实 MAF 委派、文件写入与中文回答检查，9 个附件全部校验后公开。[修复与验证证据](docs/validation/bundled-maf-2026-10-31/README.md)区分本地固定模型回复与生产模型验收。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。尚未完成签名/公证，系统可能显示安装安全提示。首次运行后通过语音条右键菜单配置任务模型、下载两个语音模型。
 
 ## 源码运行
 
