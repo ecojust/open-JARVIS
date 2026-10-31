@@ -6,7 +6,7 @@
 
 alpha.8 只收集了 `agent_framework` 命名空间与 provider 版本信息，遗漏独立的 `agent_framework_openai` 实现；旧冻结检查只导入代理模块，未执行真正的模型调用，因此漏检。新版本显式收集 provider 全部子模块，用户错误信息不再要求执行 pip。
 
-本地 **312 项测试通过**，ruff 通过。新增显式自检通过真实 MAF 与本地 HTTP/SSE，完成总控委派、工具写中文文件、工具结果回传和最终中文回答。冻结构建和发布校验均要求该任务检查成功；自检仅在打包验收时显式执行，不增加桌面启动流程。三端冻结验证及 alpha.9 发布尚在进行，不能把源码检查当成安装包验证。[问题复现与检查范围](validation/bundled-maf-2026-10-31/README.md)。
+本地 **312 项测试通过**，ruff 通过。新增显式自检通过真实 MAF 与本地 HTTP/SSE，完成总控委派、工具写中文文件、工具结果回传和最终中文回答。冻结构建和发布校验均要求该任务检查成功；自检仅在打包验收时显式执行，不增加桌面启动流程。[三端原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41208266939) 与 [alpha.9 构建](https://github.com/ecojust/open-JARVIS/actions/runs/41208267210) 均首次通过，无重试；每端冻结 worker 均完成新任务检查后才生成安装器。公开发布正在进行。[问题复现与检查范围](validation/bundled-maf-2026-10-31/README.md)。
 
 ## 首个公开预览 Release
 

@@ -1,0 +1,908 @@
+{
+  "recorded_at": "2026-10-31T14:06:40.539235+00:00",
+  "source_sha": "00020ea1e9048fd0627616502f968799d733c3a7",
+  "runs": {
+    "ci": {
+      "run_id": 41208266939,
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7",
+      "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41208266939",
+      "created_at": "2026-10-31T14:02:22Z",
+      "updated_at": "2026-10-31T14:05:20Z",
+      "jobs": [
+        {
+          "completedAt": "2026-10-31T14:04:30Z",
+          "conclusion": "success",
+          "databaseId": 124557711322,
+          "name": "test (windows-2022, windows-x64, x64)",
+          "startedAt": "2026-10-31T14:02:25Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install application and build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Test deterministic logic and native UI without hardware",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Runtime self-test",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 17,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 18,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41208266939/job/124557711322"
+        },
+        {
+          "completedAt": "2026-10-31T14:05:20Z",
+          "conclusion": "success",
+          "databaseId": 124557711521,
+          "name": "test (macos-15-intel, macos-x64, x64)",
+          "startedAt": "2026-10-31T14:02:26Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install application and build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Test deterministic logic and native UI without hardware",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Runtime self-test",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 17,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 18,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41208266939/job/124557711521"
+        },
+        {
+          "completedAt": "2026-10-31T14:04:36Z",
+          "conclusion": "success",
+          "databaseId": 124557711523,
+          "name": "test (macos-15, macos-arm64, arm64)",
+          "startedAt": "2026-10-31T14:02:26Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install application and build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Test deterministic logic and native UI without hardware",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Runtime self-test",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 17,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 18,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41208266939/job/124557711523"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": 13045701779,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NTcwMTc3OQ==",
+          "name": "desktop-smoke-windows-x64",
+          "size_in_bytes": 676,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045701779",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045701779/zip",
+          "expired": false,
+          "digest": "sha256:c21ada28366339fa036ffed63a8a5bf07aa929c6dcb294219f728419b00670b6",
+          "created_at": "2026-10-31T14:04:26Z",
+          "updated_at": "2026-10-31T14:04:26Z",
+          "expires_at": "2026-11-14T14:04:26Z",
+          "workflow_run": {
+            "id": 41208266939,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        },
+        {
+          "id": 13045617077,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NTYxNzA3Nw==",
+          "name": "desktop-smoke-macos-x64",
+          "size_in_bytes": 663,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045617077",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045617077/zip",
+          "expired": false,
+          "digest": "sha256:78b73372b7903ed2be0c783d9840e70a8203783c082cef408abead2a3071fa53",
+          "created_at": "2026-10-31T14:05:16Z",
+          "updated_at": "2026-10-31T14:05:16Z",
+          "expires_at": "2026-11-14T14:05:15Z",
+          "workflow_run": {
+            "id": 41208266939,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        },
+        {
+          "id": 13045093032,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NTA5MzAzMg==",
+          "name": "desktop-smoke-macos-arm64",
+          "size_in_bytes": 658,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045093032",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045093032/zip",
+          "expired": false,
+          "digest": "sha256:2ce6228f72c47cdb7f68a404de64511efab428f8eec5b070d90cffeddb329b89",
+          "created_at": "2026-10-31T14:04:32Z",
+          "updated_at": "2026-10-31T14:04:32Z",
+          "expires_at": "2026-11-14T14:04:31Z",
+          "workflow_run": {
+            "id": 41208266939,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        }
+      ]
+    },
+    "build": {
+      "run_id": 41208267210,
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7",
+      "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41208267210",
+      "created_at": "2026-10-31T14:02:22Z",
+      "updated_at": "2026-10-31T14:06:16Z",
+      "jobs": [
+        {
+          "completedAt": "2026-10-31T14:06:15Z",
+          "conclusion": "success",
+          "databaseId": 124557714251,
+          "name": "build (windows-2022, windows-x64, x64)",
+          "startedAt": "2026-10-31T14:02:26Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run deterministic validation",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare macOS signing keychain",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare Windows signing certificate",
+              "number": 10,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Build signed candidate",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build explicitly unsigned test candidate",
+              "number": 12,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve candidate and verification metadata",
+              "number": 13,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve frozen runtime diagnostic",
+              "number": 14,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove temporary signing material",
+              "number": 15,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove Windows certificate and private key",
+              "number": 16,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 31,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 32,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 33,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41208267210/job/124557714251"
+        },
+        {
+          "completedAt": "2026-10-31T14:06:13Z",
+          "conclusion": "success",
+          "databaseId": 124557714506,
+          "name": "build (macos-15-intel, macos-x64, x64)",
+          "startedAt": "2026-10-31T14:02:27Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run deterministic validation",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare macOS signing keychain",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare Windows signing certificate",
+              "number": 10,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Build signed candidate",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build explicitly unsigned test candidate",
+              "number": 12,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve candidate and verification metadata",
+              "number": 13,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve frozen runtime diagnostic",
+              "number": 14,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove temporary signing material",
+              "number": 15,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove Windows certificate and private key",
+              "number": 16,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 31,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 32,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 33,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41208267210/job/124557714506"
+        },
+        {
+          "completedAt": "2026-10-31T14:05:16Z",
+          "conclusion": "success",
+          "databaseId": 124557714543,
+          "name": "build (macos-15, macos-arm64, arm64)",
+          "startedAt": "2026-10-31T14:02:27Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run deterministic validation",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare macOS signing keychain",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare Windows signing certificate",
+              "number": 10,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Build signed candidate",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build explicitly unsigned test candidate",
+              "number": 12,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve candidate and verification metadata",
+              "number": 13,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve frozen runtime diagnostic",
+              "number": 14,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove temporary signing material",
+              "number": 15,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove Windows certificate and private key",
+              "number": 16,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 31,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 32,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 33,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41208267210/job/124557714543"
+        },
+        {
+          "completedAt": "2026-10-31T14:06:15Z",
+          "conclusion": "skipped",
+          "databaseId": 124558595977,
+          "name": "draft",
+          "startedAt": "2026-10-31T14:06:16Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41208267210/job/124558595977"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": 13045692084,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NTY5MjA4NA==",
+          "name": "frozen-self-test-windows-x64",
+          "size_in_bytes": 1224,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045692084",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045692084/zip",
+          "expired": false,
+          "digest": "sha256:dbbef525fd6f6c2cb41c3afeba451b872c84d2203b5b5893293dcfc09e075a49",
+          "created_at": "2026-10-31T14:06:12Z",
+          "updated_at": "2026-10-31T14:06:12Z",
+          "expires_at": "2026-11-14T14:06:12Z",
+          "workflow_run": {
+            "id": 41208267210,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        },
+        {
+          "id": 13045652276,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NTY1MjI3Ng==",
+          "name": "candidate-windows-x64",
+          "size_in_bytes": 109785669,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045652276",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045652276/zip",
+          "expired": false,
+          "digest": "sha256:2471340f4e8490fdd2a7be5648436ff7d789cf84f7c83ff7eafc7d8fed0ef2e2",
+          "created_at": "2026-10-31T14:06:11Z",
+          "updated_at": "2026-10-31T14:06:11Z",
+          "expires_at": "2026-11-14T14:06:08Z",
+          "workflow_run": {
+            "id": 41208267210,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        },
+        {
+          "id": 13045541338,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NTU0MTMzOA==",
+          "name": "frozen-self-test-macos-arm64",
+          "size_in_bytes": 1195,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045541338",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045541338/zip",
+          "expired": false,
+          "digest": "sha256:75a2cb05226da4285e17dd1e950dc74ff142f64a4aca3444c68b6a8e46d50388",
+          "created_at": "2026-10-31T14:05:12Z",
+          "updated_at": "2026-10-31T14:05:12Z",
+          "expires_at": "2026-11-14T14:05:11Z",
+          "workflow_run": {
+            "id": 41208267210,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        },
+        {
+          "id": 13045241757,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NTI0MTc1Nw==",
+          "name": "desktop-smoke-macos-x64",
+          "size_in_bytes": 660,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045241757",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045241757/zip",
+          "expired": false,
+          "digest": "sha256:e8468bc30745b81585e95885643f5bf1e0176549029ebc8da87b5665f6404453",
+          "created_at": "2026-10-31T14:04:25Z",
+          "updated_at": "2026-10-31T14:04:25Z",
+          "expires_at": "2026-11-14T14:04:24Z",
+          "workflow_run": {
+            "id": 41208267210,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        },
+        {
+          "id": 13045117054,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NTExNzA1NA==",
+          "name": "candidate-macos-arm64",
+          "size_in_bytes": 127347559,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045117054",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13045117054/zip",
+          "expired": false,
+          "digest": "sha256:8c7b2f4c58331b054c8ca6818cbe3919a5fc28289f8a34ed458ca29313fc02ef",
+          "created_at": "2026-10-31T14:05:11Z",
+          "updated_at": "2026-10-31T14:05:11Z",
+          "expires_at": "2026-11-14T14:05:06Z",
+          "workflow_run": {
+            "id": 41208267210,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        },
+        {
+          "id": 13044998194,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NDk5ODE5NA==",
+          "name": "desktop-smoke-macos-arm64",
+          "size_in_bytes": 659,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13044998194",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13044998194/zip",
+          "expired": false,
+          "digest": "sha256:5dd6549374b8c7091b9d6b378539a7052e719a7236f859217e2b6c60682d549c",
+          "created_at": "2026-10-31T14:03:58Z",
+          "updated_at": "2026-10-31T14:03:58Z",
+          "expires_at": "2026-11-14T14:03:57Z",
+          "workflow_run": {
+            "id": 41208267210,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        },
+        {
+          "id": 13044744312,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NDc0NDMxMg==",
+          "name": "frozen-self-test-macos-x64",
+          "size_in_bytes": 1193,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13044744312",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13044744312/zip",
+          "expired": false,
+          "digest": "sha256:3534c576f9f1c03b7e514c7d3b675ab5f3655bef08d85370d3951798c3a0bcfe",
+          "created_at": "2026-10-31T14:06:11Z",
+          "updated_at": "2026-10-31T14:06:11Z",
+          "expires_at": "2026-11-14T14:06:10Z",
+          "workflow_run": {
+            "id": 41208267210,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        },
+        {
+          "id": 13044634606,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NDYzNDYwNg==",
+          "name": "candidate-macos-x64",
+          "size_in_bytes": 140429580,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13044634606",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13044634606/zip",
+          "expired": false,
+          "digest": "sha256:6ac03bc00181f6d5d86f21ffc3137d4af03e9f9cf47ef86b582b206a68ac190c",
+          "created_at": "2026-10-31T14:06:10Z",
+          "updated_at": "2026-10-31T14:06:10Z",
+          "expires_at": "2026-11-14T14:06:04Z",
+          "workflow_run": {
+            "id": 41208267210,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        },
+        {
+          "id": 13044594690,
+          "node_id": "MDg6QXJ0aWZhY3QxMzA0NDU5NDY5MA==",
+          "name": "desktop-smoke-windows-x64",
+          "size_in_bytes": 671,
+          "url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13044594690",
+          "archive_download_url": "https://api.github.com/repos/ecojust/open-JARVIS/actions/artifacts/13044594690/zip",
+          "expired": false,
+          "digest": "sha256:d92695ab07ac1072cc7e28e6c0d8741a83124915ac965ebafcb762eeedcec5b1",
+          "created_at": "2026-10-31T14:04:06Z",
+          "updated_at": "2026-10-31T14:04:06Z",
+          "expires_at": "2026-11-14T14:04:05Z",
+          "workflow_run": {
+            "id": 41208267210,
+            "repository_id": 1440608989,
+            "head_repository_id": 1440608989,
+            "head_branch": "master",
+            "head_sha": "00020ea1e9048fd0627616502f968799d733c3a7"
+          }
+        }
+      ]
+    }
+  }
+}

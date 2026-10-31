@@ -17,9 +17,9 @@
 | Linux 真实 PyInstaller 冻结导入对照 | 旧配置失败，补收 provider 后成功 | [comparison.json](comparison.json)；只检查实际运行时符号导入，不是完整客户端、任务执行或安装验收 |
 | Linux 源码 MAF 本地任务 | 通过 | [source-agent-roundtrip.json](source-agent-roundtrip.json)；真实 MAF、HTTP/SSE 和文件工具，模型回复为本地固定测试数据，未使用外部服务 |
 | 本地测试与静态检查 | 312 项测试、Ruff 通过 | 本轮源码检查；不代替三平台冻结程序执行 |
-| macOS Intel 冻结任务自检 | 待验证 | 等待新构建实际执行后补证据 |
-| macOS Apple Silicon 冻结任务自检 | 待验证 | 等待新构建实际执行后补证据 |
-| Windows x64 冻结任务自检 | 待验证 | 等待新构建实际执行后补证据 |
+| macOS Intel 冻结任务自检 | 通过 | [三端构建记录](native-build.json)，冻结 worker 实际执行 MAF 任务检查 |
+| macOS Apple Silicon 冻结任务自检 | 通过 | [三端构建记录](native-build.json)，冻结 worker 实际执行 MAF 任务检查 |
+| Windows x64 冻结任务自检 | 通过 | [三端构建记录](native-build.json)，冻结 worker 实际执行 MAF 任务检查 |
 
 ### Linux 冻结导入对照
 
@@ -67,7 +67,7 @@ python -m PyInstaller --noconfirm --name maf-probe-new \
 
 检查核对了四次模型请求、两次流式请求、一次成功文件工具调用，以及真实 UTF-8 文件的完整内容。HTTP 客户端忽略环境代理，并在每次请求前限制目标为本地测试服务；临时客户端替换在结束后恢复。任务和自检有超时，数据库连接与 HTTP 客户端结束后关闭，服务线程也被停止。该检查未访问用户模型账户或修改用户工作目录。
 
-同一检查已纳入冻结 worker 的 `--role self-test`。构建脚本要求 `agent_roundtrip.ok` 为真，否则停止生成安装器；发布提升脚本也要求三个构建清单均包含成功的任务自检，防止继续复用仅通过旧导入检查的构建。**本目录当前只有 Linux 冻结导入探针和源码任务的执行结果，三平台冻结 worker 的实际结果尚待补充。**
+同一检查已纳入冻结 worker 的 `--role self-test`。构建脚本要求 `agent_roundtrip.ok` 为真，否则停止生成安装器；发布提升脚本也要求三个构建清单均包含成功的任务自检，防止继续复用仅通过旧导入检查的构建。三端构建 `41208267210` 与原生 CI `41208266939` 均已成功，源码 `00020ea1e9048fd0627616502f968799d733c3a7`，首次运行无重试。[native-build.json](native-build.json) 保存 job 步骤和候选产物身份；安装器生成前均实际执行冻结 worker 的完整检查。
 
 本地固定回复仅提供可重复的模型协议测试输入；委派、MAF 执行、网络传输和文件写入均实际运行。它不验证生产模型自主规划质量、资料检索时效、六类业务产物、桌面预览、麦克风输入或扬声器输出。
 
