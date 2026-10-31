@@ -1,0 +1,273 @@
+{
+  "kind": "injected_local_503_then_real_remote_token_files",
+  "full_weights_downloaded": false,
+  "models": {
+    "stt": {
+      "remote_url": "https://hf-mirror.com/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/2365baeacb507f821a0c8120fcee3d484dba7a07/tokens.txt",
+      "actual_bytes": 315894,
+      "sha256": "f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc",
+      "verified": true,
+      "events": [
+        {
+          "phase": "downloading",
+          "source": "Local injected HTTP 503",
+          "source_index": 1,
+          "source_count": 2,
+          "completed_bytes": 0,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "switching",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 0,
+          "total_bytes": 315894,
+          "reason": "服务器返回 HTTP 503"
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 0,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 8192,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 24576,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 40960,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 57344,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 62832,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 71024,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 87408,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 103792,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 120176,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 136560,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 152944,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 169328,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 182784,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 190976,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 207360,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 223744,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 240128,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 256512,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 272896,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 289280,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 305664,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 315894,
+          "total_bytes": 315894
+        },
+        {
+          "phase": "verifying",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 315894,
+          "total_bytes": 315894
+        }
+      ]
+    },
+    "tts": {
+      "remote_url": "https://hf-mirror.com/csukuangfj/kokoro-multi-lang-v1_1/resolve/423bfb9ccd6a66115a76602a9630ffea265ae176/tokens.txt",
+      "actual_bytes": 1111,
+      "sha256": "931ab2df2400cd65d580a22402024c2347ced8ae9ea300e545144b1aacc48e14",
+      "verified": true,
+      "events": [
+        {
+          "phase": "downloading",
+          "source": "Local injected HTTP 503",
+          "source_index": 1,
+          "source_count": 2,
+          "completed_bytes": 0,
+          "total_bytes": 1111
+        },
+        {
+          "phase": "switching",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 0,
+          "total_bytes": 1111,
+          "reason": "服务器返回 HTTP 503"
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 0,
+          "total_bytes": 1111
+        },
+        {
+          "phase": "downloading",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 1111,
+          "total_bytes": 1111
+        },
+        {
+          "phase": "verifying",
+          "source": "HF Mirror",
+          "source_index": 2,
+          "source_count": 2,
+          "completed_bytes": 1111,
+          "total_bytes": 1111
+        }
+      ]
+    }
+  },
+  "passed": true
+}

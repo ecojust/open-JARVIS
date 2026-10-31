@@ -97,6 +97,43 @@ class ModelManagerTests(unittest.TestCase):
         self.assertEqual(self.downloads, ["stt"])
         self.assertEqual(self.dialog.cards["tts"].status_label.text(), "已就绪")
 
+    def test_source_switch_resets_partial_progress_and_remains_cancellable(self):
+        card = self.dialog.cards["stt"]
+        self.dialog.update_model(
+            "stt",
+            {
+                "phase": "downloading",
+                "source": "Hugging Face",
+                "source_index": 1,
+                "source_count": 2,
+                "completed_bytes": 80,
+                "total_bytes": 100,
+            },
+        )
+        self.assertEqual(card.progress.value(), 800)
+        self.assertEqual(card.source_label.text(), "下载来源：Hugging Face（1/2）")
+        self.dialog.update_model(
+            "stt",
+            {
+                "phase": "switching",
+                "source": "HF Mirror",
+                "source_index": 2,
+                "source_count": 2,
+                "completed_bytes": 10,
+            },
+        )
+        self.assertEqual(card.status_label.text(), "正在切换来源")
+        self.assertEqual(card.progress.value(), 100)
+        self.assertEqual(card.source_label.text(), "下载来源：HF Mirror（2/2）")
+        self.assertFalse(card.download_button.isEnabled())
+        self.assertTrue(card.cancel_button.isEnabled())
+        QTest.mouseClick(card.cancel_button, Qt.MouseButton.LeftButton)
+        self.assertEqual(self.cancellations, ["stt"])
+        self.dialog.update_model("stt", {"phase": "cancelled"})
+        self.assertTrue(card.source_label.isHidden())
+        self.dialog.update_model("stt", {"phase": "checking"})
+        self.assertTrue(card.source_label.isHidden())
+
     def test_closing_and_reopening_does_not_cancel_and_preserves_progress(self):
         self.dialog.update_model(
             "tts",

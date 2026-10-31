@@ -140,6 +140,38 @@ class ModelDownloadControllerTests(unittest.TestCase):
         self.assertEqual(self.controller._model_states["tts"]["phase"], "failed")
         self.assertFalse(self.controller.pending_settings)
 
+    def test_source_switch_survives_reopening_and_cancel_blocks_late_progress(self):
+        self.controller.download_model("stt")
+        worker = self.controller._downloads["stt"]
+        worker.send(
+            "download.progress",
+            kind="stt",
+            phase="switching",
+            source="HF Mirror",
+            source_index=2,
+            source_count=2,
+            completed_bytes=10,
+            total_bytes=100,
+            message="连接超时，正在切换到备用来源",
+        )
+        self.controller.model_dialog.close()
+        self.controller.show_models()
+        card = self.controller.model_dialog.cards["stt"]
+        self.assertEqual(card.status_label.text(), "正在切换来源")
+        self.assertIn("HF Mirror（2/2）", card.source_label.text())
+        self.assertEqual(card.progress.value(), 100)
+        self.assertTrue(card.cancel_button.isEnabled())
+        card.cancel_button.click()
+        worker.send(
+            "download.progress", kind="stt", phase="downloading", completed_bytes=50
+        )
+        worker.finish()
+        self.assertEqual(self.controller._model_states["stt"]["phase"], "cancelled")
+        self.assertFalse(self.controller.pending_settings)
+        card.download_button.click()
+        self.assertEqual(self.controller._model_states["stt"]["source"], "")
+        self.assertTrue(card.source_label.isHidden())
+
     def test_incompatible_runtime_selection_cannot_claim_completed(self):
         self.controller.download_model("tts")
         worker = self.controller._downloads["tts"]

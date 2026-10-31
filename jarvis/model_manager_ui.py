@@ -20,12 +20,15 @@ from PySide6.QtWidgets import (
 )
 
 
-_BUSY = frozenset({"checking", "downloading", "verifying", "installing", "cancelling"})
+_BUSY = frozenset(
+    {"checking", "downloading", "switching", "verifying", "installing", "cancelling"}
+)
 _PHASE_NAMES = {
     "checking": "正在检查",
     "missing": "尚未下载",
     "incompatible": "需要兼容版本",
     "downloading": "正在下载",
+    "switching": "正在切换来源",
     "verifying": "正在校验",
     "installing": "正在安装",
     "ready": "已就绪",
@@ -102,6 +105,11 @@ class ModelCard(QFrame):
         self.progress.setRange(0, 1000)
         self.progress.setFormat("%p%")
         layout.addWidget(self.progress)
+        self.source_label = QLabel()
+        self.source_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.source_label.setWordWrap(True)
+        self.source_label.setObjectName("muted")
+        layout.addWidget(self.source_label)
         self.detail_label = QLabel()
         self.detail_label.setTextFormat(Qt.TextFormat.PlainText)
         self.detail_label.setWordWrap(True)
@@ -169,7 +177,7 @@ class ModelCard(QFrame):
         self.path_field.setVisible(bool(directory))
         completed = _number(self.snapshot.get("completed_bytes"))
         total = _number(self.snapshot.get("total_bytes"))
-        if busy and phase == "downloading" and total:
+        if busy and phase in {"downloading", "switching"} and total:
             self.progress.setRange(0, 1000)
             self.progress.setValue(round(1000 * min(completed, total) / total))
             self.progress.setFormat(
@@ -182,11 +190,22 @@ class ModelCard(QFrame):
             self.progress.setValue(1000 if phase == "ready" else 0)
             self.progress.setFormat("已完成" if phase == "ready" else "%p%")
         self.progress.setVisible(busy or phase == "ready")
+        source = _text(self.snapshot.get("source"), 100)
+        source_index = int(_number(self.snapshot.get("source_index")))
+        source_count = int(_number(self.snapshot.get("source_count")))
+        source_text = "下载来源：" + source
+        if 0 < source_index <= source_count <= 100:
+            source_text += f"（{source_index}/{source_count}）"
+        self.source_label.setText(source_text)
+        self.source_label.setVisible(
+            bool(source) and phase in {"downloading", "switching", "verifying"}
+        )
         fallback = {
             "checking": "正在确认本机模型状态…",
             "missing": "点击下载后即可使用，不需要运行安装命令。",
             "incompatible": "当前模型与此版本不兼容，请下载受支持的版本。旧文件会保留。",
             "downloading": "下载期间可以继续使用文字任务。",
+            "switching": "当前来源暂不可用，正在自动尝试其他来源。",
             "verifying": "正在校验下载文件完整性，请稍候。",
             "installing": "正在准备模型，完成后自动加载。",
             "ready": "已安装；升级客户端后会检查兼容性并复用。",
@@ -240,7 +259,9 @@ class ModelManagerDialog(QDialog):
         heading = QLabel("下载语音模型")
         heading.setObjectName("heading")
         layout.addWidget(heading)
-        introduction = QLabel("分别下载语音识别与中文播报模型，完成后自动加载。")
+        introduction = QLabel(
+            "分别下载语音识别与中文播报模型，完成后自动加载。来源不可用时自动切换。"
+        )
         introduction.setWordWrap(True)
         introduction.setObjectName("muted")
         layout.addWidget(introduction)

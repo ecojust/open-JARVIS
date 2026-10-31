@@ -5,8 +5,14 @@ from pathlib import Path
 
 import httpx
 
+from .model_download import DOWNLOAD_TIMEOUT, DownloadSource, download_verified
+
 
 MODEL_REPO = "https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/2365baeacb507f821a0c8120fcee3d484dba7a07"
+MODEL_SOURCES = (
+    DownloadSource("Hugging Face", MODEL_REPO),
+    DownloadSource("HF Mirror", MODEL_REPO.replace("huggingface.co", "hf-mirror.com")),
+)
 MODEL_FILES = {
     "tokens.txt": (
         315894,
@@ -79,11 +85,15 @@ def download(directory: Path, *, progress=None) -> None:
                 return
             total = sum(value[0] for value in MODEL_FILES.values())
             downloaded = 0
+            sources = [
+                DownloadSource(source.name, source.url, index)
+                for index, source in enumerate(MODEL_SOURCES, start=1)
+            ]
             with staging_directory(directory, "stt") as temporary:
                 staged = Path(temporary) / "model"
                 staged.mkdir()
                 with httpx.Client(
-                    follow_redirects=True, timeout=httpx.Timeout(60, connect=20)
+                    follow_redirects=True, timeout=DOWNLOAD_TIMEOUT
                 ) as client:
                     for name, (expected_size, expected_digest) in MODEL_FILES.items():
                         target = staged / name
@@ -91,31 +101,22 @@ def download(directory: Path, *, progress=None) -> None:
                             shutil.copyfile(directory / name, target)
                             downloaded += expected_size
                             continue
-                        with client.stream("GET", f"{MODEL_REPO}/{name}") as response:
-                            response.raise_for_status()
-                            if "text/html" in response.headers.get("content-type", ""):
-                                raise ValueError("模型站点返回了网页，未下载到模型文件")
-                            size, digest = 0, hashlib.sha256()
-                            with target.open("xb") as handle:
-                                for chunk in response.iter_bytes(1024 * 1024):
-                                    size += len(chunk)
-                                    if size > expected_size:
-                                        raise ValueError(
-                                            f"{name} 下载大小与固定版本不一致"
-                                        )
-                                    handle.write(chunk)
-                                    digest.update(chunk)
-                                    report(
-                                        "downloading",
-                                        completed_bytes=downloaded + size,
-                                        total_bytes=total,
-                                        message="正在下载语音识别模型",
-                                    )
-                            if (
-                                size != expected_size
-                                or digest.hexdigest() != expected_digest
-                            ):
-                                raise ValueError(f"{name} 大小或 SHA-256 校验失败")
+                        selected = download_verified(
+                            client,
+                            target,
+                            tuple(
+                                DownloadSource(
+                                    source.name, f"{source.url}/{name}", source.index
+                                )
+                                for source in sources
+                            ),
+                            expected_size,
+                            expected_digest,
+                            report,
+                            completed_bytes=downloaded,
+                            total_bytes=total,
+                        )
+                        sources.sort(key=lambda source: source.name != selected.name)
                         downloaded += expected_size
                 write_manifest(
                     "stt", staged, provenance="pinned-file-sha256", progress=report

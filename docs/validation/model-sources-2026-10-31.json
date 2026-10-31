@@ -1,0 +1,105 @@
+{
+  "recorded_date": "2026-10-31",
+  "purpose": "Validate fixed model source paths and content identities for automatic download fallback.",
+  "limitations": [
+    "Network probes were performed from the development environment; availability on every user network is not guaranteed.",
+    "Full model weights were not downloaded again. Kokoro file identities were checked against actual existing local file bytes and the fixed upstream repository tree.",
+    "Hugging Face and hf-mirror may redirect to shared upstream storage; separate entry domains do not guarantee independent storage availability."
+  ],
+  "stt": {
+    "repo": "csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17",
+    "revision": "2365baeacb507f821a0c8120fcee3d484dba7a07",
+    "tokens_full_downloads": [
+      {
+        "url": "https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/2365baeacb507f821a0c8120fcee3d484dba7a07/tokens.txt",
+        "http_status": 200,
+        "size_bytes": 315894,
+        "sha256": "f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc",
+        "matches_existing_pin": true
+      },
+      {
+        "url": "https://hf-mirror.com/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/2365baeacb507f821a0c8120fcee3d484dba7a07/tokens.txt",
+        "http_status": 200,
+        "size_bytes": 315894,
+        "sha256": "f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc",
+        "matches_existing_pin": true
+      }
+    ],
+    "model_upstream_metadata": {
+      "url": "https://huggingface.co/api/models/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/tree/2365baeacb507f821a0c8120fcee3d484dba7a07",
+      "file": "model.int8.onnx",
+      "size_bytes": 239233841,
+      "lfs_sha256": "c71f0ce00bec95b07744e116345e33d8cbbe08cef896382cf907bf4b51a2cd51",
+      "matches_existing_pin": true
+    },
+    "model_range_probe": {
+      "url": "https://hf-mirror.com/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/2365baeacb507f821a0c8120fcee3d484dba7a07/model.int8.onnx",
+      "requested_range": "bytes=0-127",
+      "http_status": 206,
+      "content_range": "bytes 0-127/239233841",
+      "bytes_read": 128
+    }
+  },
+  "tts": {
+    "archive": {
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_1.tar.bz2",
+      "metadata_url": "https://api.github.com/repos/k2-fsa/sherpa-onnx/releases/tags/tts-models",
+      "metadata_http_status": 200,
+      "asset_id": 677613419,
+      "size_bytes": 364855331,
+      "published_sha256": "b78e1ac42b852e839cceaafbe88f66806bf5860992d1d7b9a3f2ad1198427aed",
+      "range_probe": {
+        "requested_range": "bytes=0-127",
+        "http_status": 206,
+        "content_range": "bytes 0-127/364855331",
+        "bytes_read": 128
+      }
+    },
+    "file_sources": {
+      "repo": "csukuangfj/kokoro-multi-lang-v1_1",
+      "revision": "423bfb9ccd6a66115a76602a9630ffea265ae176",
+      "tree_url": "https://huggingface.co/api/models/csukuangfj/kokoro-multi-lang-v1_1/tree/423bfb9ccd6a66115a76602a9630ffea265ae176?recursive=true&limit=1000",
+      "tree_http_status": 200,
+      "file_count": 377,
+      "total_bytes": 426584734,
+      "lfs_sha256_identities_verified": 7,
+      "ordinary_git_blob_identities_verified": 370,
+      "actual_file_sha256_computed": 377,
+      "identity_or_size_mismatches": 0,
+      "excluded_repository_metadata": [
+        ".gitattributes"
+      ],
+      "pins_file": "jarvis/kokoro_files.py"
+    },
+    "range_probes": [
+      {
+        "url": "https://huggingface.co/csukuangfj/kokoro-multi-lang-v1_1/resolve/423bfb9ccd6a66115a76602a9630ffea265ae176/tokens.txt",
+        "requested_range": "bytes=0-127",
+        "http_status": 206,
+        "content_range": "bytes 0-127/1111",
+        "bytes_read": 128
+      },
+      {
+        "url": "https://huggingface.co/csukuangfj/kokoro-multi-lang-v1_1/resolve/423bfb9ccd6a66115a76602a9630ffea265ae176/model.onnx",
+        "requested_range": "bytes=0-127",
+        "http_status": 206,
+        "content_range": "bytes 0-127/325561476",
+        "bytes_read": 128
+      },
+      {
+        "url": "https://hf-mirror.com/csukuangfj/kokoro-multi-lang-v1_1/resolve/423bfb9ccd6a66115a76602a9630ffea265ae176/tokens.txt",
+        "requested_range": "bytes=0-127",
+        "http_status": 206,
+        "content_range": "bytes 0-127/1111",
+        "bytes_read": 128
+      },
+      {
+        "url": "https://hf-mirror.com/csukuangfj/kokoro-multi-lang-v1_1/resolve/423bfb9ccd6a66115a76602a9630ffea265ae176/model.onnx",
+        "requested_range": "bytes=0-127",
+        "http_status": 206,
+        "content_range": "bytes 0-127/325561476",
+        "bytes_read": 128
+      }
+    ]
+  }
+}

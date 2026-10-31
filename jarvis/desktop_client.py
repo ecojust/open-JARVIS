@@ -1568,7 +1568,13 @@ class DesktopController(QObject):
         output = bytearray()
         outcome = {"completed": False, "error": ""}
         self._set_model_state(
-            kind, phase="checking", message="正在检查已下载模型…", completed_bytes=0
+            kind,
+            phase="checking",
+            message="正在检查已下载模型…",
+            completed_bytes=0,
+            source="",
+            source_index=0,
+            source_count=0,
         )
 
         def progress():
