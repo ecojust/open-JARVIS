@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "name": "Open JARVIS 生肖羊 Logo",
+  "design_version": "0.1",
+  "status": "design_draft",
+  "created_at": "2026-10-31",
+  "file": "open-jarvis-sheep.png",
+  "width": 1254,
+  "height": 1254,
+  "format": "PNG",
+  "mode": "RGBA",
+  "sha256": "687ea8d4bb182061863955801db6eeb3dc11793223fb84d14616cd5e962d30dd",
+  "subject": "十二生肖·羊，卷角公羊",
+  "palette": "宝蓝色圆角底板、黑色与米白色雕刻纹理",
+  "creation_method": "使用图像生成工具参考同系列风格新绘制，并整理透明边缘；非矢量原稿。",
+  "style_references": [
+    "https://github.com/ecojust/open-office/blob/HEAD/assets/branding/README.md",
+    "https://github.com/ecojust/open-media/blob/HEAD/src/assets/branding/README.md"
+  ],
+  "platform_exports_generated": false
+}
