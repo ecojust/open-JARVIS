@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-from PyInstaller.utils.hooks import collect_all, collect_submodules, copy_metadata
+from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_submodules, copy_metadata
 
 root = Path(SPECPATH).resolve().parent
 version = os.environ.get("JARVIS_BUILD_VERSION", "0.1.0")
@@ -14,6 +14,7 @@ entitlements = str(root / "packaging" / "macos" / "entitlements.plist") if signi
 
 datas = [
     (str(root / "assets" / "branding"), "assets/branding"),
+    (str(root / "assets" / "fonts"), "assets/fonts"),
     (str(root / "examples"), "examples"),
     (str(root / "static"), "static"),
     (str(root / "LICENSE"), "."),
@@ -24,7 +25,11 @@ hiddenimports = [
     "uvicorn.logging", "uvicorn.loops.asyncio", "uvicorn.protocols.http.h11_impl",
     "uvicorn.lifespan.on", "sounddevice",
     "_sounddevice", "webrtcvad", "_webrtcvad", "numpy", "httpx", "openai",
+    "docx", "openpyxl", "pptx", "imageio_ffmpeg", "imageio_ffmpeg.binaries",
 ]
+# Keep the small built-in Office templates required to create new documents.
+datas += collect_data_files("docx", subdir="templates")
+datas += collect_data_files("pptx.templates")
 for package in ("sherpa_onnx",):
     package_data, package_binaries, package_imports = collect_all(package)
     datas += package_data
@@ -34,7 +39,7 @@ for package in ("sherpa_onnx",):
 hiddenimports += ["_sounddevice_data"]
 hiddenimports += collect_submodules("agent_framework")
 hiddenimports += collect_submodules("jarvis")
-for distribution in ("agent-framework-core", "agent-framework-openai", "openai", "sherpa-onnx", "sherpa-onnx-core", "PySide6-Essentials", "shiboken6"):
+for distribution in ("agent-framework-core", "agent-framework-openai", "openai", "sherpa-onnx", "sherpa-onnx-core", "PySide6-Essentials", "shiboken6", "python-docx", "openpyxl", "python-pptx", "Pillow", "imageio-ffmpeg"):
     datas += copy_metadata(distribution)
 
 # GUI is intentionally native Qt; avoid the Chromium runtime and model caches.

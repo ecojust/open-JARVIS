@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import asyncio
 import hmac
 import json
+import mimetypes
 from pathlib import Path
 import shutil
 
@@ -30,6 +32,7 @@ class ChatRequest(BaseModel):
 
 class TaskRequest(ChatRequest):
     client_request_id: str | None = Field(default=None, min_length=1, max_length=128)
+    parent_task_id: str | None = Field(default=None, min_length=1, max_length=128)
 
 
 def create_app(settings: Settings | None = None, *, agent_factory=Agent) -> FastAPI:
@@ -154,12 +157,13 @@ def create_app(settings: Settings | None = None, *, agent_factory=Agent) -> Fast
     @app.post("/api/tasks", status_code=202)
     async def submit_task(payload: TaskRequest):
         task = await app.state.tasks.submit(
-            text_message(payload), payload.client_request_id
+            text_message(payload), payload.client_request_id, payload.parent_task_id
         )
         return {
             "task_id": task["task_id"],
             "status": task["status"],
             "held": task["held"],
+            "parent_task_id": task["parent_task_id"],
         }
 
     @app.get("/api/tasks")
@@ -273,6 +277,64 @@ def create_app(settings: Settings | None = None, *, agent_factory=Agent) -> Fast
         target = local_file(path)
         return FileResponse(
             target, filename=target.name, media_type="application/octet-stream"
+        )
+
+    def artifact_file(artifact_id):
+        artifact = app.state.store.get_artifact(artifact_id)
+        if not artifact:
+            raise HTTPException(404, "找不到该产物。")
+        target = local_file(artifact["path"])
+        try:
+            if target.stat().st_size > 512 * 1024 * 1024:
+                raise HTTPException(413, "该产物超过预览和媒体传输大小限制。")
+        except OSError as exc:
+            raise HTTPException(404, "无法读取该产物。") from exc
+        return artifact, target
+
+    @app.get("/api/artifacts/{artifact_id}/preview")
+    async def preview_artifact(artifact_id: str):
+        artifact, target = artifact_file(artifact_id)
+        from .artifact_preview import build_preview
+
+        try:
+            preview = await asyncio.to_thread(build_preview, target)
+        except (ValueError, OSError) as exc:
+            raise HTTPException(
+                422, "无法预览该文件，请检查格式或下载后查看。"
+            ) from exc
+        if not isinstance(preview, dict):
+            raise HTTPException(422, "文件预览结果格式异常。")
+        return {
+            **preview,
+            "artifact_id": artifact_id,
+            "name": target.name,
+            "path": artifact["path"],
+            "media_type": mimetypes.guess_type(target.name)[0]
+            or artifact["media_type"],
+            "media_url": f"/api/artifacts/{artifact_id}/media",
+        }
+
+    @app.get("/api/artifacts/{artifact_id}/media")
+    async def artifact_media(artifact_id: str):
+        artifact, target = artifact_file(artifact_id)
+        media_type = mimetypes.guess_type(target.name)[0] or artifact["media_type"]
+        inline = media_type in {
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/gif",
+            "video/mp4",
+            "audio/wav",
+            "audio/x-wav",
+            "audio/mpeg",
+            "audio/ogg",
+        }
+        return FileResponse(
+            target,
+            filename=target.name,
+            media_type=media_type,
+            content_disposition_type="inline" if inline else "attachment",
+            headers={"Cache-Control": "no-store"},
         )
 
     @app.get("/api/artifacts/{artifact_id}")

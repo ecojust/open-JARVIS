@@ -100,6 +100,7 @@ class TaskClient(QObject):
         timeout=15000,
         raw=None,
         content_type=None,
+        max_response_bytes=None,
     ):
         if self._closing:
             return None
@@ -122,12 +123,31 @@ class TaskClient(QObject):
             request, method.encode("ascii"), QByteArray(body)
         )
         self._replies.add(reply)
+        oversized = False
+
+        def limit_response():
+            nonlocal oversized
+            if (
+                max_response_bytes is not None
+                and reply.bytesAvailable() > max_response_bytes
+            ):
+                oversized = True
+                reply.abort()
+
+        if max_response_bytes is not None:
+            reply.readyRead.connect(limit_response)
 
         def finished():
             self._replies.discard(reply)
             try:
                 data = bytes(reply.readAll())
                 if self._closing:
+                    return
+                if oversized or (
+                    max_response_bytes is not None and len(data) > max_response_bytes
+                ):
+                    if error:
+                        error("预览内容过大，请下载原文件查看。")
                     return
                 status = (
                     reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
@@ -243,7 +263,9 @@ class TaskClient(QObject):
         self.connection.emit(False, "执行记录连接中断，正在恢复；后台任务仍继续。")
         self._retry.start(1500)
 
-    def download(self, path: str, destination: Path, callback=None, error=None):
+    def download(
+        self, path: str, destination: Path, callback=None, error=None, *, max_bytes=None
+    ):
         if self._closing:
             return
         output = QSaveFile(str(destination))
@@ -254,14 +276,21 @@ class TaskClient(QObject):
         reply = self.network.get(self._request(path, timeout=30000))
         self._replies.add(reply)
         failed = False
+        oversized = False
+        received = 0
 
         def chunk():
-            nonlocal failed
+            nonlocal failed, oversized, received
             status = (
                 reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute) or 0
             )
             if status == 200:
                 data = reply.readAll()
+                received += data.size()
+                if max_bytes is not None and received > max_bytes:
+                    failed = oversized = True
+                    reply.abort()
+                    return
                 if output.write(data) != data.size():
                     failed = True
                     reply.abort()
@@ -283,7 +312,11 @@ class TaskClient(QObject):
                 ):
                     output.cancelWriting()
                     if error:
-                        error("文件下载失败，已有目标文件未被替换。")
+                        error(
+                            "视频预览超过 128 MiB，请下载原文件后播放。"
+                            if oversized
+                            else "文件下载失败，已有目标文件未被替换。"
+                        )
                     return
                 chunk()
                 if failed or not output.commit():
@@ -394,6 +427,11 @@ class DesktopController(QObject):
         self._start_time = 0.0
         self._last_task_refresh = 0.0
         self._downloads = {}
+        self._preview_generation = 0
+        self._media_directory = None
+        self._media_paths = {}
+        self._media_pending = set()
+        self._force_new_task = False
         self._task_refresh = QTimer(self)
         self._task_refresh.setSingleShot(True)
         self._task_refresh.timeout.connect(self.refresh_tasks)
@@ -742,6 +780,7 @@ class DesktopController(QObject):
             self.notify("设置等待现有任务结束后应用，请稍后再发送新任务。")
             return False
         if text.startswith("新任务"):
+            self._force_new_task = True
             text = re.sub(r"^新任务[，,。:：\s]*", "", text).strip()
             self.awaiting_task = None
             self._send_audio("expect_input", enabled=False)
@@ -757,7 +796,19 @@ class DesktopController(QObject):
         payload = {"message": text}
         if not waiting:
             payload["client_request_id"] = uuid.uuid4().hex
+            parent = None if self._force_new_task else self._parent_for_message(text)
+            if parent is not None:
+                payload["parent_task_id"] = parent
+        self._force_new_task = False
         self.last_status = "正在提交任务…"
+        if payload.get("parent_task_id"):
+            related = self.tasks.get(payload["parent_task_id"], {})
+            self.last_status = (
+                "正在承接任务："
+                + str(related.get("message") or related.get("title") or "上一项结果")[
+                    :100
+                ]
+            )
         self._render_status()
         self.client.request(
             "POST",
@@ -767,6 +818,49 @@ class DesktopController(QObject):
             error=self.notify,
         )
         return True
+
+    def _parent_for_message(self, text):
+        terminal = {
+            "succeeded",
+            "partially_succeeded",
+            "cancelled",
+            "failed",
+            "interrupted",
+        }
+        selected = self.tasks.get(self.selected_task, {})
+        reference = re.search(r"刚才|之前|上一|这份|这个|那份|那个", text)
+        wanted = set()
+        if reference:
+            lowered = text[reference.start() :].lower()
+            matches = []
+            for words, suffixes in (
+                (("ppt", "幻灯片", "演示文稿"), {".pptx"}),
+                (("word", "文档"), {".docx"}),
+                (("excel", "电子表格", "排班表"), {".xlsx"}),
+                (("视频",), {".mp4"}),
+            ):
+                positions = [lowered.find(word) for word in words if word in lowered]
+                if positions:
+                    matches.append((min(positions), suffixes))
+            if matches:
+                # The first artifact named after the reference is the source;
+                # “刚才的视频转 PPT” must not choose an unrelated PPT output.
+                wanted = min(matches, key=lambda item: item[0])[1]
+        if wanted:
+            # A preceding scheduling task must not steal “刚才的 PPT”.
+            order = list(dict.fromkeys([self.selected_task, *self.task_order]))
+            for task_id in order:
+                task = self.tasks.get(task_id, {})
+                if task.get("status") not in terminal:
+                    continue
+                if any(
+                    Path(str(item.get("path") or "")).suffix.lower() in wanted
+                    and not item.get("hidden")
+                    for item in task.get("artifacts", [])
+                ):
+                    return task_id
+            return None
+        return self.selected_task if selected.get("status") in terminal else None
 
     def _task_submitted(self, data, waiting):
         task_id = data.get("task_id")
@@ -1148,6 +1242,108 @@ class DesktopController(QObject):
             error=self.notify,
         )
 
+    def preview_artifact(self, artifact_id, name, *, automatic=False, task_id=None):
+        if not self.ready or self.client is None or artifact_id is None:
+            return
+        window = self._ensure_results()
+        source_task = task_id if task_id is not None else window.task_id
+        if source_task != window.task_id:
+            return
+        self._preview_generation += 1
+        generation = self._preview_generation
+        window.show_preview_loading(artifact_id, name)
+        if not automatic:
+            window.show_result()
+
+        def current():
+            return (
+                not self.closing
+                and self.results is window
+                and window.task_id == source_task
+                and generation == self._preview_generation
+                and window.preview.artifact_id == artifact_id
+            )
+
+        def ready(payload):
+            if current():
+                window.show_preview(
+                    {**payload, "artifact_id": artifact_id, "name": str(name)}
+                )
+
+        def failed(message):
+            if current():
+                window.preview.show_error(message)
+
+        self.client.request(
+            "GET",
+            "/api/artifacts/" + quote(str(artifact_id), safe="") + "/preview",
+            callback=ready,
+            error=failed,
+            timeout=30000,
+            max_response_bytes=2 * 1024 * 1024,
+        )
+
+    def play_artifact(self, artifact_id, name):
+        """Open an authenticated local MP4 copy, never a token-bearing URL."""
+        if not self.ready or self.client is None or artifact_id is None:
+            return
+        if Path(str(name)).suffix.lower() != ".mp4":
+            self.notify("只支持使用此入口播放 MP4 视频，请下载其他格式后打开。")
+            return
+        from PySide6.QtGui import QDesktopServices
+        import tempfile
+
+        def open_video(path):
+            if self.closing:
+                return
+            if QDesktopServices.openUrl(QUrl.fromLocalFile(str(path))):
+                self.notify("已交给系统默认播放器。")
+            else:
+                self.notify("系统未能打开播放器，请下载视频后选择已安装的播放器。")
+
+        cached = self._media_paths.get(artifact_id)
+        if cached and cached.is_file():
+            open_video(cached)
+            return
+        if artifact_id in self._media_pending:
+            self.notify("视频正在准备，请稍候。")
+            return
+        if len(self._media_paths) + len(self._media_pending) >= 3:
+            for key, path in list(self._media_paths.items()):
+                try:
+                    path.unlink(missing_ok=True)
+                except OSError:
+                    continue
+                del self._media_paths[key]
+                break
+        if len(self._media_paths) + len(self._media_pending) >= 3:
+            self.notify("已有视频仍在使用，请关闭播放器后重试，或下载原文件。")
+            return
+        if self._media_directory is None:
+            self._media_directory = tempfile.TemporaryDirectory(
+                prefix="jarvis-video-preview-", ignore_cleanup_errors=True
+            )
+        destination = Path(self._media_directory.name) / (uuid.uuid4().hex + ".mp4")
+        self._media_pending.add(artifact_id)
+        self.notify("正在准备实际视频文件…")
+
+        def ready(path):
+            self._media_pending.discard(artifact_id)
+            self._media_paths[artifact_id] = path
+            open_video(path)
+
+        def failed(message):
+            self._media_pending.discard(artifact_id)
+            self.notify(message)
+
+        self.client.download(
+            "/api/artifacts/" + quote(str(artifact_id), safe="") + "/media",
+            destination,
+            callback=ready,
+            error=failed,
+            max_bytes=128 * 1024 * 1024,
+        )
+
     def download_artifact(self, artifact_id, name):
         if not self.ready:
             return
@@ -1326,6 +1522,7 @@ class DesktopController(QObject):
             return
         self.closing = True
         self.ready = False
+        self._preview_generation += 1
         self.probe_timer.stop()
         self._task_refresh.stop()
         self._release_view.stop()
@@ -1352,3 +1549,8 @@ class DesktopController(QObject):
         if self.results:
             self.results.hide()
         self.tile.hide()
+        if self._media_directory is not None:
+            self._media_directory.cleanup()
+            self._media_directory = None
+        self._media_paths.clear()
+        self._media_pending.clear()

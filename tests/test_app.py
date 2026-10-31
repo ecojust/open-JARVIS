@@ -4,6 +4,9 @@ from contextlib import contextmanager
 import json
 from pathlib import Path
 import tempfile
+import types
+import sys
+import wave
 import time
 import unittest
 from unittest.mock import AsyncMock, patch
@@ -39,6 +42,110 @@ class AppTests(unittest.TestCase):
             app = create_app(settings)
             with TestClient(app, base_url="http://localhost") as client:
                 yield client, app, settings
+
+    def test_parent_task_api_persists_link_and_rejects_unknown_or_active_parent(self):
+        with self.app_client() as (client, app, _):
+            missing = client.post(
+                "/api/tasks", json={"message": "承接", "parent_task_id": "missing"}
+            )
+            self.assertEqual(missing.status_code, 409)
+            invalid = client.post(
+                "/api/tasks", json={"message": "承接", "parent_task_id": ""}
+            )
+            self.assertEqual(invalid.status_code, 422)
+            parent = app.state.store.create_task("前序报告")
+            active = client.post(
+                "/api/tasks",
+                json={"message": "承接", "parent_task_id": parent["task_id"]},
+            )
+            self.assertEqual(active.status_code, 409)
+            app.state.store.update_task(
+                parent["task_id"],
+                "task.completed",
+                {},
+                status="succeeded",
+                display_text="前序事实",
+            )
+            payload = {
+                "message": "/write new-report.md | 子任务输出",
+                "parent_task_id": parent["task_id"],
+                "client_request_id": "parent-idempotency",
+            }
+            accepted = client.post("/api/tasks", json=payload)
+            self.assertEqual(accepted.status_code, 202)
+            self.assertEqual(accepted.json()["parent_task_id"], parent["task_id"])
+            task_id = accepted.json()["task_id"]
+            detail = client.get(f"/api/tasks/{task_id}").json()
+            self.assertEqual(detail["parent_context"]["summary"], "前序事实")
+            again = client.post("/api/tasks", json=payload)
+            self.assertEqual(again.json()["task_id"], task_id)
+            conflict = client.post(
+                "/api/tasks", json={**payload, "parent_task_id": None}
+            )
+            self.assertEqual(conflict.status_code, 409)
+
+    def test_artifact_preview_parses_validated_file_and_media_supports_ranges(self):
+        with self.app_client(instance_token="local-test-token") as (
+            client,
+            app,
+            settings,
+        ):
+            token = {"Authorization": "Bearer local-test-token"}
+            task = app.state.store.create_task("预览参考文件")
+            document = settings.workspace / "article.md"
+            document.write_text("# 实际文章\n真实正文", encoding="utf-8")
+            item, _ = app.state.store.add_artifact(
+                task["task_id"], "article.md", document.stat().st_size, "text/markdown"
+            )
+            artifact_id = item["artifact_id"]
+            module = types.ModuleType("jarvis.artifact_preview")
+            parsed = []
+
+            def build_preview(path):
+                parsed.append(path)
+                return {"kind": "document", "text": path.read_text(encoding="utf-8")}
+
+            module.build_preview = build_preview
+            route = f"/api/artifacts/{artifact_id}/preview"
+            self.assertEqual(client.get(route).status_code, 401)
+            with patch.dict(sys.modules, {"jarvis.artifact_preview": module}):
+                response = client.get(route, headers=token)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()["text"], "# 实际文章\n真实正文")
+                self.assertEqual(
+                    response.json()["media_url"], f"/api/artifacts/{artifact_id}/media"
+                )
+                self.assertEqual(parsed, [document.resolve()])
+                document.unlink()
+                self.assertEqual(client.get(route, headers=token).status_code, 404)
+                self.assertEqual(len(parsed), 1)
+            wav = settings.workspace / "narration.wav"
+            with wave.open(str(wav), "wb") as stream:
+                stream.setnchannels(1)
+                stream.setsampwidth(2)
+                stream.setframerate(16000)
+                stream.writeframes(b"\x00\x00" * 160)
+            audio, _ = app.state.store.add_artifact(
+                task["task_id"], "narration.wav", wav.stat().st_size, "audio/wav"
+            )
+            media = f"/api/artifacts/{audio['artifact_id']}/media"
+            self.assertEqual(client.get(media).status_code, 401)
+            full = client.get(media, headers=token)
+            self.assertEqual(full.content, wav.read_bytes())
+            self.assertTrue(full.headers["content-type"].startswith("audio/"))
+            partial = client.get(media, headers={**token, "Range": "bytes=10-29"})
+            self.assertEqual(partial.status_code, 206)
+            self.assertEqual(partial.content, wav.read_bytes()[10:30])
+            self.assertTrue(partial.headers["content-range"].startswith("bytes 10-29/"))
+            invalid, _ = app.state.store.add_artifact(
+                task["task_id"], "../escape.wav", 10, "audio/wav"
+            )
+            self.assertEqual(
+                client.get(
+                    f"/api/artifacts/{invalid['artifact_id']}/media", headers=token
+                ).status_code,
+                404,
+            )
 
     def test_web_entrypoint_and_referenced_static_assets_are_served(self):
         with self.app_client() as (client, _, _):

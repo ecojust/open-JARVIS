@@ -3,3 +3,5 @@ uvicorn==0.52.1
 httpx==0.28.1
 python-dotenv==1.2.2
 -r requirements-agent.txt
+-r requirements-office.txt
+imageio-ffmpeg==0.6.0

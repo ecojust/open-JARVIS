@@ -210,7 +210,20 @@ class MAFIntegrationTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("delegate_writer", first_tools)
         self.assertNotIn("write_file", first_tools)
         writer_tools = {t["function"]["name"] for t in server.requests[1][1]["tools"]}
-        self.assertEqual(writer_tools, {"write_file", "read_file", "list_files"})
+        self.assertEqual(
+            writer_tools,
+            {
+                "write_file",
+                "read_file",
+                "list_files",
+                "get_file_preview",
+                "create_document",
+                "create_spreadsheet",
+                "create_presentation",
+            },
+        )
+        self.assertNotIn("create_explainer_video", writer_tools)
+        self.assertNotIn("create_schedule", writer_tools)
         self.assertTrue(server.requests[1][1]["stream"])
         self.assertIn(
             (
@@ -224,6 +237,74 @@ class MAFIntegrationTests(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(events[-1][1]["status"], "succeeded")
         self.assertEqual(events[-1][1]["usage"], {"model_calls": 4, "tool_calls": 1})
+
+    async def test_maf_accepts_nested_office_schema_and_creates_real_presentation(self):
+        arguments = {
+            "path": "reports/actual.pptx",
+            "title": "结构化资料",
+            "slides": [
+                {
+                    "title": "实际工具写入",
+                    "bullets": ["数值来自输入资料"],
+                    "notes": "这是用于验证工具协议的明确测试资料。",
+                    "sources": [
+                        {"title": "协议测试来源", "url": "https://example.com/source"}
+                    ],
+                }
+            ],
+            "sources": [{"title": "协议测试来源", "url": "https://example.com/source"}],
+        }
+        server, settings = self.setup_model(
+            [
+                call("delegate_writer", {"task": "生成真正的PPT"}),
+                call("create_presentation", arguments),
+                {"content": "已生成 reports/actual.pptx。"},
+                final("PPT已生成。"),
+            ]
+        )
+        events = [
+            event
+            async for event in run_maf(
+                settings, self.store, self.registry, "生成真正的PPT"
+            )
+        ]
+        from pptx import Presentation
+
+        actual = Presentation(self.root / "workspace/reports/actual.pptx")
+        self.assertEqual(actual.slides[0].shapes.title.text, "实际工具写入")
+        self.assertIn(
+            "明确测试资料", actual.slides[0].notes_slide.notes_text_frame.text
+        )
+        self.assertEqual(events[-1][1]["status"], "succeeded")
+        result = next(
+            data["result"]
+            for kind, data in events
+            if kind == "tool_result" and data["name"] == "create_presentation"
+        )
+        self.assertTrue(result["saved"])
+        self.assertTrue(any(item.get("hidden") for item in result["artifacts"]))
+        self.assertEqual(len(server.requests), 4)
+
+    async def test_media_delegation_has_only_presentation_and_video_tools(self):
+        server, settings = self.setup_model(
+            [
+                call("delegate_media", {"task": "检查可用PPT"}),
+                call("list_files", {}),
+                {"content": "需要先生成PPT。"},
+                final("请先生成PPT。", "awaiting_input"),
+            ]
+        )
+        events = [
+            event
+            async for event in run_maf(
+                settings, self.store, self.registry, "将PPT制作成视频"
+            )
+        ]
+        tools = {tool["function"]["name"] for tool in server.requests[1][1]["tools"]}
+        self.assertEqual(
+            tools, {"list_files", "get_file_preview", "create_explainer_video"}
+        )
+        self.assertEqual(events[-1][1]["status"], "awaiting_input")
 
     async def test_budget_covers_nested_agent_requests_and_preserves_completed_write(
         self,

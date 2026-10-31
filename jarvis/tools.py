@@ -11,6 +11,7 @@ import math
 import os
 import socket
 import tempfile
+import threading
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
@@ -19,6 +20,7 @@ from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 import httpx
 
 from .storage import Store
+from .tool_schemas import WORK_DEFINITIONS, validate_value
 
 MAX_FILE_BYTES = 2 * 1024 * 1024
 MAX_TEXT_CHARS = 30_000
@@ -147,6 +149,9 @@ DEFINITIONS = [
 ]
 
 
+DEFINITIONS.extend(WORK_DEFINITIONS)
+
+
 class _PageParser(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
@@ -229,6 +234,7 @@ class _SearchParser(HTMLParser):
 class ToolRegistry:
     def __init__(self, workspace: Path, store: Store, brave_api_key: str = ""):
         self.workspace = Path(workspace).resolve()
+        self._active_cancel = None
         self.workspace.mkdir(parents=True, exist_ok=True)
         self.store = store
         self.brave_api_key = brave_api_key
@@ -267,25 +273,7 @@ class ToolRegistry:
         if not isinstance(arguments, dict):
             raise ValueError("工具参数必须是 JSON 对象")
         schema = self._schemas[name]
-        extra = set(arguments) - set(schema["properties"])
-        if extra:
-            raise ValueError("不支持的参数：" + ", ".join(sorted(map(str, extra))))
-        for key in schema["required"]:
-            if key not in arguments:
-                raise ValueError(f"缺少必填参数：{key}")
-        for key, value in arguments.items():
-            field = schema["properties"][key]
-            expected = {"string": str, "integer": int, "boolean": bool}[field["type"]]
-            if type(value) is not expected:
-                raise ValueError(f"参数 {key} 类型应为 {field['type']}")
-            if expected is str and not field.get("minLength", 0) <= len(
-                value
-            ) <= field.get("maxLength", 100_000):
-                raise ValueError(f"参数 {key} 长度无效")
-            if expected is str and field.get("minLength", 0) and not value.strip():
-                raise ValueError(f"参数 {key} 不能为空")
-            if expected is int and value < field.get("minimum", value):
-                raise ValueError(f"参数 {key} 不能小于 {field['minimum']}")
+        validate_value(arguments, schema)
 
     async def execute(self, name: str, arguments: dict) -> dict:
         try:
@@ -293,18 +281,87 @@ class ToolRegistry:
             method = getattr(self, "_" + name)
             if name in {"search_web", "fetch_page"}:
                 return await method(**arguments)
+            if name == "create_explainer_video":
+                cancellation = threading.Event()
+                self._active_cancel = cancellation
+                try:
+                    return await asyncio.to_thread(
+                        method, **arguments, cancel_event=cancellation
+                    )
+                finally:
+                    self._active_cancel = None
             return await asyncio.to_thread(method, **arguments)
         except (
             ValueError,
             OSError,
             UnicodeError,
             csv.Error,
+            ImportError,
             httpx.HTTPError,
             TimeoutError,
         ) as exc:
             if isinstance(exc, (httpx.HTTPError, TimeoutError)):
                 return {"error": "网络请求失败或超时，请稍后重试。"}
+            if isinstance(exc, ImportError):
+                return {
+                    "error": "工作组件未安装，请安装最新版 requirements-desktop.txt 中的依赖。"
+                }
             return {"error": str(exc)}
+
+    def cancel_active(self):
+        event = getattr(self, "_active_cancel", None)
+        if event is not None:
+            event.set()
+
+    def _create_document(self, path, **arguments):
+        from .office_tools import create_document
+
+        self.resolve_path(path)
+        return create_document(self.workspace, path, **arguments)
+
+    def _create_spreadsheet(self, path, **arguments):
+        from .office_tools import create_spreadsheet
+
+        self.resolve_path(path)
+        return create_spreadsheet(self.workspace, path, **arguments)
+
+    def _create_presentation(self, path, **arguments):
+        from .office_tools import create_presentation
+
+        self.resolve_path(path)
+        return create_presentation(self.workspace, path, **arguments)
+
+    def _create_schedule(self, path, **arguments):
+        from .schedule_tools import create_schedule
+
+        self.resolve_path(path)
+        return create_schedule(self.workspace, path, **arguments)
+
+    def _create_explainer_video(self, path, presentation_path, **arguments):
+        from .video_tools import create_explainer_video
+
+        self.resolve_path(path)
+        self.resolve_path(presentation_path)
+        if arguments.get("manifest_path"):
+            self.resolve_path(arguments["manifest_path"])
+        return create_explainer_video(
+            self.workspace, path, presentation_path=presentation_path, **arguments
+        )
+
+    def _get_file_preview(self, path):
+        from .artifact_preview import build_preview
+
+        result = build_preview(self.resolve_path(path))
+        # Tool results stay smaller than native UI previews, protecting context.
+        encoded = json.dumps(result, ensure_ascii=False, allow_nan=False)
+        if len(encoded) > 20000:
+            return {
+                "path": path,
+                "kind": result["kind"],
+                "truncated": True,
+                "content": encoded[:18000],
+            }
+        return {"path": path, **result}
 
     def dashboard(self) -> dict:
         return {
@@ -365,6 +422,10 @@ class ToolRegistry:
 
     def _write_file(self, path: str, content: str, overwrite: bool = False) -> dict:
         file = self.resolve_path(path)
+        if file.suffix.lower() in {".docx", ".xlsx", ".pptx", ".mp4"}:
+            raise ValueError(
+                "Office 和视频需要使用对应的专用工具，不能将文本改扩展名当作真实文件。"
+            )
         data = content.encode("utf-8")
         if len(data) > MAX_FILE_BYTES:
             raise ValueError("文件内容超过 2 MB 限制")
@@ -535,6 +596,10 @@ class ToolRegistry:
     async def _public_get(
         self, url: str, headers: dict | None = None, *, allow_redirects: bool = True
     ) -> tuple[str, bytes, str]:
+        from .trusted_sources import get_trusted, supports_trusted_url
+
+        if supports_trusted_url(url):
+            return await get_trusted(url, headers)
         current = url
         async with asyncio.timeout(25):
             for hop in range(4):

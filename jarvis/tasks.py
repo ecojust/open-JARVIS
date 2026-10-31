@@ -7,6 +7,7 @@ from collections import deque
 import contextlib
 from dataclasses import replace
 import logging
+import json
 import mimetypes
 import time
 
@@ -22,6 +23,18 @@ class TaskConflict(ValueError):
 
 class TaskQueueFull(TaskConflict):
     pass
+
+
+def _json_bounded_text(value, budget):
+    """Keep a complete text prefix within its serialized JSON character budget."""
+    low, high = 0, min(len(value), budget)
+    while low < high:
+        middle = (low + high + 1) // 2
+        if len(json.dumps(value[:middle], ensure_ascii=False)) <= budget:
+            low = middle
+        else:
+            high = middle - 1
+    return value[:low]
 
 
 class TaskManager:
@@ -77,21 +90,81 @@ class TaskManager:
         if len(self.pending) + (1 if self.active_id else 0) >= total_limit:
             raise TaskQueueFull("任务队列已满，请等待当前任务完成后再提交。")
 
-    async def submit(self, message, client_request_id=None):
+    async def submit(self, message, client_request_id=None, parent_task_id=None):
         if self._closing:
             raise TaskConflict("服务正在退出，暂不接收新任务。")
         if client_request_id:
             existing = self.store.find_request(client_request_id)
             if existing:
-                if existing["message"] != message:
-                    raise TaskConflict("同一请求标识不能用于不同指令。")
+                if (
+                    existing["message"] != message
+                    or existing.get("parent_task_id") != parent_task_id
+                ):
+                    raise TaskConflict("同一请求标识不能用于不同指令或前序任务。")
                 return existing
+        context = self._parent_context(parent_task_id) if parent_task_id else {}
         self._capacity()
-        task = self.store.create_task(message, client_request_id)
+        task = self.store.create_task(
+            message,
+            client_request_id,
+            parent_task_id=parent_task_id,
+            parent_context=context,
+        )
         self.pending.append(task["task_id"])
         self._wake.set()
         await self._notify()
         return task
+
+    def _parent_context(self, task_id):
+        parent = self.store.get_task(task_id)
+        if parent is None:
+            raise TaskConflict("找不到需要承接的前序任务。")
+        if parent["status"] not in TERMINAL_STATUSES:
+            raise TaskConflict("前序任务尚未结束；待补充问题请使用该任务的补充入口。")
+        artifacts = []
+        candidates = self.store.list_artifacts(task_id)
+        candidates.sort(
+            key=lambda item: (
+                bool(item.get("hidden")),
+                item.get("role") != "preview_manifest",
+            )
+        )
+        for artifact in candidates:
+            try:
+                target = self.registry.resolve_path(artifact["path"])
+                if not target.is_file():
+                    continue
+                size = target.stat().st_size
+            except (ValueError, OSError):
+                continue
+            artifacts.append(
+                {
+                    key: artifact[key]
+                    for key in ("artifact_id", "path", "media_type", "role", "hidden")
+                }
+                | {"size": size}
+            )
+            if len(artifacts) == 32:
+                break
+        summary = _json_bounded_text(parent["display_text"].strip(), 6000)
+        if not summary and not artifacts:
+            raise TaskConflict("前序任务没有可引用的结果或产物。")
+        context = {
+            "task_id": task_id,
+            "message": _json_bounded_text(parent["message"], 1500),
+            "status": parent["status"],
+            "summary": summary,
+            "artifacts": artifacts,
+            "artifacts_truncated": len(candidates) > len(artifacts),
+        }
+        # Text budgets include JSON escaping, leaving room for the first actual
+        # artifact even when message/summary contain many control characters.
+        # MAF retains up to 12k characters per history item; this smaller total
+        # also leaves room for the reference-material instructions.
+        while artifacts and len(json.dumps(context, ensure_ascii=False)) > 11000:
+            artifacts.pop()
+            context["artifacts_truncated"] = True
+        return context
 
     def require(self, task_id):
         task = self.store.get_task(task_id)
@@ -411,6 +484,7 @@ class TaskManager:
     def _record_result(self, task_id, name, result):
         if not isinstance(result, dict):
             result = {"data": result}
+        result = self._record_result_artifacts(task_id, name, result)
         queue = self._steps.setdefault(task_id, deque())
         match = next((item for item in queue if item[0] == name), None)
         if match:
@@ -422,24 +496,56 @@ class TaskManager:
                 arguments = self._arguments[task_id][name].popleft()
             step_id, _ = self.store.add_step(task_id, name, arguments)
             self.store.finish_step(step_id, result)
-        if name == "write_file" and not result.get("error"):
-            self._record_artifact(task_id, result.get("path"))
 
-    def _record_artifact(self, task_id, path):
+    def _record_result_artifacts(self, task_id, name, result):
+        if not isinstance(result, dict):
+            return {"error": "工具结果格式异常，无法核对操作结果。"}
+        entries = result.get("artifacts", [])
+        invalid = not isinstance(entries, list)
+        entries = entries if isinstance(entries, list) else []
+        invalid = invalid or len(entries) > 64
+        for item in entries[:64]:
+            if not isinstance(item, dict) or not self._record_artifact(
+                task_id,
+                item.get("path"),
+                hidden=item.get("hidden") is True,
+                role=item.get("role", "primary"),
+            ):
+                invalid = True
+        if name == "write_file" and not result.get("error"):
+            invalid = not self._record_artifact(task_id, result.get("path")) or invalid
+        if invalid and not result.get("error"):
+            result = {
+                **result,
+                "error": "工具声明的部分产物无法核对，已确认存在的文件仍保留。",
+            }
+        return result
+
+    def _record_artifact(self, task_id, path, *, hidden=False, role="primary"):
         if not isinstance(path, str):
-            return
+            return False
         try:
             target = self.registry.resolve_path(path)
-            if target.is_file():
-                relative = target.relative_to(self.registry.workspace).as_posix()
-                self.store.add_artifact(
-                    task_id,
-                    relative,
-                    target.stat().st_size,
-                    mimetypes.guess_type(relative)[0] or "application/octet-stream",
-                )
+            if not target.is_file():
+                return False
+            relative = target.relative_to(self.registry.workspace).as_posix()
+            size = target.stat().st_size
+            if size > 512 * 1024 * 1024:
+                return False
+            if not isinstance(role, str) or len(role) > 64:
+                role = "primary"
+            self.store.add_artifact(
+                task_id,
+                relative,
+                size,
+                mimetypes.guess_type(relative)[0] or "application/octet-stream",
+                hidden=hidden,
+                role=role,
+            )
+            return True
         except (ValueError, OSError):
             logger.warning("Ignored invalid artifact path for task %s", task_id)
+            return False
 
     def _finish_error(self, task_id, text):
         successes = any(
@@ -460,6 +566,8 @@ class TaskManager:
             task_id, "cancelled" if status == "cancelled" else "interrupted"
         )
         artifacts = self.store.list_artifacts(task_id)
+        if status == "failed" and any(not item.get("hidden") for item in artifacts):
+            status = "partially_succeeded"
         steps = self.store.list_steps(task_id)
         data = {
             "status": status,
@@ -556,6 +664,16 @@ class _TaskRegistry:
                 # deliver cancellation more than once. Keep shielding every
                 # wait: cancelling the asyncio task does not stop its file-
                 # writing worker thread, and we still need its actual outcome.
+                if not cancelled:
+                    cancel_active = getattr(self.registry, "cancel_active", None)
+                    if callable(cancel_active):
+                        try:
+                            cancel_active()
+                        except Exception:
+                            logger.warning(
+                                "Tool cancellation hook failed for task %s",
+                                self.task_id,
+                            )
                 cancelled = True
                 if operation.cancelled():
                     result = {"error": "操作中断，无法确认工具结果，请核对工作目录。"}
@@ -566,10 +684,9 @@ class _TaskRegistry:
         # Audit at the actual operation boundary. An SDK producer may outlive
         # its event consumer during cancellation; durable facts cannot depend
         # on the consumer draining a tool_result notification.
+        result = self.manager._record_result_artifacts(self.task_id, name, result)
         self.manager.store.finish_step(step_id, result)
         self.manager._journaled.setdefault(self.task_id, deque()).append((name, result))
-        if name == "write_file" and not result.get("error"):
-            self.manager._record_artifact(self.task_id, result.get("path"))
         await self.manager._notify()
         if cancelled:
             raise asyncio.CancelledError

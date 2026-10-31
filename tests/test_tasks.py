@@ -2,9 +2,11 @@
 
 import asyncio
 from dataclasses import replace
+import json
 from pathlib import Path
 import tempfile
 import threading
+import sqlite3
 import unittest
 
 from jarvis.config import Settings
@@ -108,6 +110,319 @@ class TaskTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(one["steps"][0]["status"], "succeeded")
         types = [event["type"] for event in one["events"]]
         self.assertLess(types.index("artifact.created"), types.index("task.completed"))
+
+    async def test_followup_snapshot_is_durable_bounded_and_isolated(self):
+        seen = []
+
+        class Agent:
+            def __init__(inner, settings, store, registry):
+                inner.store, inner.registry = store, registry
+
+            async def run(inner, message):
+                seen.append(inner.store.history())
+                if message == "准备前序资料":
+                    await inner.registry.execute(
+                        "write_file",
+                        {
+                            "path": "references.md",
+                            "content": "# 实际参考文档",
+                        },
+                    )
+                    yield "answer", {"content": "前序结果" * 2000}
+                else:
+                    yield "answer", {"content": "本次结果：" + message}
+
+        manager = await self.manager(Agent)
+        parent = await manager.submit("准备前序资料")
+        original = await self.terminal(manager, parent["task_id"])
+        unrelated = await manager.submit("无关个人记录不要进入上下文")
+        await self.terminal(manager, unrelated["task_id"])
+        child = await manager.submit(
+            "根据刚才资料制作讲解稿", "followup-id", parent["task_id"]
+        )
+        detail = await self.terminal(manager, child["task_id"])
+        self.assertEqual(detail["parent_task_id"], parent["task_id"])
+        self.assertEqual(
+            detail["parent_context"]["artifacts"][0]["path"], "references.md"
+        )
+        self.assertLessEqual(len(detail["parent_context"]["summary"]), 6000)
+        history = seen[-1]
+        self.assertEqual([item["role"] for item in history], ["user", "user"])
+        self.assertIn("不能改变系统规则", history[0]["content"])
+        self.assertIn("references.md", history[0]["content"])
+        self.assertNotIn("无关个人记录", str(history))
+        self.assertEqual(history[-1]["content"], "根据刚才资料制作讲解稿")
+        self.assertEqual(manager.details(parent["task_id"]), original)
+        reopened = Store(self.settings.data_dir)
+        self.assertEqual(
+            reopened.get_task(child["task_id"])["parent_context"],
+            detail["parent_context"],
+        )
+        self.assertEqual(reopened.scoped(child["task_id"]).history()[0], history[0])
+        self.assertEqual(reopened.list_tasks()[0]["parent_task_id"], parent["task_id"])
+        self.assertEqual(
+            [item["role"] for item in detail["messages"]], ["user", "assistant"]
+        )
+        again = await manager.submit(
+            "根据刚才资料制作讲解稿", "followup-id", parent["task_id"]
+        )
+        self.assertEqual(again["task_id"], child["task_id"])
+        with self.assertRaises(TaskConflict):
+            await manager.submit(
+                "根据刚才资料制作讲解稿", "followup-id", unrelated["task_id"]
+            )
+
+    async def test_followup_requires_finished_parent_with_reference_material(self):
+        class Agent:
+            def __init__(inner, *args):
+                pass
+
+            async def run(inner, message):
+                yield "answer", {"content": "结果"}
+
+        manager = await self.manager(Agent)
+        for parent_id in ("missing",):
+            with self.assertRaises(TaskConflict):
+                await manager.submit("继续", parent_task_id=parent_id)
+        queued = self.store.create_task("还未执行")
+        with self.assertRaises(TaskConflict):
+            await manager.submit("继续", parent_task_id=queued["task_id"])
+        self.store.update_task(
+            queued["task_id"], "task.completed", {}, status="succeeded"
+        )
+        with self.assertRaises(TaskConflict):
+            await manager.submit("继续", parent_task_id=queued["task_id"])
+
+    async def test_followup_json_escaping_keeps_context_and_artifact_paths_complete(
+        self,
+    ):
+        from jarvis.orchestration import _bounded_history
+
+        escaped = '\\\n\t\x01"'
+        message = "原始指令" + escaped * 1500
+        summary = "实际结果" + escaped * 6000
+        for with_artifacts in (False, True):
+            with self.subTest(with_artifacts=with_artifacts):
+                parent = self.store.create_task(message)
+                self.store.update_task(
+                    parent["task_id"],
+                    "task.completed",
+                    {},
+                    status="succeeded",
+                    display_text=summary,
+                )
+                paths = []
+                if with_artifacts:
+                    for index in range(32):
+                        path = f"reference-{index:02d}-" + "x" * 150 + ".md"
+                        target = self.registry.workspace / path
+                        target.write_text("真实参考文件", encoding="utf-8")
+                        self.store.add_artifact(
+                            parent["task_id"],
+                            path,
+                            target.stat().st_size,
+                            "text/markdown",
+                        )
+                        paths.append(path)
+                manager = TaskManager(self.settings, self.store, self.registry)
+                self.managers.append(manager)
+                child = await manager.submit("继续", parent_task_id=parent["task_id"])
+                context = child["parent_context"]
+                encoded = json.dumps(context, ensure_ascii=False)
+                self.assertLessEqual(len(encoded), 11000)
+                self.assertEqual(json.loads(encoded), context)
+                for field, original, budget in (
+                    ("message", message, 1500),
+                    ("summary", summary, 6000),
+                ):
+                    self.assertTrue(context[field])
+                    self.assertTrue(original.startswith(context[field]))
+                    self.assertLessEqual(
+                        len(json.dumps(context[field], ensure_ascii=False)), budget
+                    )
+                if with_artifacts:
+                    self.assertTrue(context["artifacts_truncated"])
+                    self.assertGreater(len(context["artifacts"]), 0)
+                    self.assertLess(len(context["artifacts"]), len(paths))
+                    self.assertEqual(context["artifacts"][0]["path"], paths[0])
+                    self.assertTrue(
+                        all(item["path"] in paths for item in context["artifacts"])
+                    )
+                else:
+                    self.assertEqual(context["artifacts"], [])
+                    self.assertFalse(context["artifacts_truncated"])
+                # Exercise the actual MAF history boundary, not just raw JSON.
+                history = _bounded_history(self.store.scoped(child["task_id"]), "继续")
+                reference = history[0]["content"]
+                self.assertLessEqual(len(reference), 12000)
+                self.assertEqual(json.loads(reference.split("\n", 1)[1]), context)
+                self.assertEqual(history[-1], {"role": "user", "content": "继续"})
+
+    async def test_multiple_artifacts_validate_actual_files_and_preserve_hidden_role(
+        self,
+    ):
+        original = self.registry.execute
+
+        async def output(name, arguments):
+            if name == "make_outputs":
+                (self.registry.workspace / "report.md").write_text(
+                    "真实正文", encoding="utf-8"
+                )
+                (self.registry.workspace / "report.preview.json").write_text(
+                    "{}", encoding="utf-8"
+                )
+                return {
+                    "artifacts": [
+                        {"path": "report.md", "media_type": "text/html"},
+                        {
+                            "path": "report.preview.json",
+                            "hidden": True,
+                            "role": "preview_manifest",
+                        },
+                        {"path": "missing.docx"},
+                        {"path": "../outside.md"},
+                    ]
+                }
+            return await original(name, arguments)
+
+        self.registry.execute = output
+
+        class Agent:
+            def __init__(inner, settings, store, registry):
+                inner.registry = registry
+
+            async def run(inner, message):
+                result = await inner.registry.execute("make_outputs", {})
+                self.assertIn("error", result)
+                yield "answer", {"content": "只保留已验证文件", "status": "succeeded"}
+
+        manager = await self.manager(Agent)
+        task = await manager.submit("生成多个输出")
+        detail = await self.terminal(manager, task["task_id"])
+        self.assertEqual(detail["status"], "partially_succeeded")
+        artifacts = {item["path"]: item for item in detail["artifacts"]}
+        self.assertEqual(set(artifacts), {"report.md", "report.preview.json"})
+        self.assertFalse(artifacts["report.md"]["hidden"])
+        self.assertNotEqual(artifacts["report.md"]["media_type"], "text/html")
+        self.assertTrue(artifacts["report.preview.json"]["hidden"])
+        self.assertEqual(artifacts["report.preview.json"]["role"], "preview_manifest")
+        reopened = Store(self.settings.data_dir)
+        self.assertTrue(
+            reopened.get_artifact(artifacts["report.preview.json"]["artifact_id"])[
+                "hidden"
+            ]
+        )
+
+    async def test_cancel_keeps_all_outputs_from_one_actual_operation(self):
+        started, release = asyncio.Event(), asyncio.Event()
+
+        async def output(name, arguments):
+            started.set()
+            await release.wait()
+            for name in ("report.md", "notes.md"):
+                (self.registry.workspace / name).write_text("已完成", encoding="utf-8")
+            return {"artifacts": [{"path": "report.md"}, {"path": "notes.md"}]}
+
+        self.registry.execute = output
+
+        class Agent:
+            def __init__(inner, settings, store, registry):
+                inner.registry = registry
+
+            async def run(inner, message):
+                await inner.registry.execute("make_outputs", {})
+                yield "answer", {"content": "完成"}
+
+        manager = await self.manager(Agent)
+        task = await manager.submit("生成资料")
+        await started.wait()
+        await manager.cancel(task["task_id"])
+        release.set()
+        detail = await self.terminal(manager, task["task_id"])
+        self.assertEqual(detail["status"], "cancelled")
+        self.assertEqual(
+            {item["path"] for item in detail["artifacts"]}, {"report.md", "notes.md"}
+        )
+        self.assertEqual(detail["steps"][0]["status"], "succeeded")
+
+    async def test_cancel_signals_cooperative_tool_and_audits_partial_outputs(self):
+        started = asyncio.Event()
+        stop = threading.Event()
+        cancellation_calls = []
+
+        def cancel_active():
+            cancellation_calls.append(True)
+            stop.set()
+
+        async def output(name, arguments):
+            started.set()
+            stopped = await asyncio.to_thread(stop.wait, 1)
+            self.assertTrue(stopped, "cooperative cancellation was not delivered")
+            (self.registry.workspace / "completed-script.md").write_text(
+                "已经完成的讲稿", encoding="utf-8"
+            )
+            return {
+                "error": "视频生成已取消",
+                "artifacts": [{"path": "completed-script.md"}],
+            }
+
+        self.registry.execute = output
+        self.registry.cancel_active = cancel_active
+
+        class Agent:
+            def __init__(inner, settings, store, registry):
+                inner.registry = registry
+
+            async def run(inner, message):
+                await inner.registry.execute("render_video", {})
+                yield "answer", {"content": "不应执行到这里"}
+
+        manager = await self.manager(Agent)
+        task = await manager.submit("生成讲解")
+        await started.wait()
+        await manager.cancel(task["task_id"])
+        detail = await self.terminal(manager, task["task_id"])
+        self.assertEqual(cancellation_calls, [True])
+        self.assertEqual(detail["status"], "cancelled")
+        self.assertEqual(detail["steps"][0]["status"], "failed")
+        self.assertEqual(detail["artifacts"][0]["path"], "completed-script.md")
+
+    def test_previous_database_migration_preserves_tasks_and_artifacts(self):
+        directory = Path(self.temp.name) / "legacy-data"
+        directory.mkdir()
+        database = directory / "jarvis.sqlite3"
+        with sqlite3.connect(database) as connection:
+            connection.executescript("""
+                CREATE TABLE tasks (
+                    task_id TEXT PRIMARY KEY, client_request_id TEXT UNIQUE,
+                    message TEXT NOT NULL, status TEXT NOT NULL, held INTEGER NOT NULL DEFAULT 0,
+                    display_text TEXT NOT NULL DEFAULT '', speech_text TEXT NOT NULL DEFAULT '',
+                    error TEXT NOT NULL DEFAULT '', plan TEXT NOT NULL DEFAULT '[]',
+                    elapsed_seconds REAL NOT NULL DEFAULT 0,
+                    model_calls INTEGER NOT NULL DEFAULT 0, tool_calls INTEGER NOT NULL DEFAULT 0,
+                    created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+                );
+                CREATE TABLE artifacts (
+                    artifact_id TEXT PRIMARY KEY, task_id TEXT NOT NULL, path TEXT NOT NULL,
+                    size INTEGER NOT NULL, media_type TEXT NOT NULL, created_at TEXT NOT NULL,
+                    UNIQUE(task_id,path)
+                );
+                INSERT INTO tasks(task_id,message,status,display_text,created_at,updated_at)
+                VALUES ('old-task','之前的任务','succeeded','保留旧结果','2026-01-01','2026-01-01');
+                INSERT INTO artifacts VALUES ('old-artifact','old-task','kept.md',12,'text/markdown','2026-01-01');
+                PRAGMA user_version=1;
+            """)
+        migrated = Store(directory)
+        task = migrated.get_task("old-task")
+        self.assertEqual(task["display_text"], "保留旧结果")
+        self.assertIsNone(task["parent_task_id"])
+        self.assertEqual(task["parent_context"], {})
+        artifact = migrated.get_artifact("old-artifact")
+        self.assertEqual(artifact["path"], "kept.md")
+        self.assertFalse(artifact["hidden"])
+        self.assertEqual(artifact["role"], "primary")
+        migrated.add_artifact("old-task", "next.md", 4, "text/markdown")
+        self.assertEqual(len(migrated.list_artifacts("old-task")), 2)
 
     async def test_idempotent_submission_and_bounded_queue(self):
         ready = asyncio.Event()

@@ -37,6 +37,8 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
     QPushButton,
     QSplitter,
+    QSizePolicy,
+    QTabWidget,
     QTextBrowser,
     QVBoxLayout,
     QWidget,
@@ -70,6 +72,13 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
 QMenu { background: #142236; border: 1px solid #304865; padding: 5px; }
 QMenu::item { padding: 7px 22px; }
 QMenu::item:selected { background: #28486e; }
+QTabWidget::pane { border: 1px solid #283c54; border-radius: 6px; }
+QTabBar::tab { background: #142236; border: 1px solid #304259; padding: 8px 18px; color: #a7bdd7; }
+QTabBar::tab:selected { background: #254e80; color: #ffffff; }
+QTableView { background: #111d2c; alternate-background-color: #17263a; color: #e4eaf3; gridline-color: #2c4059; border: 1px solid #283c54; selection-background-color: #286de0; }
+QHeaderView::section { background: #1c3350; color: #dce9f8; border: 1px solid #304a67; padding: 6px; }
+QComboBox { background: #182538; border: 1px solid #304259; border-radius: 5px; padding: 7px; }
+QComboBox QAbstractItemView { background: #142236; color: #e4eaf3; selection-background-color: #286de0; }
 QCheckBox { spacing: 8px; }
 QToolTip { color: #eef4ff; background: #17283f; border: 1px solid #3b5270; }
 """
@@ -283,6 +292,7 @@ class ResultsWindow(QMainWindow):
         self._artifacts_signature = None
         self._events_snapshot_signature = None
         self._events_rendered_text = ""
+        self._auto_preview_task = None
         self.setWindowTitle("Open JARVIS · 工作结果")
         self.resize(1280, 840)
         self.setStyleSheet(STYLE)
@@ -333,6 +343,10 @@ class ResultsWindow(QMainWindow):
         self.title.setObjectName("heading")
         self.title.setTextFormat(Qt.TextFormat.PlainText)
         self.title.setWordWrap(True)
+        self.title.setMinimumWidth(0)
+        self.title.setSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
+        )
         report_layout.addWidget(self.title)
         action_row = QHBoxLayout()
         self.task_state = QLabel("尚未选择任务")
@@ -356,7 +370,15 @@ class ResultsWindow(QMainWindow):
         self.body.setMarkdown(
             "## 你好，我是 JARVIS\n\n检索资料、分析 CSV、撰写工作文档。\n\n任务会在后台执行，完成后在这里展示实际结果与可下载的文件。"
         )
-        report_layout.addWidget(self.body, 1)
+        self.content_tabs = QTabWidget()
+        self.content_tabs.addTab(self.body, "任务结果")
+        from .preview_ui import ArtifactPreviewWidget
+
+        self.preview = ArtifactPreviewWidget()
+        self.preview.download_requested.connect(controller.download_artifact)
+        self.preview.play_requested.connect(controller.play_artifact)
+        self.preview_tab = self.content_tabs.addTab(self.preview, "产物预览")
+        report_layout.addWidget(self.content_tabs, 1)
         self.artifacts_area = QWidget()
         self.artifacts_layout = QHBoxLayout(self.artifacts_area)
         self.artifacts_layout.setContentsMargins(0, 0, 0, 0)
@@ -492,11 +514,29 @@ class ResultsWindow(QMainWindow):
             self._body_signature = content
             self.body.verticalScrollBar().setValue(0 if changed else previous_scroll)
         if changed:
+            self._auto_preview_task = None
+            self.content_tabs.setCurrentIndex(0)
+            self.preview.loading(None, "产物内容预览")
+            self.preview.placeholder.setText("选择产物查看实际文件内容。")
             self.body.verticalScrollBar().setValue(0)
             self._event_lines.clear()
             self._event_ids.clear()
             self._events_snapshot_signature = None
-        self._set_artifacts(task.get("artifacts") or [])
+        artifacts = self._set_artifacts(task.get("artifacts") or [])
+        if (
+            status in {"succeeded", "partially_succeeded", "cancelled", "failed"}
+            and artifacts
+            and self._auto_preview_task != self.task_id
+        ):
+            self._auto_preview_task = self.task_id
+            first = next((item for item in artifacts if self._can_preview(item)), None)
+            if first is not None:
+                self.controller.preview_artifact(
+                    first.get("artifact_id", first.get("id")),
+                    Path(str(first.get("path") or first.get("name") or "产物")).name,
+                    automatic=True,
+                    task_id=self.task_id,
+                )
         if "events" in task:
             events = [
                 event
@@ -514,7 +554,34 @@ class ResultsWindow(QMainWindow):
                 }
         self._sync_events()
 
+    @staticmethod
+    def _can_preview(item):
+        return Path(str(item.get("path") or item.get("name") or "")).suffix.lower() in {
+            ".docx",
+            ".xlsx",
+            ".pptx",
+            ".mp4",
+            ".md",
+            ".txt",
+            ".csv",
+            ".html",
+        }
+
+    def show_preview_loading(self, artifact_id, name):
+        self.preview.loading(artifact_id, name)
+        self.content_tabs.setCurrentIndex(self.preview_tab)
+
+    def show_preview(self, payload):
+        self.preview.render(payload)
+        self.content_tabs.setCurrentIndex(self.preview_tab)
+
     def _set_artifacts(self, artifacts):
+        artifacts = [
+            item
+            for item in artifacts
+            if not item.get("hidden")
+            and not str(item.get("path", "")).lower().endswith(".preview.json")
+        ]
         signature = tuple(
             (
                 item.get("artifact_id", item.get("id")),
@@ -524,46 +591,77 @@ class ResultsWindow(QMainWindow):
             for item in artifacts
         )
         if signature == self._artifacts_signature:
-            return
+            return artifacts
         self._artifacts_signature = signature
         while self.artifacts_layout.count():
             item = self.artifacts_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
-        for artifact in artifacts[:3]:
+        for artifact in artifacts[:1]:
             artifact_id = artifact.get("artifact_id", artifact.get("id"))
             if artifact_id is None:
                 continue
             path = str(artifact.get("path") or artifact.get("name") or "下载文件")
             name = Path(path).name
-            button = QPushButton("↓ " + (name[:30] + "…" if len(name) > 30 else name))
-            button.setToolTip(path + "\n" + _format_size(artifact.get("size")))
-            button.clicked.connect(
-                lambda checked=False, aid=artifact_id, filename=name: (
-                    self.controller.download_artifact(aid, filename)
+            previewable = self._can_preview(artifact)
+            label = "预览 " if previewable else "↓ "
+            button = QPushButton()
+            button.setText(
+                button.fontMetrics().elidedText(
+                    label + name, Qt.TextElideMode.ElideMiddle, 190
                 )
             )
+            button.setMinimumWidth(0)
+            button.setMaximumWidth(220)
+            button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+            button.setToolTip(path + "\n" + _format_size(artifact.get("size")))
+            if previewable:
+                button.clicked.connect(
+                    lambda checked=False, aid=artifact_id, filename=name: (
+                        self.controller.preview_artifact(
+                            aid, filename, task_id=self.task_id
+                        )
+                    )
+                )
+            else:
+                button.clicked.connect(
+                    lambda checked=False, aid=artifact_id, filename=name: (
+                        self.controller.download_artifact(aid, filename)
+                    )
+                )
             self.artifacts_layout.addWidget(button)
-        if len(artifacts) > 3:
-            more = QPushButton(f"更多产物（{len(artifacts) - 3}）")
+        if len(artifacts) > 1:
+            more = QPushButton(f"更多产物（{len(artifacts) - 1}）")
+            more.setMaximumWidth(140)
             menu = QMenu(more)
-            for artifact in artifacts[3:]:
+            for artifact in artifacts[1:]:
                 artifact_id = artifact.get("artifact_id", artifact.get("id"))
                 if artifact_id is None:
                     continue
                 path = str(artifact.get("path") or artifact.get("name") or "下载文件")
                 name = Path(path).name
-                action = menu.addAction(name)
+                previewable = self._can_preview(artifact)
+                action = menu.addAction(("预览 " if previewable else "下载 ") + name)
                 action.setToolTip(path)
-                action.triggered.connect(
-                    lambda checked=False, aid=artifact_id, filename=name: (
-                        self.controller.download_artifact(aid, filename)
+                if previewable:
+                    action.triggered.connect(
+                        lambda checked=False, aid=artifact_id, filename=name: (
+                            self.controller.preview_artifact(
+                                aid, filename, task_id=self.task_id
+                            )
+                        )
                     )
-                )
+                else:
+                    action.triggered.connect(
+                        lambda checked=False, aid=artifact_id, filename=name: (
+                            self.controller.download_artifact(aid, filename)
+                        )
+                    )
             more.setMenu(menu)
             self.artifacts_layout.addWidget(more)
         self.artifacts_layout.addStretch(1)
         self.artifacts_area.setVisible(bool(artifacts))
+        return artifacts
 
     def append_event(self, envelope: dict):
         task_id = envelope.get("task_id")

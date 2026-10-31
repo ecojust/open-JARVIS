@@ -178,7 +178,7 @@ def frozen_self_test(worker: Path, evidence: Path) -> dict:
             "Frozen runtime self-test failed; installer will not be created. "
             f"Diagnostic evidence: {evidence}"
         )
-    print(json.dumps({"frozen_self_test": payload}, ensure_ascii=False), flush=True)
+    print(json.dumps({"frozen_self_test": payload}, ensure_ascii=True), flush=True)
     return payload
 
 
@@ -218,6 +218,29 @@ def collect_license_inventory(output: Path) -> None:
                 "review_required": not bool(saved),
             }
         )
+        if name.lower().replace("_", "-") == "imageio-ffmpeg":
+            inventory[-1]["review_required"] = True
+            inventory[-1]["review_note"] = (
+                "Wheel license covers the Python wrapper; the embedded FFmpeg "
+                "build needs separate license and corresponding-source review."
+            )
+    font_source = ROOT / "assets" / "fonts"
+    font_metadata = json.loads((font_source / "source.json").read_text(encoding="utf-8"))
+    font_license_dir = output / "NotoSansSC"
+    font_license_dir.mkdir(exist_ok=True)
+    for filename in ("OFL.txt", "source.json"):
+        shutil.copyfile(font_source / filename, font_license_dir / filename)
+    inventory.append(
+        {
+            "name": font_metadata["name"],
+            "version": font_metadata["revision"],
+            "license_files": ["NotoSansSC/OFL.txt"],
+            "provenance": "NotoSansSC/source.json",
+            "license": font_metadata["license"],
+            "sha256": font_metadata["sha256"],
+            "review_required": False,
+        }
+    )
     for location in (
         Path(sys.base_prefix) / "LICENSE.txt",
         Path(sys.base_prefix) / "LICENSE",
@@ -405,6 +428,10 @@ def write_manifest(
         "sherpa-onnx",
         "agent-framework-core",
         "agent-framework-openai",
+        "python-docx",
+        "openpyxl",
+        "python-pptx",
+        "imageio-ffmpeg",
     ]
     versions = {}
     for distribution in distributions:

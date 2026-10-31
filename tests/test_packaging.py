@@ -19,6 +19,100 @@ spec.loader.exec_module(build_release)
 
 
 class PackagingTests(unittest.TestCase):
+    def test_font_self_test_checks_provenance_and_renders_chinese(self):
+        from jarvis.__main__ import _font_self_test
+
+        result = _font_self_test()
+        self.assertTrue(result["ok"], result)
+        self.assertEqual(result["glyphs_checked"], "中文")
+        self.assertEqual(result["license"], "SIL Open Font License 1.1")
+        metadata = json.loads((ROOT / "assets/fonts/source.json").read_text(encoding="utf-8"))
+        self.assertEqual(result["sha256"], metadata["sha256"])
+
+    def test_font_self_test_rejects_changed_resource_before_loading_it(self):
+        from jarvis.__main__ import _font_self_test
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "NotoSansSC-Regular.otf").write_bytes(b"changed font")
+            (root / "source.json").write_text(json.dumps({"sha256": "expected"}))
+            with patch("jarvis.paths.asset_path", side_effect=lambda name: root / Path(name).name):
+                result = _font_self_test()
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error_type"], "ValueError")
+        self.assertIn("checksum", result["error_message"])
+
+    def test_office_self_test_creates_and_reopens_real_files(self):
+        from jarvis.__main__ import _office_roundtrip_checks
+
+        checks = _office_roundtrip_checks()
+        self.assertEqual(set(checks), {"docx", "xlsx", "pptx"})
+        for extension, result in checks.items():
+            with self.subTest(extension=extension):
+                self.assertTrue(result["ok"], result)
+                self.assertTrue(result["reopened"])
+                self.assertGreater(result["size_bytes"], 100)
+
+    def test_ffmpeg_self_test_uses_bundled_executable_despite_environment_override(self):
+        from jarvis.__main__ import _ffmpeg_self_test
+
+        with patch.dict("os.environ", {"IMAGEIO_FFMPEG_EXE": "missing-external-command"}):
+            result = _ffmpeg_self_test()
+        self.assertTrue(result["ok"], result)
+        self.assertTrue(result["bundled"])
+        self.assertTrue(result["version_line"].startswith("ffmpeg version "))
+
+    def test_ffmpeg_self_test_has_a_fixed_command_and_execution_deadline(self):
+        from jarvis.__main__ import _ffmpeg_self_test
+
+        with patch(
+            "subprocess.run", side_effect=subprocess.TimeoutExpired("ffmpeg", 20)
+        ) as run:
+            result = _ffmpeg_self_test()
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error_type"], "TimeoutExpired")
+        self.assertEqual(run.call_args.args[0][1:], ["-nostdin", "-version"])
+        self.assertEqual(run.call_args.kwargs["timeout"], 20)
+        self.assertEqual(run.call_args.kwargs["stdin"], subprocess.DEVNULL)
+
+    def test_ffmpeg_hook_collects_only_native_binary_and_resource_package(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            package = Path(temporary) / "imageio_ffmpeg"
+            (package / "binaries").mkdir(parents=True)
+            filenames = {
+                "osx-aarch64": "ffmpeg-macos-aarch64-v7.1",
+                "osx-x86_64": "ffmpeg-macos-x86_64-v7.1",
+                "win64": "ffmpeg-win-x86_64-v7.1.exe",
+            }
+            for filename in filenames.values():
+                (package / "binaries" / filename).write_bytes(b"native executable")
+            helpers = types.ModuleType("PyInstaller.utils.hooks")
+            helpers.get_module_file_attribute = lambda name: str(package / "__init__.py")
+            helpers.collect_data_files = MagicMock(return_value=[])
+            definitions = types.ModuleType("imageio_ffmpeg._definitions")
+            definitions.FNAME_PER_PLATFORM = filenames
+            modules = {
+                "PyInstaller": types.ModuleType("PyInstaller"),
+                "PyInstaller.utils": types.ModuleType("PyInstaller.utils"),
+                "PyInstaller.utils.hooks": helpers,
+                "imageio_ffmpeg": types.ModuleType("imageio_ffmpeg"),
+                "imageio_ffmpeg._definitions": definitions,
+            }
+            with patch.dict("sys.modules", modules):
+                for target, filename in filenames.items():
+                    with self.subTest(target=target):
+                        definitions.get_platform = lambda target=target: target
+                        collected = runpy.run_path(
+                            str(ROOT / "packaging/hooks/hook-imageio_ffmpeg.py")
+                        )
+                        self.assertEqual(
+                            collected["binaries"],
+                            [(str(package / "binaries" / filename), "imageio_ffmpeg/binaries")],
+                        )
+                        self.assertEqual(
+                            collected["hiddenimports"], ["imageio_ffmpeg.binaries"]
+                        )
+
     def test_webrtcvad_hook_collects_the_installed_wheel_distribution(self):
         helpers = types.ModuleType("PyInstaller.utils.hooks")
         helpers.copy_metadata = MagicMock(return_value=[("wheel.dist-info", ".")])

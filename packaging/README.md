@@ -58,6 +58,18 @@ the source wheel also contains foreign-architecture libraries that must not be
 bundled. Current PySide6-Essentials 6.12.0 macOS wheels require macOS 14 or newer;
 the dependency floor is known, but installer/device acceptance still remains.
 
+Office export keeps the built-in `docx` and `pptx` templates. The packaged
+self-test creates DOCX, XLSX and PPTX files in a temporary directory, reopens
+them, and verifies their content. It also starts the native executable supplied
+by the `imageio-ffmpeg` wheel with a fixed `-version` command and a 20-second
+deadline. This verifies the bundled FFmpeg resource rather than a build host's
+PATH or `IMAGEIO_FFMPEG_EXE` override; `ffprobe` is not a package requirement.
+The native binary is included in macOS architecture checks and signing.
+The fixed Noto Sans SC font, its OFL license and source checksum are included as
+resources. Self-test verifies the checksum and renders distinct Chinese glyphs
+with Pillow, so an English Windows installation need not supply a Chinese font.
+Font loading remains on demand in the application.
+
 ## Branding and model resources
 
 The icon generator checks the approved PNG against
@@ -109,5 +121,7 @@ No push, tag, test result or build automatically publishes a public release.
 The draft is held for the hardware and performance gates in the root design.
 The license collector saves installed dependency license files and an inventory;
 missing or embedded-native licenses still need distribution review before
-publication. This scaffold is not evidence that signing, notarization, native
+publication. In particular, the `imageio-ffmpeg` wheel's BSD license covers its
+Python wrapper; its embedded FFmpeg build needs its own license/source review.
+This scaffold is not evidence that signing, notarization, native
 installation, device permissions or all three builds have already passed.
