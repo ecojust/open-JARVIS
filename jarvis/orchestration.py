@@ -15,6 +15,8 @@ from typing import Any
 
 import httpx
 
+from .provider_options import chat_completion_body_options
+
 
 class OrchestrationError(Exception):
     """A user-safe orchestration failure, without provider bodies or secrets."""
@@ -397,6 +399,14 @@ async def run_maf(settings, store, registry, message: str):
                                 "terminate_on_unknown_calls": True,
                             },
                         )
+                        model_options = {
+                            "max_tokens": 4096,
+                            "allow_multiple_tool_calls": False,
+                        }
+                        if body_options := chat_completion_body_options(
+                            settings.base_url
+                        ):
+                            model_options["extra_body"] = body_options
                         delegated = []
                         for name, (
                             description,
@@ -413,10 +423,7 @@ async def run_maf(settings, store, registry, message: str):
                                     for n in sorted(names)
                                     if n in tools_by_name
                                 ],
-                                default_options={
-                                    "max_tokens": 4096,
-                                    "allow_multiple_tool_calls": False,
-                                },
+                                default_options=model_options,
                             )
                             delegated.append(
                                 specialist.as_tool(
@@ -433,10 +440,7 @@ async def run_maf(settings, store, registry, message: str):
                                 for n in sorted(PERSONAL_TOOLS)
                                 if n in tools_by_name
                             ],
-                            default_options={
-                                "max_tokens": 4096,
-                                "allow_multiple_tool_calls": False,
-                            },
+                            default_options=model_options,
                         )
                         history = [
                             Message(role=item["role"], contents=[item["content"]])

@@ -1,6 +1,7 @@
 """Real MAF agents talking to a local OpenAI-compatible test HTTP server."""
 
 import asyncio
+from contextlib import contextmanager, nullcontext
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
@@ -8,7 +9,11 @@ import tempfile
 import threading
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
+import httpx
+
+from jarvis.agent import Agent as NativeAgent
 from jarvis.config import Settings
 from jarvis.orchestration import run_maf, _Budget, _parse_final
 from jarvis.storage import Store
@@ -42,7 +47,7 @@ def call(name, arguments, ident="call-1"):
 
 
 class ModelServer:
-    def __init__(self, replies):
+    def __init__(self, replies, *, require_disabled=False):
         self.replies = list(replies)
         self.requests = []
         self.failure = None
@@ -57,11 +62,14 @@ class ModelServer:
                     self.rfile.read(int(self.headers["Content-Length"]))
                 )
                 outer.requests.append((self.path, request))
-                if not outer.replies:
+                if require_disabled and request.get("thinking") != {"type": "disabled"}:
+                    reply = 400
+                elif not outer.replies:
                     self.send_response(500)
                     self.end_headers()
                     return
-                reply = outer.replies.pop(0)
+                else:
+                    reply = outer.replies.pop(0)
                 if isinstance(reply, int):
                     self.send_response(reply)
                     self.send_header("Content-Type", "application/json")
@@ -141,6 +149,28 @@ class ModelServer:
         self.server.shutdown()
         self.server.server_close()
         self.thread.join(2)
+
+
+@contextmanager
+def route_official_deepseek_to(server):
+    """Exercise real SDK and HTTP requests without contacting the public API."""
+    original_client = httpx.AsyncClient
+
+    async def route(request):
+        if request.url.host != "api.deepseek.com":
+            raise AssertionError("Unexpected outbound host in DeepSeek protocol test")
+        request.url = httpx.URL(server.url).copy_with(path=request.url.path)
+        request.headers["Host"] = request.url.netloc.decode()
+
+    class LocalClient(original_client):
+        def __init__(self, *args, **kwargs):
+            hooks = dict(kwargs.pop("event_hooks", {}))
+            hooks["request"] = [*hooks.get("request", []), route]
+            kwargs.update(event_hooks=hooks, trust_env=False)
+            super().__init__(*args, **kwargs)
+
+    with patch("httpx.AsyncClient", LocalClient):
+        yield
 
 
 class MAFIntegrationTests(unittest.IsolatedAsyncioTestCase):
@@ -237,6 +267,58 @@ class MAFIntegrationTests(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(events[-1][1]["status"], "succeeded")
         self.assertEqual(events[-1][1]["usage"], {"model_calls": 4, "tool_calls": 1})
+        self.assertTrue(all("thinking" not in body for _, body in server.requests))
+
+    async def test_deepseek_disables_thinking_for_coordinator_and_writer_tool_rounds(
+        self,
+    ):
+        server = ModelServer(
+            [
+                call("delegate_writer", {"task": "保存 reports/deepseek.md"}),
+                call(
+                    "write_file",
+                    {"path": "reports/deepseek.md", "content": "# 实际工具结果"},
+                    "write-1",
+                ),
+                {"content": "已保存 reports/deepseek.md。"},
+                final(),
+            ],
+            require_disabled=True,
+        )
+        self.addCleanup(server.close)
+        settings = Settings(
+            api_key="local-test-key",
+            base_url="https://api.deepseek.com/v1",
+            model="deepseek-flash",
+            workspace=self.root / "workspace",
+            data_dir=self.root / "data",
+        )
+        with route_official_deepseek_to(server):
+            events = [
+                event
+                async for event in run_maf(
+                    settings, self.store, self.registry, "保存报告"
+                )
+            ]
+        self.assertEqual(events[-1][1]["status"], "succeeded", events[-1])
+        self.assertEqual(
+            (self.root / "workspace/reports/deepseek.md").read_text(),
+            "# 实际工具结果",
+        )
+        self.assertEqual(len(server.requests), 4)
+        bodies = [body for _, body in server.requests]
+        self.assertTrue(all(b["thinking"] == {"type": "disabled"} for b in bodies))
+        self.assertTrue(bodies[1]["stream"])
+        self.assertTrue(bodies[2]["stream"])
+        self.assertFalse(bodies[0].get("stream", False))
+        for index, tool_id in ((2, "write-1"), (3, "call-1")):
+            self.assertTrue(
+                any(
+                    message.get("role") == "tool"
+                    and message.get("tool_call_id") == tool_id
+                    for message in bodies[index]["messages"]
+                )
+            )
 
     async def test_maf_accepts_nested_office_schema_and_creates_real_presentation(self):
         arguments = {
@@ -458,6 +540,64 @@ class MAFIntegrationTests(unittest.IsolatedAsyncioTestCase):
         result = _parse_final("我都做好了。", _Budget())
         self.assertEqual(result["status"], "failed")
         self.assertIn("尚不能确认", result["display_text"])
+
+
+class NativeProviderIntegrationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_real_native_tool_roundtrip_on_deepseek_and_unmodified_proxy(self):
+        for official in (True, False):
+            with self.subTest(official=official), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                server = ModelServer(
+                    [
+                        call(
+                            "write_file",
+                            {"path": "report.md", "content": "# Native 实际结果"},
+                        ),
+                        {"content": "报告已保存。"},
+                    ],
+                    require_disabled=official,
+                )
+                self.addCleanup(server.close)
+                settings = Settings(
+                    api_key="local-test-key",
+                    base_url="https://api.deepseek.com" if official else server.url,
+                    model="deepseek-flash",
+                    orchestrator="native",
+                    workspace=root / "workspace",
+                    data_dir=root / "data",
+                )
+                store = Store(settings.data_dir)
+                store.add_message("user", "保存报告")
+                agent = NativeAgent(
+                    settings, store, ToolRegistry(settings.workspace, store)
+                )
+                route = (
+                    route_official_deepseek_to(server) if official else nullcontext()
+                )
+                with route:
+                    events = [event async for event in agent.run("保存报告")]
+                self.assertEqual(events[-1][1]["status"], "succeeded", events[-1])
+                self.assertEqual(
+                    (settings.workspace / "report.md").read_text(), "# Native 实际结果"
+                )
+                self.assertEqual(len(server.requests), 2)
+                for _, body in server.requests:
+                    if official:
+                        self.assertEqual(body["thinking"], {"type": "disabled"})
+                    else:
+                        self.assertNotIn("thinking", body)
+                messages = server.requests[1][1]["messages"]
+                self.assertEqual(messages[-1]["role"], "tool")
+                self.assertEqual(messages[-1]["tool_call_id"], "call-1")
+                self.assertNotIn("error", json.loads(messages[-1]["content"]))
+
+    async def test_local_deepseek_simulation_rejects_missing_thinking_option(self):
+        server = ModelServer([{"content": "accepted"}], require_disabled=True)
+        self.addCleanup(server.close)
+        async with httpx.AsyncClient(trust_env=False) as client:
+            response = await client.post(f"{server.url}/chat/completions", json={})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(server.replies), 1)
 
 
 if __name__ == "__main__":

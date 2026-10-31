@@ -1,0 +1,22 @@
+{
+  "screen": [
+    0,
+    0,
+    800,
+    800
+  ],
+  "window": [
+    768,
+    700
+  ],
+  "input_width": 652,
+  "default_help_hidden": true,
+  "expanded_scroll_maximum": 137,
+  "providers": [
+    "deepseek",
+    "openai",
+    "bailian",
+    "ollama"
+  ],
+  "switch_copy_link_preserves_configuration": true
+}

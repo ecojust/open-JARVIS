@@ -220,6 +220,60 @@ class ModelManagerTests(unittest.TestCase):
         self.dialog.update_model("stt", {"phase": "ready"})
         self.assertTrue(row.eta_label.isHidden())
 
+    def test_provider_help_copy_and_selection_preserve_unsaved_configuration(self):
+        from jarvis.provider_help import PROVIDER_HELP
+
+        self.dialog.fields["OPENAI_BASE_URL"].setText("https://my-service.example/v1")
+        self.dialog.fields["OPENAI_MODEL"].setText("my-unsaved-model")
+        self.dialog.fields["OPENAI_API_KEY"].setText("private-unsaved-key")
+        original = self.dialog.values()
+        clipboard = self.app.clipboard()
+        previous_clipboard = clipboard.text()
+        self.assertFalse(self.dialog.provider_help_card.isVisible())
+        self.dialog.provider_info_button.click()
+        self.app.processEvents()
+        self.assertTrue(self.dialog.provider_help_card.isVisible())
+        try:
+            for index, provider in enumerate(PROVIDER_HELP):
+                self.dialog.provider_selector.setCurrentIndex(index)
+                self.app.processEvents()
+                for field, button, key in (
+                    (
+                        self.dialog.provider_url,
+                        self.dialog.provider_copy_buttons[0],
+                        "base_url",
+                    ),
+                    (
+                        self.dialog.provider_model,
+                        self.dialog.provider_copy_buttons[1],
+                        "model",
+                    ),
+                ):
+                    self.assertTrue(field.isReadOnly())
+                    if provider[key]:
+                        button.click()
+                        self.assertEqual(clipboard.text(), provider[key])
+                    else:
+                        self.assertFalse(button.isEnabled())
+                        self.assertTrue(field.placeholderText())
+                self.assertEqual(
+                    self.dialog.provider_key_link.isVisible(), bool(provider["key_url"])
+                )
+                self.assertEqual(self.dialog.values(), original)
+                self.assertNotIn(
+                    original["OPENAI_API_KEY"],
+                    [
+                        field.text()
+                        for field in self.dialog.provider_help_card.findChildren(QLineEdit)
+                    ],
+                )
+            self.dialog.provider_info_button.click()
+            self.app.processEvents()
+            self.assertFalse(self.dialog.provider_help_card.isVisible())
+            self.assertEqual(self.dialog.values(), original)
+        finally:
+            clipboard.setText(previous_clipboard)
+
     def test_legacy_paths_are_preserved_but_not_offered_as_editable_fields(self):
         preferences = {
             "JARVIS_STT_MODEL_DIR": "/existing/legacy/stt",

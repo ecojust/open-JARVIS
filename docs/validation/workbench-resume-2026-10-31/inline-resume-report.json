@@ -133,7 +133,7 @@
       "completed_bytes": 589875,
       "total_bytes": 3450051,
       "eta_seconds": 5,
-      "bytes_per_second": 582146.2580386533,
+      "bytes_per_second": 585396.0871206529,
       "resumed_bytes": 0
     },
     {
@@ -144,7 +144,7 @@
       "completed_bytes": 720947,
       "total_bytes": 3450051,
       "eta_seconds": 5,
-      "bytes_per_second": 570445.7794565202,
+      "bytes_per_second": 573058.3629395425,
       "resumed_bytes": 0
     },
     {
@@ -155,7 +155,7 @@
       "completed_bytes": 852019,
       "total_bytes": 3450051,
       "eta_seconds": 5,
-      "bytes_per_second": 562508.3473603557,
+      "bytes_per_second": 564810.750006712,
       "resumed_bytes": 0
     },
     {
@@ -166,7 +166,7 @@
       "completed_bytes": 983091,
       "total_bytes": 3450051,
       "eta_seconds": 5,
-      "bytes_per_second": 556825.8682441056,
+      "bytes_per_second": 558865.9756856997,
       "resumed_bytes": 0
     },
     {
@@ -177,7 +177,7 @@
       "completed_bytes": 1114163,
       "total_bytes": 3450051,
       "eta_seconds": 5,
-      "bytes_per_second": 552723.5662421783,
+      "bytes_per_second": 554432.5874270626,
       "resumed_bytes": 0
     },
     {
@@ -188,7 +188,7 @@
       "completed_bytes": 1245235,
       "total_bytes": 3450051,
       "eta_seconds": 5,
-      "bytes_per_second": 549492.1147246024,
+      "bytes_per_second": 550992.2986188439,
       "resumed_bytes": 0
     },
     {
@@ -199,7 +199,7 @@
       "completed_bytes": 1376307,
       "total_bytes": 3450051,
       "eta_seconds": 4,
-      "bytes_per_second": 546868.4476292009,
+      "bytes_per_second": 548189.1858259558,
       "resumed_bytes": 0
     },
     {
@@ -210,7 +210,7 @@
       "completed_bytes": 1507379,
       "total_bytes": 3450051,
       "eta_seconds": 4,
-      "bytes_per_second": 544732.7962783687,
+      "bytes_per_second": 545941.8186345138,
       "resumed_bytes": 0
     },
     {
@@ -221,7 +221,7 @@
       "completed_bytes": 1638451,
       "total_bytes": 3450051,
       "eta_seconds": 4,
-      "bytes_per_second": 542923.2859991215,
+      "bytes_per_second": 544044.1368210505,
       "resumed_bytes": 0
     },
     {
@@ -232,7 +232,7 @@
       "completed_bytes": 1725051,
       "total_bytes": 3450051,
       "eta_seconds": 4,
-      "bytes_per_second": 527780.9577211143,
+      "bytes_per_second": 528831.6697990226,
       "resumed_bytes": 0
     },
     {
@@ -299,7 +299,7 @@
       "completed_bytes": 2314875,
       "total_bytes": 3450051,
       "eta_seconds": 2,
-      "bytes_per_second": 587616.3810798125,
+      "bytes_per_second": 587589.0000602818,
       "resumed_bytes": 1725000
     },
     {
@@ -310,7 +310,7 @@
       "completed_bytes": 2445947,
       "total_bytes": 3450051,
       "eta_seconds": 2,
-      "bytes_per_second": 574784.3016062736,
+      "bytes_per_second": 574632.5910432222,
       "resumed_bytes": 1725000
     },
     {
@@ -318,10 +318,10 @@
       "source": "本机限速 HTTP 测试源",
       "source_index": 2,
       "source_count": 2,
-      "completed_bytes": 2559099,
+      "completed_bytes": 2577019,
       "total_bytes": 3450051,
       "eta_seconds": 2,
-      "bytes_per_second": 554321.5827369953,
+      "bytes_per_second": 566074.897161353,
       "resumed_bytes": 1725000
     },
     {
@@ -332,7 +332,7 @@
       "completed_bytes": 2708091,
       "total_bytes": 3450051,
       "eta_seconds": 2,
-      "bytes_per_second": 559950.8474977536,
+      "bytes_per_second": 559786.590792358,
       "resumed_bytes": 1725000
     },
     {
@@ -343,7 +343,7 @@
       "completed_bytes": 2839163,
       "total_bytes": 3450051,
       "eta_seconds": 2,
-      "bytes_per_second": 555394.0242040377,
+      "bytes_per_second": 555272.4911337269,
       "resumed_bytes": 1725000
     },
     {
@@ -354,7 +354,7 @@
       "completed_bytes": 2970235,
       "total_bytes": 3450051,
       "eta_seconds": 1,
-      "bytes_per_second": 551812.1634836793,
+      "bytes_per_second": 551729.6087892982,
       "resumed_bytes": 1725000
     },
     {
@@ -365,7 +365,7 @@
       "completed_bytes": 3101307,
       "total_bytes": 3450051,
       "eta_seconds": 1,
-      "bytes_per_second": 548943.613566729,
+      "bytes_per_second": 548852.8250301995,
       "resumed_bytes": 1725000
     },
     {
@@ -376,7 +376,7 @@
       "completed_bytes": 3232379,
       "total_bytes": 3450051,
       "eta_seconds": 1,
-      "bytes_per_second": 546579.5949771154,
+      "bytes_per_second": 546029.635579364,
       "resumed_bytes": 1725000
     },
     {
@@ -384,10 +384,10 @@
       "source": "本机限速 HTTP 测试源",
       "source_index": 2,
       "source_count": 2,
-      "completed_bytes": 3363451,
+      "completed_bytes": 3345531,
       "total_bytes": 3450051,
       "eta_seconds": 1,
-      "bytes_per_second": 544672.4151597385,
+      "bytes_per_second": 538145.0991839478,
       "resumed_bytes": 1725000
     },
     {

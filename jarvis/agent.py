@@ -9,6 +9,7 @@ from .config import Settings
 from .storage import Store
 from .tools import ToolRegistry
 from .orchestration import _result
+from .provider_options import chat_completion_body_options
 
 
 SYSTEM_PROMPT = """你是 JARVIS，一个以中文交流的本地工作助理。你的重点是资料检索、撰写文档和 CSV 数据分析。
@@ -192,6 +193,7 @@ class Agent:
                     "messages": messages,
                     "tools": self.registry.definitions,
                     "tool_choice": "auto",
+                    **chat_completion_body_options(self.settings.base_url),
                 },
             )
             response.raise_for_status()

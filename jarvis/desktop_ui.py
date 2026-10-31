@@ -25,6 +25,7 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
+    QComboBox,
     QDialog,
     QDialogButtonBox,
     QFormLayout,
@@ -1056,11 +1057,21 @@ class SettingsDialog(QDialog):
     def __init__(self, preferences: dict, parent=None):
         super().__init__(parent)
         self.setWindowTitle("JARVIS 设置")
-        self.setStyleSheet(LIGHT_STYLE)
-        self.resize(650, 700)
+        screen = self.screen()
+        available = screen.availableGeometry() if screen else None
+        self.resize(
+            min(900, max(1, available.width() - 32)) if available else 900,
+            min(700, max(1, available.height() - 64)) if available else 700,
+        )
         self.setStyleSheet(
             LIGHT_STYLE
             + """
+            QLabel#settingsSection { font-size: 15px; font-weight: 600; }
+            QPushButton#providerInfo { color: #007aff; padding: 0; border-radius: 14px; }
+            QPushButton#providerInfo:checked { background: #e8f1ff; border-color: #bdd6fb; }
+            QFrame#providerHelp { background: #eef3fa; border: 1px solid #dce5f1; border-radius: 12px; }
+            QFrame#providerHelp QWidget { background: transparent; }
+            QFrame#providerHelp QLineEdit, QFrame#providerHelp QComboBox, QFrame#providerHelp QPushButton { background: #ffffff; }
             QLabel#modelStatus { color: #0070d9; }
             QPushButton#primary:disabled { background: #e4ebf4; border-color: #dce4ef; color: #9ba9bc; }
             QProgressBar { border: 1px solid #d6dce5; border-radius: 5px; text-align: center; min-height: 21px; background: #edf1f6; }
@@ -1089,9 +1100,30 @@ class SettingsDialog(QDialog):
         content = QWidget()
         content_layout = QVBoxLayout(content)
         content_layout.setContentsMargins(0, 0, 10, 0)
+        model_heading = QHBoxLayout()
+        model_heading.setSpacing(8)
+        model_label = QLabel("任务模型")
+        model_label.setObjectName("settingsSection")
+        model_heading.addWidget(model_label)
+        self.provider_info_button = QPushButton("ⓘ")
+        self.provider_info_button.setObjectName("providerInfo")
+        self.provider_info_button.setFixedSize(28, 28)
+        self.provider_info_button.setCheckable(True)
+        self.provider_info_button.setAutoDefault(False)
+        self.provider_info_button.setAccessibleName("查看模型服务配置帮助")
+        self.provider_info_button.setToolTip("查看不同厂商的接口地址、模型名称和 API Key 获取方式")
+        model_heading.addWidget(self.provider_info_button)
+        model_heading.addStretch(1)
+        content_layout.addLayout(model_heading)
+        self.provider_help_card = self._build_provider_help()
+        self.provider_help_card.hide()
+        self.provider_info_button.toggled.connect(self.provider_help_card.setVisible)
+        content_layout.addWidget(self.provider_help_card)
         form = QFormLayout()
         form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         form.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
+        form.setFormAlignment(Qt.AlignmentFlag.AlignTop)
         specs = [
             ("OPENAI_BASE_URL", "模型接口", "https://api.openai.com/v1"),
             ("OPENAI_MODEL", "模型名称", "gpt-4o-mini"),
@@ -1112,6 +1144,7 @@ class SettingsDialog(QDialog):
                 continue
             field = QLineEdit(str(preferences.get(key, default) or ""))
             field.setAccessibleName(label)
+            field.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             if key == "OPENAI_API_KEY":
                 field.setEchoMode(QLineEdit.EchoMode.Password)
                 field.setPlaceholderText("仅保存在本机配置中")
@@ -1146,6 +1179,85 @@ class SettingsDialog(QDialog):
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
+
+    def _build_provider_help(self) -> QFrame:
+        from .provider_help import PROVIDER_HELP
+
+        self._provider_help = PROVIDER_HELP
+        card = QFrame()
+        card.setObjectName("providerHelp")
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(10)
+        title_row = QHBoxLayout()
+        title = QLabel("选择服务商，查看填写示例")
+        title.setObjectName("settingsSection")
+        title_row.addWidget(title)
+        title_row.addStretch(1)
+        self.provider_selector = QComboBox()
+        self.provider_selector.setAccessibleName("模型服务商配置示例")
+        for provider in PROVIDER_HELP:
+            self.provider_selector.addItem(provider["name"], provider["id"])
+        title_row.addWidget(self.provider_selector, 1)
+        layout.addLayout(title_row)
+        form = QFormLayout()
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        self.provider_url = QLineEdit()
+        self.provider_url.setPlaceholderText("填写服务实际提供的 API 地址")
+        self.provider_model = QLineEdit()
+        self.provider_model.setPlaceholderText("填写服务实际提供的模型 ID")
+        self.provider_copy_buttons = []
+        for label, field in (("模型接口", self.provider_url), ("模型名称", self.provider_model)):
+            field.setReadOnly(True)
+            field.setAccessibleName(label + "示例")
+            field.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            row = QHBoxLayout()
+            row.addWidget(field, 1)
+            copy = QPushButton("复制")
+            copy.setAutoDefault(False)
+            copy.setAccessibleName("复制" + label + "示例")
+            copy.setToolTip("复制示例，不修改下方配置")
+            copy.clicked.connect(lambda checked=False, field=field: QApplication.clipboard().setText(field.text()))
+            self.provider_copy_buttons.append(copy)
+            row.addWidget(copy)
+            form.addRow(label, row)
+        key_row = QHBoxLayout()
+        self.provider_key_hint = QLabel()
+        self.provider_key_hint.setWordWrap(True)
+        key_row.addWidget(self.provider_key_hint, 1)
+        self.provider_key_link = QPushButton("前往官方平台 ↗")
+        self.provider_key_link.setAutoDefault(False)
+        self.provider_key_link.clicked.connect(self._open_provider_key_page)
+        key_row.addWidget(self.provider_key_link)
+        form.addRow("模型 API Key", key_row)
+        layout.addLayout(form)
+        self.provider_note = QLabel()
+        self.provider_note.setObjectName("muted")
+        self.provider_note.setTextFormat(Qt.TextFormat.PlainText)
+        self.provider_note.setWordWrap(True)
+        self.provider_note.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        layout.addWidget(self.provider_note)
+        self.provider_selector.currentIndexChanged.connect(self._update_provider_help)
+        self._update_provider_help()
+        return card
+
+    def _update_provider_help(self, *_):
+        provider = self._provider_help[self.provider_selector.currentIndex()]
+        self.provider_url.setText(provider["base_url"])
+        self.provider_model.setText(provider["model"])
+        self.provider_copy_buttons[0].setEnabled(bool(provider["base_url"]))
+        self.provider_copy_buttons[1].setEnabled(bool(provider["model"]))
+        self.provider_key_hint.setText("填写你自己的 API Key" if provider["key_url"] else "请参阅下方说明")
+        self.provider_key_link.setVisible(bool(provider["key_url"]))
+        self.provider_key_link.setToolTip(provider["key_url"])
+        self.provider_key_link.setAccessibleName("打开" + provider["name"] + "官方 API Key 页面")
+        self.provider_note.setText(provider["note"])
+
+    def _open_provider_key_page(self):
+        provider = self._provider_help[self.provider_selector.currentIndex()]
+        if provider["key_url"]:
+            QDesktopServices.openUrl(QUrl(provider["key_url"]))
 
     def update_model(self, kind: str, status: dict):
         if kind not in self.model_rows:
