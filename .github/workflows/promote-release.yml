@@ -1,0 +1,55 @@
+name: Promote verified native candidates
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: Successful native candidate build run ID
+        required: true
+        type: string
+      version:
+        description: Existing prerelease version without v
+        required: true
+        type: string
+      source_sha:
+        description: Full source commit used by that build
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: promote-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      BUILD_RUN_ID: ${{ inputs.build_run_id }}
+      RELEASE_VERSION: ${{ inputs.version }}
+      SOURCE_SHA: ${{ inputs.source_sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify original build and native CI
+        id: original
+        run: python scripts/promote_release.py check-run --run-id "$BUILD_RUN_ID" --version "$RELEASE_VERSION" --source-sha "$SOURCE_SHA"
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.build_run_id }}
+          artifact-ids: ${{ steps.original.outputs.artifact_ids }}
+          merge-multiple: false
+          path: candidates
+      - name: Verify all nine assets and create draft prerelease
+        run: python scripts/promote_release.py draft --run-id "$BUILD_RUN_ID" --version "$RELEASE_VERSION" --source-sha "$SOURCE_SHA"

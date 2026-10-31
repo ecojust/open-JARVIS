@@ -118,6 +118,16 @@ targets without downloading speech models or requiring microphone hardware.
 and checksums, and creates a **draft prerelease only if explicitly requested**.
 No push, tag, test result or build automatically publishes a public release.
 
+`promote-release.yml` reuses an existing successful native build without
+rebuilding the installers. Its manual inputs identify the build run, exact
+source commit and prerelease version. It checks the original run and native CI,
+downloads only the three candidate artifacts, verifies the nine expected files,
+their full hashes and frozen self-tests, then uploads a draft prerelease.
+Release notes are reviewed in `docs/releases/<version>.md` before dispatch.
+Public publication is a separate explicit action after checking the uploaded
+assets and tag target. An explicitly requested unsigned preview remains marked
+as a prerelease and retains its uncompleted hardware/signing acceptance scope.
+
 The draft is held for the hardware and performance gates in the root design.
 The license collector saves installed dependency license files and an inventory;
 missing or embedded-native licenses still need distribution review before
