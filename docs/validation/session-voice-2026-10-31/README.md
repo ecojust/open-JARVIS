@@ -48,4 +48,10 @@
 
 [30 次启动测量](performance.json)：Linux offscreen 的语音条启动 P95 **228.9 ms**、RSS P95 **75.8 MiB**。这是单个语音条进程的开发测量，未包含后端和模型，不作为 macOS/Windows 完整持续监听性能验收。
 
-尚未执行真实麦克风/扬声器、生产模型自由任务、三端干净系统安装和全部性能预算验收。三端候选构建与发布结果会另行补充；不能用上述本地结果代替原生安装包证据。
+尚未执行真实麦克风/扬声器、生产模型自由任务、三端干净系统安装和全部性能预算验收。原生构建结果如下；不能用上述本地结果代替原生安装包证据。
+
+## 三端原生安装包
+
+源码 `59631c3d509cd2f4d68b6f5ff3ffd4565b9291eb` 的 [原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41218568950) 与 [alpha.10 构建](https://github.com/ecojust/open-JARVIS/actions/runs/41218568807) 全部成功。[native-build.json](native-build.json) 保存源码、各 job 步骤、运行编号及候选产物身份。三个平台都运行测试、实际桌面/后台冒烟和冻结程序检查；冻结 worker 实际执行本地 HTTP/SSE 的 MAF 委派、中文文件写出与最终回答。
+
+首轮 `8bc7907` 在 Windows 发现新测试夹具仅提交 SQLite 事务、未关闭连接，导致临时目录清理失败；macOS/Linux 删除打开文件时没有暴露该测试问题。改为显式关闭 fixture 连接后，7 项会话专项再次通过，并重新执行三端 CI/构建。旧构建已停止且不用于发布。[初次检查记录](initial-windows-check.json)保留原因和注释；不宣称整个功能首次构建无失败。

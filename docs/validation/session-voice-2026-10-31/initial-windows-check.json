@@ -1,0 +1,699 @@
+{
+  "source_sha": "8bc79077dd21858cc1970af633c9be3477ed1a1c",
+  "ci_run_id": 41218336918,
+  "build_run_id": 41218337328,
+  "failures": [
+    {
+      "job_id": 124587474258,
+      "annotations": [
+        {
+          "path": ".github",
+          "blob_href": "https://github.com/ecojust/open-JARVIS/blob/8bc79077dd21858cc1970af633c9be3477ed1a1c/.github",
+          "start_line": 531,
+          "start_column": null,
+          "end_line": 531,
+          "end_column": null,
+          "annotation_level": "failure",
+          "title": "test_sessions.SessionStoreTests.test_migration_keeps_legacy_records_and_restart_never_creates_a_session",
+          "message": "Traceback (most recent call last):\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\shutil.py\", line 633, in _rmtree_unsafe\n    os.unlink(fullname)\nPermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\\\Users\\\\RUNNER~1\\\\AppData\\\\Local\\\\Temp\\\\tmp7v92cbzj\\\\jarvis.sqlite3'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"D:\\a\\open-JARVIS\\open-JARVIS\\tests\\test_sessions.py\", line 45, in test_migration_keeps_legacy_records_and_restart_never_creates_a_session\n    with tempfile.TemporaryDirectory() as temporary:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\tempfile.py\", line 950, in __exit__\n    self.cleanup()\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\tempfile.py\", line 954, in cleanup\n    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\tempfile.py\", line 934, in _rmtree\n    _shutil.rmtree(name, onexc=onexc)\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\shutil.py\", line 781, in rmtree\n    return _rmtree_unsafe(path, onexc)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\shutil.py\", line 635, in _rmtree_unsafe\n    onexc(os.unlink, fullname, err)\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\tempfile.py\", line 909, in onexc\n    _os.unlink(path)\nPermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\\\Users\\\\RUNNER~1\\\\AppData\\\\Local\\\\Temp\\\\tmp7v92cbzj\\\\jarvis.sqlite3'\n",
+          "raw_details": ""
+        }
+      ]
+    },
+    {
+      "job_id": 124587478892,
+      "annotations": [
+        {
+          "path": ".github",
+          "blob_href": "https://github.com/ecojust/open-JARVIS/blob/8bc79077dd21858cc1970af633c9be3477ed1a1c/.github",
+          "start_line": 533,
+          "start_column": null,
+          "end_line": 533,
+          "end_column": null,
+          "annotation_level": "failure",
+          "title": "test_sessions.SessionStoreTests.test_migration_keeps_legacy_records_and_restart_never_creates_a_session",
+          "message": "Traceback (most recent call last):\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\shutil.py\", line 633, in _rmtree_unsafe\n    os.unlink(fullname)\nPermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\\\Users\\\\RUNNER~1\\\\AppData\\\\Local\\\\Temp\\\\tmpuv682rzv\\\\jarvis.sqlite3'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"D:\\a\\open-JARVIS\\open-JARVIS\\tests\\test_sessions.py\", line 45, in test_migration_keeps_legacy_records_and_restart_never_creates_a_session\n    with tempfile.TemporaryDirectory() as temporary:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\tempfile.py\", line 950, in __exit__\n    self.cleanup()\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\tempfile.py\", line 954, in cleanup\n    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\tempfile.py\", line 934, in _rmtree\n    _shutil.rmtree(name, onexc=onexc)\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\shutil.py\", line 781, in rmtree\n    return _rmtree_unsafe(path, onexc)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\shutil.py\", line 635, in _rmtree_unsafe\n    onexc(os.unlink, fullname, err)\n  File \"C:\\hostedtoolcache\\windows\\Python\\3.12.10\\x64\\Lib\\tempfile.py\", line 909, in onexc\n    _os.unlink(path)\nPermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\\\Users\\\\RUNNER~1\\\\AppData\\\\Local\\\\Temp\\\\tmpuv682rzv\\\\jarvis.sqlite3'\n",
+          "raw_details": ""
+        }
+      ]
+    }
+  ],
+  "cause": "The Windows migration fixture left its direct sqlite3 connection open; the connection context manager only commits/rolls back. TemporaryDirectory removal failed with WinError 32. Application Store connections already close in finally.",
+  "resolution": "Fixed by parent in 59631c3d509cd2f4d68b6f5ff3ffd4565b9291eb using contextlib.closing and explicit transaction context; new CI/build dispatched, no blind retry.",
+  "superseded_runs": [
+    {
+      "id": 41218336918,
+      "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41218336918",
+      "head_sha": "8bc79077dd21858cc1970af633c9be3477ed1a1c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "cancelled",
+      "jobs": [
+        {
+          "completedAt": "2026-10-31T16:11:58Z",
+          "conclusion": "failure",
+          "databaseId": 124587474258,
+          "name": "test (windows-2022, windows-x64, x64)",
+          "startedAt": "2026-10-31T16:10:02Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install application and build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "failure",
+              "name": "Test deterministic logic and native UI without hardware",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Runtime self-test",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 17,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 18,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41218336918/job/124587474258"
+        },
+        {
+          "completedAt": "2026-10-31T16:12:51Z",
+          "conclusion": "cancelled",
+          "databaseId": 124587474382,
+          "name": "test (macos-15-intel, macos-x64, x64)",
+          "startedAt": "2026-10-31T16:10:03Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install application and build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Test deterministic logic and native UI without hardware",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "cancelled",
+              "name": "Runtime self-test",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 17,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 18,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41218336918/job/124587474382"
+        },
+        {
+          "completedAt": "2026-10-31T16:12:25Z",
+          "conclusion": "success",
+          "databaseId": 124587474385,
+          "name": "test (macos-15, macos-arm64, arm64)",
+          "startedAt": "2026-10-31T16:10:03Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install application and build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Test deterministic logic and native UI without hardware",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Runtime self-test",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 17,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 18,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41218336918/job/124587474385"
+        }
+      ]
+    },
+    {
+      "id": 41218337328,
+      "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41218337328",
+      "head_sha": "8bc79077dd21858cc1970af633c9be3477ed1a1c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "cancelled",
+      "jobs": [
+        {
+          "completedAt": "2026-10-31T16:12:58Z",
+          "conclusion": "cancelled",
+          "databaseId": 124587478703,
+          "name": "build (macos-15-intel, macos-x64, x64)",
+          "startedAt": "2026-10-31T16:10:06Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run deterministic validation",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare macOS signing keychain",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare Windows signing certificate",
+              "number": 10,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Build signed candidate",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "cancelled",
+              "name": "Build explicitly unsigned test candidate",
+              "number": 12,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Preserve candidate and verification metadata",
+              "number": 13,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve frozen runtime diagnostic",
+              "number": 14,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove temporary signing material",
+              "number": 15,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove Windows certificate and private key",
+              "number": 16,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 31,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 32,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 33,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41218337328/job/124587478703"
+        },
+        {
+          "completedAt": "2026-10-31T16:12:09Z",
+          "conclusion": "failure",
+          "databaseId": 124587478892,
+          "name": "build (windows-2022, windows-x64, x64)",
+          "startedAt": "2026-10-31T16:10:02Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "failure",
+              "name": "Run deterministic validation",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare macOS signing keychain",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare Windows signing certificate",
+              "number": 10,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Build signed candidate",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Build explicitly unsigned test candidate",
+              "number": 12,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Preserve candidate and verification metadata",
+              "number": 13,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve frozen runtime diagnostic",
+              "number": 14,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove temporary signing material",
+              "number": 15,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove Windows certificate and private key",
+              "number": 16,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 31,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 32,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 33,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41218337328/job/124587478892"
+        },
+        {
+          "completedAt": "2026-10-31T16:12:44Z",
+          "conclusion": "cancelled",
+          "databaseId": 124587478915,
+          "name": "build (macos-15, macos-arm64, arm64)",
+          "startedAt": "2026-10-31T16:10:04Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify native architecture",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Install build dependencies",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run deterministic validation",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Native desktop and real backend lifecycle smoke",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve desktop smoke evidence",
+              "number": 8,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare macOS signing keychain",
+              "number": 9,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Prepare Windows signing certificate",
+              "number": 10,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Build signed candidate",
+              "number": 11,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Build explicitly unsigned test candidate",
+              "number": 12,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve candidate and verification metadata",
+              "number": 13,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Preserve frozen runtime diagnostic",
+              "number": 14,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove temporary signing material",
+              "number": 15,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Remove Windows certificate and private key",
+              "number": 16,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Post Run actions/setup-python@v5",
+              "number": 31,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 32,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 33,
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41218337328/job/124587478915"
+        },
+        {
+          "completedAt": "2026-10-31T16:12:58Z",
+          "conclusion": "cancelled",
+          "databaseId": 124588211147,
+          "name": "draft",
+          "startedAt": "2026-10-31T16:12:58Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/ecojust/open-JARVIS/actions/runs/41218337328/job/124588211147"
+        }
+      ]
+    }
+  ]
+}
