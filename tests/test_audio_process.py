@@ -1,7 +1,28 @@
 import threading
 import unittest
+from unittest.mock import patch
 
 from jarvis.audio_process import AudioController
+
+
+class EventLog(list):
+    """Wait for an observed callback rather than assuming a timer has fired."""
+
+    def __init__(self):
+        super().__init__()
+        self.changed = threading.Condition()
+
+    def append(self, event):
+        with self.changed:
+            super().append(event)
+            self.changed.notify_all()
+
+    def wait_for(self, predicate, *, after=0, timeout=2):
+        with self.changed:
+            return self.changed.wait_for(
+                lambda: any(predicate(name, data) for name, data in self[after:]),
+                timeout=timeout,
+            )
 
 
 class FakeVoice:
@@ -46,7 +67,7 @@ class FakeTTS:
 
 class AudioControllerTests(unittest.TestCase):
     def make(self):
-        events = []
+        events = EventLog()
         changed = threading.Event()
 
         def event(name, data):
@@ -73,15 +94,62 @@ class AudioControllerTests(unittest.TestCase):
         )
         self.assertTrue(controller.voice.paused)
         controller.handle({"command": "pause"})
-        controller.tts.event("finished", {"playback_id": "old", "task_id": "task"})
         resumed.clear()
-        self.assertFalse(resumed.wait(0.03))
+        finish_events = len(events)
+        controller.tts.event("finished", {"playback_id": "old", "task_id": "task"})
+        self.assertTrue(
+            events.wait_for(
+                lambda name, data: (
+                    name == "audio.status" and data.get("user_paused") is True
+                ),
+                after=finish_events,
+            ),
+            "echo-tail completion did not report the preserved user pause",
+        )
+        self.assertFalse(resumed.is_set())
         self.assertTrue(controller.voice.paused)
         controller.handle({"command": "resume"})
         self.assertFalse(controller.voice.paused)
         controller.handle({"command": "speak", "text": "新回复", "playback_id": "new"})
         controller.tts.event("finished", {"playback_id": "old", "task_id": "task"})
         self.assertTrue(controller.voice.paused)
+
+    def test_user_resume_before_delayed_echo_timer_still_waits_for_tail_completion(
+        self,
+    ):
+        controller, events, resumed = self.make()
+        controller.start()
+        controller.handle({"command": "speak", "text": "回复", "playback_id": "p1"})
+        controller.handle({"command": "pause"})
+        resumed.clear()
+        callbacks = []
+
+        def deferred_timer(interval, callback):
+            callbacks.append(callback)
+
+            # Keep the callback pending until explicitly dispatched below, as
+            # happens when a loaded CI runner delays the timer thread.
+            class Timer:
+                daemon = False
+
+                def start(self):
+                    pass
+
+                def cancel(self):
+                    pass
+
+            return Timer()
+
+        with patch("jarvis.audio_process.threading.Timer", side_effect=deferred_timer):
+            controller.tts.event("finished", {"playback_id": "p1"})
+            controller.handle({"command": "resume"})
+            self.assertTrue(controller.voice.paused)
+            self.assertFalse(resumed.is_set())
+            self.assertEqual(len(callbacks), 1)
+            callbacks[0]()
+
+        self.assertTrue(resumed.wait(1), "listening did not resume after the echo tail")
+        self.assertFalse(controller.voice.paused)
 
     def test_tts_failure_releases_temporary_pause_after_tail_guard(self):
         controller, events, resumed = self.make()

@@ -67,6 +67,7 @@ if sys.platform == "darwin":
         info_plist={
             "CFBundleName": "Open JARVIS", "CFBundleDisplayName": "Open JARVIS",
             "CFBundleShortVersionString": numeric_version, "CFBundleVersion": numeric_version,
+            "LSMinimumSystemVersion": "14.0",
             "NSMicrophoneUsageDescription": "JARVIS 使用麦克风在本机识别你的语音指令。",
             "NSHighResolutionCapable": True,
             # COLLECT also contains the console worker; the app itself is GUI.

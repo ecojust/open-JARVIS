@@ -19,6 +19,20 @@ spec.loader.exec_module(build_release)
 
 
 class PackagingTests(unittest.TestCase):
+    def test_webrtcvad_hook_collects_the_installed_wheel_distribution(self):
+        helpers = types.ModuleType("PyInstaller.utils.hooks")
+        helpers.copy_metadata = MagicMock(return_value=[("wheel.dist-info", ".")])
+        modules = {
+            "PyInstaller": types.ModuleType("PyInstaller"),
+            "PyInstaller.utils": types.ModuleType("PyInstaller.utils"),
+            "PyInstaller.utils.hooks": helpers,
+        }
+        with patch.dict("sys.modules", modules):
+            collected = runpy.run_path(str(ROOT / "packaging/hooks/hook-webrtcvad.py"))
+        helpers.copy_metadata.assert_called_once_with("webrtcvad-wheels")
+        self.assertEqual(collected["datas"], [("wheel.dist-info", ".")])
+        self.assertIn("_webrtcvad", collected["hiddenimports"])
+
     def test_frozen_import_failure_preserves_diagnostic_and_blocks_installer(self):
         payload = {
             "ok": False,
