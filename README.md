@@ -17,7 +17,7 @@
 
 桌面入口为 **圆形山羊 Logo → 实际声浪 → 展开图标** 的 264×56 胶囊形语音条，两端圆润。点击中间声浪暂停/继续接听，右侧图标最大化结果窗口，避免主动进入 macOS 全屏 Space；拖动语音条或按钮只移动位置。声浪跟随实际音量，静音/暂停/播报时归零。模型直接在设置的语音识别、语音合成两行点击「下载」，原处显示进度和预计剩余时间，完成后自动加载；兼容的已下载模型可跨客户端版本复用。
 
-[新版界面截图与续传验收](docs/validation/workbench-resume-2026-10-31/README.md)。本地 **301 项测试通过**；最新源码包含浅色工作空间、主动查看回复、后台播报、模型换源续传，以及加宽的设置页与 ⓘ 厂商帮助。下方安装包入口将在本轮三端构建完成后更新。
+[新版界面截图与续传验收](docs/validation/workbench-resume-2026-10-31/README.md)。本地 **301 项测试通过**；最新源码包含浅色工作空间、主动查看回复、后台播报、模型换源续传，以及加宽的设置页与 ⓘ 厂商帮助。下方 **alpha.7** 三端安装包已包含这些改动，原生 CI 与打包后自检均通过。
 
 ## 工作空间与后台播报
 
@@ -33,15 +33,15 @@
 
 ## 下载开发预览
 
-**0.1.0-alpha.4，未签名测试包**，由相应系统和 CPU 架构的原生运行器构建。登录 GitHub 后从下列 Actions artifact 下载 ZIP，解压后使用其中的 DMG 或 EXE；同时包含 SHA-256 与构建清单。该批产物保留 14 天，过期后可通过手动构建工作流重新生成。
+**0.1.0-alpha.7，未签名测试包**，由相应系统和 CPU 架构的原生运行器构建。登录 GitHub 后从下列 Actions artifact 下载 ZIP，解压后使用其中的 DMG 或 EXE；同时包含 SHA-256 与构建清单。该批产物保留 14 天，过期后可通过手动构建工作流重新生成。
 
 | 平台 | 测试安装包 | Actions ZIP 大小 |
 | --- | --- | --- |
-| macOS Intel，macOS 14+ | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41187467552/artifacts/13037267847) | 约 140.1 MB |
-| macOS Apple Silicon，macOS 14+ | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41187467552/artifacts/13037342222) | 约 127.2 MB |
-| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41187467552/artifacts/13037357464) | 约 109.4 MB |
+| macOS Intel，macOS 14+ | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41199298612/artifacts/13041479257) | 约 140.1 MB |
+| macOS Apple Silicon，macOS 14+ | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41199298612/artifacts/13042345650) | 约 127.0 MB |
+| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41199298612/artifacts/13042385801) | 约 109.4 MB |
 
-[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41187465228) · [安装包构建与自检记录](https://github.com/ecojust/open-JARVIS/actions/runs/41187467552)。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。未完成签名/公证，系统可能阻止直接打开；这些产物用于开发试用，尚未发布正式 GitHub Release。首次运行后通过语音条右键菜单配置任务模型、下载两个语音模型。
+[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41199296308) · [安装包构建与自检记录](https://github.com/ecojust/open-JARVIS/actions/runs/41199298612)。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。未完成签名/公证，系统可能阻止直接打开；这些产物用于开发试用，尚未发布正式 GitHub Release。首次运行后通过语音条右键菜单配置任务模型、下载两个语音模型。
 
 ## 源码运行
 

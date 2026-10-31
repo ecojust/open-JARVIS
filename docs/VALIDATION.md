@@ -8,6 +8,16 @@
 
 [截图、尺寸和验证范围](validation/provider-settings-2026-10-31/README.md) 记录实际 Qt 窗口与交互。厂商示例已核对当前官方文档。DeepSeek 官方域名明确使用非思考工具模式，MAF 总控/专业 Agent 与 native 备用循环均通过实际本地 HTTP 的多轮工具请求和文件落盘检查；其他端点不额外注入参数。未使用生产 API Key，不等同于真实 DeepSeek 服务验收。
 
+提交 `42fa3a2286d2612d94bf97444e9fb6e95a8d7946` 的 [alpha.7 三端 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41199296308) 与 [未签名候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41199298612) 均首次通过，无重试。三端运行测试、实际桌面/后端冒烟和冻结程序自检后生成安装包；Windows 无权限的符号链接用例按既有规则明确跳过。
+
+| alpha.7 目标 | Actions artifact | ZIP 大小 |
+| --- | --- | --- |
+| macOS Intel | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41199298612/artifacts/13041479257) | 140,089,629 bytes |
+| macOS Apple Silicon | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41199298612/artifacts/13042345650) | 126,974,209 bytes |
+| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41199298612/artifacts/13042385801) | 109,387,914 bytes |
+
+该批已包含前述工作空间、后台播报、下载续传及设置帮助。产物保留 14 天，未创建或发布 Release；安装器未签名，真实设备和干净系统安装仍待验收。当前开发环境无法访问 Actions 产物存储域，未在此重新打开 DMG/EXE。[构建元数据](validation/provider-settings-2026-10-31/native-build.json) 保留源码提交、运行编号和产物身份。
+
 ## 浅色工作空间、后台播报与换源续传
 
 本地 **295 项测试通过**，ruff 通过。主页面默认展示实际文件，文字回答只在主动点击「查看回复」后解析显示；「添加资料」明确支持格式与大小。浏览与后台播报独立，显式浏览不会被其他播报抢走，语音和文字补充分别跟随对应问题上下文。
@@ -15,6 +25,8 @@
 下载发生中途断流时保留已收字节，通过严格的 HTTP Range 校验换源续传，完整 SHA-256 通过后才安装。Kokoro 在线来源统一为同版本的文件集合，保持已有模型兼容。确需重下时明确提示，重试有上限；当前不支持取消/退出后的跨进程断点。
 
 [界面、故障注入与真实镜像证据](validation/workbench-resume-2026-10-31/README.md) 包含真实后端文件与显式回复、实际 Qt/QProcess 半途断流续传及 ETA、真实 HF Mirror tokens 文件补齐与整文件哈希、大型模型中点 206 响应探测。没有把合成测试权重用于推理，也不把界面样例当作生产模型自主任务验收。
+
+`ebbf5d7` 的 [alpha.6 三端 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41198866132) 与 [未签名候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41198870338) 均首次通过。Intel / ARM / Windows ZIP 分别为 139,957,077 / 127,193,033 / 109,394,176 bytes。该批包含工作空间与下载续传，尚未包含后续设置加宽和厂商帮助；未创建或发布 Release。
 
 ## 小巧胶囊、设置页内下载与剩余时间
 

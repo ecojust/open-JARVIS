@@ -36,3 +36,7 @@
 [官方思考模式文档](https://api-docs.deepseek.com/guides/thinking_mode) 说明当前默认开启 thinking，并要求工具后续请求回传 `reasoning_content`。当前 MAF 的通用序列化与 native 备用循环不保留此字段，因此官方 DeepSeek 端点改为明确使用非思考工具模式，兼顾现有协议和响应速度。仅对解析后的 `api.deepseek.com` 主机生效，代理和其他厂商不额外注入此参数。
 
 本地 HTTP 模型服务明确模拟该参数要求：漏传时返回 400。实际 MAF / OpenAI SDK 流式完成总控→Writer→工具写文件→后续回答，验证每次请求均携带正确参数；native 备用流程也通过真实 HTTP 工具往返。另验证其他提供商和含伪装域名的 URL 不被误匹配。没有使用生产 DeepSeek API Key，这些检查不代表真实模型质量、可用额度或自然语言任务验收。
+
+## 完整回归与三端构建
+
+本地完整 301 项测试和 ruff 通过。`42fa3a2` 的 [三端原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41199296308) 与 [alpha.7 候选安装包构建](https://github.com/ecojust/open-JARVIS/actions/runs/41199298612) 均首次通过；包含实际桌面/后端冒烟、冻结程序自检与安装包上传。[元数据](native-build.json) 记录三个产物的身份和大小。它们为未签名开发预览，未发布正式 Release；没有将上述本地测试等同于真实音频或干净系统安装验收。
