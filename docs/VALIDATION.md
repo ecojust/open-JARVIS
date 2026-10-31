@@ -12,7 +12,17 @@
 
 [来源核验记录](validation/model-sources-2026-10-31.json) 另记录实际站点探测、Kokoro 全部 377 个文件重新计算 SHA-256，并与固定仓库的 7 个 LFS / 370 个 Git blob 身份核对。网络可用性来自当前开发环境，不能保证所有用户网络；HF 与镜像入口也可能共享最终存储。
 
-下载连接超时 10 秒、无数据读取超时 15 秒，每个文件的单次来源尝试最长 30 分钟。只在独立下载进程中执行，复用连接、顺序传输和限频进度，无并发整模型下载。备用 Kokoro 文件集为 426,584,734 bytes，界面按实际传输总量显示；官方压缩包仍为 364,855,331 bytes。
+下载连接超时 10 秒、无数据读取超时 15 秒，每个文件的单次来源尝试最长 30 分钟。只在独立下载进程中执行，复用连接、顺序传输和限频进度，同一模型不会并发从多个源重复拉取。备用 Kokoro 文件集为 426,584,734 bytes，界面按实际传输总量显示；官方压缩包仍为 364,855,331 bytes。
+
+提交 `fc8d5d39dc6e6fef5bc0d473949faa89a8e4a901` 的 [三端 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41187465228) 与 [alpha.4 候选构建](https://github.com/ecojust/open-JARVIS/actions/runs/41187467552) 全部首次通过，无重试。三个原生运行器均执行同套测试、真实桌面/后端冒烟及冻结程序自检，生成未签名 DMG/EXE；Windows 无权限的符号链接用例明确跳过。
+
+| alpha.4 目标 | Actions artifact | ZIP 大小 |
+| --- | --- | --- |
+| macOS Intel | [candidate-macos-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41187467552/artifacts/13037267847) | 140,085,952 bytes |
+| macOS Apple Silicon | [candidate-macos-arm64](https://github.com/ecojust/open-JARVIS/actions/runs/41187467552/artifacts/13037342222) | 127,241,083 bytes |
+| Windows x64 | [candidate-windows-x64](https://github.com/ecojust/open-JARVIS/actions/runs/41187467552/artifacts/13037357464) | 109,368,512 bytes |
+
+产物保留 14 天，未包含语音模型及用户数据，未创建或发布 GitHub Release。当前环境无法从 Actions 存储域下载产物，本地未重新打开 DMG/EXE；干净系统安装与签名验收仍待完成。
 
 ## 桌面语音条与模型升级兼容
 
