@@ -1,0 +1,322 @@
+{
+  "passed": true,
+  "recorded_at": "2026-10-31T16:32:31.356611+00:00",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python_version": "3.12.14",
+  "scope": "Real DesktopController, separate QProcess audio worker, production AudioController JSON-lines IPC, real VAD/SenseVoice, backend HTTP/SSE and SQLite. Only the audio input device is replaced with timed local recording replay. No physical microphone/speaker, production model API or frozen installer tested.",
+  "wake_word": "贾维斯",
+  "expected": "accepted",
+  "audio_sha256": "7f82cce87e0738a9b6a14b5cc3e6fa63a233b762fb87958eae54abe641e367f1",
+  "audio_seconds": 8.52,
+  "source_sha256": {
+    "jarvis/voice_runtime.py": "251adfac3b62e6d28521bacfe28e64350033c913463ebcdde50da5766c26e92d",
+    "jarvis/audio_process.py": "6757b7d2b71147f9d605c7c3c3188bce0467be4077863d0359502d1c430a8631",
+    "jarvis/desktop_client.py": "510411804d3945cf6d0df92234320a522a892be7cb6d954eaf5803ef074919fc",
+    "jarvis/desktop_ui.py": "46b67ad2ab96b24ba8cdcf83adb8828951d7629fa4a674494147c5029ba06fb4",
+    "jarvis/config.py": "503d34b1e1dcf7ccd302b6cdd7dff85bbe00522f4c8ac3256884c5ee3ba01d33",
+    "scripts/acceptance_voice_delivery.py": "8c4f8e8a45174191a2465b753b36b945987e2bef047521ac5027efa1791d95a0"
+  },
+  "audio_events": [
+    {
+      "event": "audio.status",
+      "data": {
+        "message": "正在初始化本地语音…",
+        "listening": false
+      },
+      "seconds": 0.697
+    },
+    {
+      "event": "stt.discarded",
+      "data": {
+        "id": "cbe1c779623c42e295de84e80f5abf96",
+        "generation": 1
+      },
+      "seconds": 0.697
+    },
+    {
+      "event": "audio.status",
+      "data": {
+        "message": "语音输入尚未就绪",
+        "listening": false,
+        "user_paused": false,
+        "wake_required": true,
+        "wake_word": "贾维斯"
+      },
+      "seconds": 0.697
+    },
+    {
+      "event": "audio.ack",
+      "data": {
+        "id": "cbe1c779623c42e295de84e80f5abf96",
+        "command": "discard_input"
+      },
+      "seconds": 0.697
+    },
+    {
+      "event": "stt.discarded",
+      "data": {
+        "id": "da274dbdd899464bb9bc588eae6f7fbd",
+        "generation": 2
+      },
+      "seconds": 0.697
+    },
+    {
+      "event": "audio.status",
+      "data": {
+        "message": "语音输入尚未就绪",
+        "listening": false,
+        "user_paused": false,
+        "wake_required": true,
+        "wake_word": "贾维斯"
+      },
+      "seconds": 0.697
+    },
+    {
+      "event": "audio.ack",
+      "data": {
+        "id": "da274dbdd899464bb9bc588eae6f7fbd",
+        "command": "discard_input"
+      },
+      "seconds": 0.697
+    },
+    {
+      "event": "audio.status",
+      "data": {
+        "message": "语音输入尚未就绪",
+        "listening": false,
+        "user_paused": false,
+        "wake_required": true,
+        "wake_word": "贾维斯"
+      },
+      "seconds": 0.697
+    },
+    {
+      "event": "audio.ack",
+      "data": {
+        "id": "3a76e21977ea48289bc106dee72b0dd3",
+        "command": "expect_input"
+      },
+      "seconds": 0.697
+    },
+    {
+      "event": "audio.status",
+      "data": {
+        "message": "正在加载本地语音模型…",
+        "listening": false,
+        "user_paused": false,
+        "wake_required": true,
+        "wake_word": "贾维斯"
+      },
+      "seconds": 0.72
+    },
+    {
+      "event": "audio.ready",
+      "data": {
+        "listening": true,
+        "stt_ready": true,
+        "tts_lazy": true,
+        "wake_required": true,
+        "wake_word": "贾维斯"
+      },
+      "seconds": 1.657
+    },
+    {
+      "event": "audio.status",
+      "data": {
+        "message": "等待唤醒：请先说“贾维斯”，再说任务。",
+        "listening": true,
+        "user_paused": false,
+        "wake_required": true,
+        "wake_word": "贾维斯"
+      },
+      "seconds": 1.657
+    },
+    {
+      "event": "stt.started",
+      "data": {
+        "utterance_id": "8a814b5066664ba7ad3de22ece762831",
+        "generation": 2
+      },
+      "seconds": 4.074
+    },
+    {
+      "event": "stt.partial",
+      "data": {
+        "text": "帮我写一。",
+        "final": false,
+        "utterance_id": "8a814b5066664ba7ad3de22ece762831",
+        "generation": 2
+      },
+      "seconds": 5.703
+    },
+    {
+      "event": "stt.partial",
+      "data": {
+        "text": "帮我写一份本周工作总。",
+        "final": false,
+        "utterance_id": "8a814b5066664ba7ad3de22ece762831",
+        "generation": 2
+      },
+      "seconds": 7.307
+    },
+    {
+      "event": "stt.partial",
+      "data": {
+        "text": "帮我写一份本周工作总结，说明已经完。",
+        "final": false,
+        "utterance_id": "8a814b5066664ba7ad3de22ece762831",
+        "generation": 2
+      },
+      "seconds": 8.907
+    },
+    {
+      "event": "stt.partial",
+      "data": {
+        "text": "帮我写一份本周工作总结，说明已经完成的任务和下一。",
+        "final": false,
+        "utterance_id": "8a814b5066664ba7ad3de22ece762831",
+        "generation": 2
+      },
+      "seconds": 10.958
+    },
+    {
+      "event": "audio.status",
+      "data": {
+        "message": "正在识别语音…",
+        "listening": true,
+        "user_paused": false,
+        "wake_required": true,
+        "wake_word": "贾维斯"
+      },
+      "seconds": 11.813
+    },
+    {
+      "event": "audio.status",
+      "data": {
+        "message": "正在聆听，说完后会自动发送。",
+        "listening": true,
+        "user_paused": false,
+        "wake_required": false,
+        "wake_word": "贾维斯"
+      },
+      "seconds": 12.191
+    },
+    {
+      "event": "stt.final",
+      "data": {
+        "text": "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。",
+        "final": true,
+        "utterance_id": "8a814b5066664ba7ad3de22ece762831",
+        "generation": 2
+      },
+      "seconds": 12.191
+    },
+    {
+      "event": "audio.status",
+      "data": {
+        "message": "正在聆听，说完后会自动发送。",
+        "listening": true,
+        "user_paused": false,
+        "wake_required": false,
+        "wake_word": "贾维斯"
+      },
+      "seconds": 12.217
+    },
+    {
+      "event": "audio.ack",
+      "data": {
+        "id": "8ece8997075a412eb7c9580da0dfa9a3",
+        "command": "expect_input"
+      },
+      "seconds": 12.217
+    },
+    {
+      "event": "audio.status",
+      "data": {
+        "message": "正在聆听，说完后会自动发送。",
+        "listening": true,
+        "user_paused": false,
+        "wake_required": false,
+        "wake_word": "贾维斯"
+      },
+      "seconds": 12.219
+    },
+    {
+      "event": "audio.ack",
+      "data": {
+        "id": "6793f6e9072e43018d941a12e4127fb0",
+        "command": "expect_input"
+      },
+      "seconds": 12.219
+    }
+  ],
+  "input_changes": [
+    {
+      "seconds": 5.704,
+      "text": "帮我写一。"
+    },
+    {
+      "seconds": 7.308,
+      "text": "帮我写一份本周工作总。"
+    },
+    {
+      "seconds": 8.907,
+      "text": "帮我写一份本周工作总结，说明已经完。"
+    },
+    {
+      "seconds": 10.958,
+      "text": "帮我写一份本周工作总结，说明已经完成的任务和下一。"
+    },
+    {
+      "seconds": 12.191,
+      "text": "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。"
+    },
+    {
+      "seconds": 12.201,
+      "text": ""
+    }
+  ],
+  "positive_audio_level_events": 72,
+  "checks": {
+    "partial_visible_in_real_input": true,
+    "actual_discard_ack_received": true,
+    "discard_boundary_released": true,
+    "real_pcm_waveform_observed": true,
+    "same_existing_session": true,
+    "no_voice_errors": true,
+    "one_final_one_persisted_run": true,
+    "final_text_matches_run": true,
+    "partial_never_submitted_as_an_extra_run": true,
+    "expected_content": true
+  },
+  "screenshots": [
+    "voice-input.png",
+    "voice-run.png"
+  ],
+  "run_records": [
+    {
+      "task_id": "task_f39e26d992f04ee696fa84125d34eeb3",
+      "session_id": "session_a8f82994ca16483eae51c9f12867c663",
+      "message": "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。",
+      "status": "awaiting_input"
+    }
+  ],
+  "final_text": "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。",
+  "partial_count": 4,
+  "final_count": 1,
+  "visible_state": {
+    "wake_required": false,
+    "wake_word": "贾维斯",
+    "listening": true,
+    "tile_caption": "等待补充",
+    "input_placeholder": "输入或说出你的想法，说完后会自动发送。",
+    "input_hint": "Enter 发送 · Shift + Enter 换行 · 语音自动发送",
+    "status": "正在聆听，说完后会自动发送。"
+  },
+  "task_scope": "Task model intentionally unconfigured: natural-language demo response, not autonomous production model execution.",
+  "elapsed_seconds": 13.051,
+  "controller_errors": {},
+  "discard_pending": false,
+  "minimum_generation": 2,
+  "audio_stderr_tail": ""
+}

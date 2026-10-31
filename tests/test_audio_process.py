@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from jarvis.audio_process import AudioController
+from jarvis.voice_runtime import VoiceService, WakeWordGate
 
 
 class EventLog(list):
@@ -73,7 +74,92 @@ class FakeTTS:
         self.closed = True
 
 
+class AudioWakeStateTests(unittest.TestCase):
+    def setUp(self):
+        self.events = EventLog()
+        with (
+            patch.dict("os.environ", {"JARVIS_WAKE_WORD": "贾维斯"}),
+            patch("jarvis.paths.load_environment"),
+        ):
+            self.controller = AudioController(
+                lambda name, data: self.events.append((name, data)),
+                voice_factory=VoiceService,
+                tts_factory=FakeTTS,
+            )
+        self.addCleanup(self.controller.close)
+        # Exercise the actual gate and control protocol without opening hardware.
+        self.controller.voice._emit("status", message="持续聆听中", listening=True)
+
+    def assert_gate_status(self, required, *, listening=True):
+        statuses = [data for name, data in self.events if name == "audio.status"]
+        self.assertTrue(statuses, "wake change did not publish audio.status")
+        state = statuses[-1]
+        self.assertEqual(state["wake_required"], required)
+        self.assertEqual(state["wake_required"], self.controller.voice.wake_required)
+        self.assertEqual(state["wake_word"], "贾维斯")
+        self.assertEqual(state["listening"], listening)
+        if listening:
+            self.assertIn("等待唤醒" if required else "自动发送", state["message"])
+
+    def test_followup_controls_publish_gate_changes_without_another_utterance(self):
+        self.assert_gate_status(True)
+        for command in (
+            {"command": "expect_input", "enabled": False},
+            {"command": "discard_input"},
+            {"command": "stop_speaking"},
+        ):
+            with self.subTest(command=command):
+                self.events.clear()
+                self.controller.handle({"command": "expect_input", "enabled": True})
+                self.assert_gate_status(False)
+                self.events.clear()
+                self.controller.handle(command)
+                self.assert_gate_status(True)
+
+    def test_discard_and_stop_preserve_an_already_awake_conversation(self):
+        voice = self.controller.voice
+        voice._accept_transcript(WakeWordGate(voice.wake_word), "贾维斯，写报告")
+        for command in ("discard_input", "stop_speaking"):
+            with self.subTest(command=command):
+                self.events.clear()
+                self.controller.handle({"command": command})
+                self.assert_gate_status(False)
+
+    def test_stop_playback_reports_gate_without_bypassing_echo_guard(self):
+        voice = self.controller.voice
+        voice._accept_transcript(WakeWordGate(voice.wake_word), "贾维斯，写报告")
+        self.controller.handle(
+            {"command": "speak", "text": "报告完成", "playback_id": "answer"}
+        )
+        with patch("jarvis.audio_process.threading.Timer") as timer:
+            self.events.clear()
+            self.controller.handle({"command": "stop_speaking"})
+            self.assert_gate_status(False, listening=False)
+            self.assertTrue(voice._snapshot()[1])
+            timer.assert_called_once()
+            resume = timer.call_args.args[1]
+            self.events.clear()
+            resume()
+            self.assert_gate_status(False)
+            self.assertFalse(voice._snapshot()[1])
+
+
 class AudioControllerTests(unittest.TestCase):
+    def test_audio_state_distinguishes_waiting_from_awake(self):
+        controller, events, _ = self.make()
+        controller.voice.wake_word = "贾维斯"
+        controller.voice.wake_required = True
+        controller.start()
+        ready = next(data for name, data in events if name == "audio.ready")
+        self.assertTrue(ready["wake_required"])
+        self.assertEqual(ready["wake_word"], "贾维斯")
+        controller.voice.event("status", {"message": "持续聆听中", "listening": True})
+        self.assertIn("等待唤醒", events[-1][1]["message"])
+        controller.voice.wake_required = False
+        controller.voice.event("status", {"message": "持续聆听中", "listening": True})
+        self.assertFalse(events[-1][1]["wake_required"])
+        self.assertIn("自动发送", events[-1][1]["message"])
+
     def test_manual_pause_cannot_be_rearmed_by_an_older_question_playback(self):
         controller, events, resumed = self.make()
         controller.start()

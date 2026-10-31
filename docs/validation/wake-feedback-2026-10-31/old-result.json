@@ -1,0 +1,188 @@
+{
+  "recorded_at": "2026-10-31T16:22:38.844298+00:00",
+  "scope": "Actual Qt DesktopController, backend HTTP/SSE/SQLite, separate QProcess audio worker with production AudioController.main, real WebRTC VAD and SenseVoice. Only sounddevice RawInputStream replaced with timed local synthetic recording replay. No microphone/speaker or production model API. Not an installed frozen binary test.",
+  "baseline_audio_source_commit": "59631c3d509cd2f4d68b6f5ff3ffd4565b9291eb",
+  "source_snapshots_sha256": {
+    "voice_runtime": "fb5f4519f659f513f0ebdd4a0ecc395f16f54577aad3b0388900ff3d15f18e67",
+    "audio_process": "fb52e5c1e97c4fb307e5141abce099bfdfe51f7a11117061ccadb02317045f86"
+  },
+  "audio_sha256": {
+    "session-voice-replay.wav": "7f82cce87e0738a9b6a14b5cc3e6fa63a233b762fb87958eae54abe641e367f1",
+    "no-wake-replay.wav": "07c5fc090d0cae199fcffbcaf5c6d9d38935872bddefefb2cc149bd33443e544"
+  },
+  "with_wake": {
+    "ready": true,
+    "listening": true,
+    "errors": {},
+    "discard_pending": false,
+    "minimum_generation": 2,
+    "stt_events": [
+      {
+        "event": "stt.discarded",
+        "data": {
+          "id": "9c6c7a4d1a10430681394cd1ad848a59",
+          "generation": 1
+        },
+        "time": 0.609,
+        "reset_before": "cea1cdc9fc234f91a62656cce5323f00"
+      },
+      {
+        "event": "stt.discarded",
+        "data": {
+          "id": "cea1cdc9fc234f91a62656cce5323f00",
+          "generation": 2
+        },
+        "time": 0.609,
+        "reset_before": "cea1cdc9fc234f91a62656cce5323f00"
+      },
+      {
+        "event": "stt.started",
+        "data": {
+          "utterance_id": "ed568216975e41c387783e8f255693f8",
+          "generation": 2
+        },
+        "time": 4.313,
+        "reset_before": null
+      },
+      {
+        "event": "stt.partial",
+        "data": {
+          "text": "帮我写一。",
+          "final": false,
+          "utterance_id": "ed568216975e41c387783e8f255693f8",
+          "generation": 2
+        },
+        "time": 5.96,
+        "reset_before": null
+      },
+      {
+        "event": "stt.partial",
+        "data": {
+          "text": "帮我写一份本周工作总。",
+          "final": false,
+          "utterance_id": "ed568216975e41c387783e8f255693f8",
+          "generation": 2
+        },
+        "time": 7.589,
+        "reset_before": null
+      },
+      {
+        "event": "stt.partial",
+        "data": {
+          "text": "帮我写一份本周工作总结，说明已经完。",
+          "final": false,
+          "utterance_id": "ed568216975e41c387783e8f255693f8",
+          "generation": 2
+        },
+        "time": 9.64,
+        "reset_before": null
+      },
+      {
+        "event": "stt.partial",
+        "data": {
+          "text": "帮我写一份本周工作总结，说明已经完成的任务和下一。",
+          "final": false,
+          "utterance_id": "ed568216975e41c387783e8f255693f8",
+          "generation": 2
+        },
+        "time": 11.225,
+        "reset_before": null
+      },
+      {
+        "event": "stt.final",
+        "data": {
+          "text": "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。",
+          "final": true,
+          "utterance_id": "ed568216975e41c387783e8f255693f8",
+          "generation": 2
+        },
+        "time": 12.596,
+        "reset_before": null
+      }
+    ],
+    "input_changes": [
+      {
+        "time": 6.02,
+        "text": "帮我写一。"
+      },
+      {
+        "time": 7.589,
+        "text": "帮我写一份本周工作总。"
+      },
+      {
+        "time": 9.641,
+        "text": "帮我写一份本周工作总结，说明已经完。"
+      },
+      {
+        "time": 11.225,
+        "text": "帮我写一份本周工作总结，说明已经完成的任务和下一。"
+      },
+      {
+        "time": 12.597,
+        "text": "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。"
+      },
+      {
+        "time": 12.615,
+        "text": ""
+      }
+    ],
+    "run_count": 1,
+    "run_messages": [
+      "帮我写一份本周工作总结，说明已经完成的任务和下一步计划。"
+    ]
+  },
+  "without_wake": {
+    "ready": true,
+    "listening": true,
+    "errors": {},
+    "discard_pending": false,
+    "minimum_generation": 2,
+    "stt_events": [
+      {
+        "event": "stt.discarded",
+        "data": {
+          "id": "c7118f1163fa46d1ae9b9333caf69446",
+          "generation": 1
+        },
+        "time": 0.652,
+        "reset_before": "430cdba68e8e469ca050fce683ba1783"
+      },
+      {
+        "event": "stt.discarded",
+        "data": {
+          "id": "430cdba68e8e469ca050fce683ba1783",
+          "generation": 2
+        },
+        "time": 0.652,
+        "reset_before": "430cdba68e8e469ca050fce683ba1783"
+      },
+      {
+        "event": "stt.started",
+        "data": {
+          "utterance_id": "00339a2bcd404008b25c4653e37a5ade",
+          "generation": 2
+        },
+        "time": 4.003,
+        "reset_before": null
+      },
+      {
+        "event": "stt.cancelled",
+        "data": {
+          "utterance_id": "00339a2bcd404008b25c4653e37a5ade",
+          "generation": 2,
+          "reason": "not_addressed"
+        },
+        "time": 10.884,
+        "reset_before": null
+      }
+    ],
+    "input_changes": [],
+    "run_count": 0,
+    "run_messages": []
+  },
+  "conclusion": "Old wake gate discards recognized non-addressed speech without preview or task, while real IPC handshake completes correctly.",
+  "no_wake_worker_uses_source_snapshots": [
+    "jarvis/voice_runtime.py",
+    "jarvis/audio_process.py"
+  ]
+}

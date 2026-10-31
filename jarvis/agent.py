@@ -5,7 +5,7 @@ from collections.abc import AsyncIterator
 
 import httpx
 
-from .config import Settings
+from .config import MAX_MODEL_CALLS, MAX_TOOL_CALLS, MAX_TOOL_ROUNDS, Settings
 from .storage import Store
 from .tools import ToolRegistry
 from .orchestration import _result
@@ -91,12 +91,24 @@ class Agent:
         messages = [{"role": "system", "content": SYSTEM_PROMPT}] + history
         # The app has already persisted this turn's user message.
         model_calls = tool_calls = successes = failures = 0
+        model_limit = max(
+            0,
+            min(
+                MAX_MODEL_CALLS,
+                getattr(self.settings, "max_model_calls", MAX_MODEL_CALLS),
+            ),
+        )
+        tool_limit = max(
+            0,
+            min(
+                MAX_TOOL_CALLS, getattr(self.settings, "max_tool_calls", MAX_TOOL_CALLS)
+            ),
+        )
+        round_limit = max(0, min(MAX_TOOL_ROUNDS, self.settings.max_tool_rounds))
         async with httpx.AsyncClient(timeout=httpx.Timeout(90, connect=15)) as client:
-            for _ in range(self.settings.max_tool_rounds):
-                if model_calls >= getattr(self.settings, "max_model_calls", 12):
-                    text = (
-                        "模型请求预算已用尽，已完成操作仍保留，请缩小任务范围后继续。"
-                    )
+            for _ in range(round_limit):
+                if model_calls >= model_limit:
+                    text = f"本轮模型请求预算已用尽（已调用 {model_calls}/{model_limit} 次）。已完成的操作和产物保留，可在当前对话继续剩余工作。"
                     yield (
                         "answer",
                         _result(
@@ -154,8 +166,8 @@ class Agent:
                         }
                         yield "tool_start", {"name": name, "arguments": arguments}
                     else:
-                        if tool_calls >= getattr(self.settings, "max_tool_calls", 24):
-                            text = "工具调用预算已用尽，已完成操作仍保留，请缩小任务范围后继续。"
+                        if tool_calls >= tool_limit:
+                            text = f"本轮工具调用预算已用尽（已调用 {tool_calls}/{tool_limit} 次）。已完成的操作和产物保留，可在当前对话继续剩余工作。"
                             yield (
                                 "answer",
                                 _result(
@@ -178,7 +190,7 @@ class Agent:
                     messages.append(
                         {"role": "tool", "tool_call_id": call_id, "content": encoded}
                     )
-            text = "已达到本轮任务的执行步数上限。已完成的操作见上方执行记录，尚不能确认整个任务完成。你可以缩小任务范围后继续。"
+            text = f"本轮已达到 {round_limit} 轮执行上限。已完成的操作和产物保留，可在当前对话继续剩余工作。"
             yield "answer", _result(text, text, "partially_succeeded")
 
     async def _completion(self, client: httpx.AsyncClient, messages: list) -> dict:
@@ -263,7 +275,7 @@ class Agent:
             )
             return
         yield "status", {"message": "演示模式：正在执行真实工具…"}
-        if getattr(self.settings, "max_tool_calls", 24) <= 0:
+        if getattr(self.settings, "max_tool_calls", MAX_TOOL_CALLS) <= 0:
             text = "工具调用预算已用尽，未执行新的操作。"
             yield "answer", _result(text, text, "failed")
             return

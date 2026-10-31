@@ -79,7 +79,28 @@ class AudioController:
             return "监听已暂停"
         if self._speaking or self._echo_pause:
             return "播报期间暂停收音"
-        return "持续聆听中" if self._voice_ready else "语音输入尚未就绪"
+        if not self._voice_ready:
+            return "语音输入尚未就绪"
+        if getattr(self.voice, "wake_required", False):
+            return f"等待唤醒：请先说“{self.voice.wake_word}”，再说任务。"
+        return "正在聆听，说完后会自动发送。"
+
+    def _wake_state(self):
+        return {
+            "wake_required": bool(getattr(self.voice, "wake_required", False)),
+            "wake_word": getattr(self.voice, "wake_word", ""),
+        }
+
+    def _send_listening_status(self):
+        """Publish control-driven gate changes without waiting for more speech."""
+        paused = self._update_pause()
+        self._send(
+            "audio.status",
+            message=self._listening_message(),
+            listening=self._voice_ready and not paused,
+            user_paused=self._user_paused,
+            **self._wake_state(),
+        )
 
     def _voice_event(self, name, data):
         with self._lock:
@@ -154,13 +175,18 @@ class AudioController:
                         listening=not self._update_pause(),
                         stt_ready=True,
                         tts_lazy=True,
+                        **self._wake_state(),
                     )
                 self._send(
                     "audio.status",
                     **{
                         **data,
+                        "message": self._listening_message()
+                        if data.get("message") == "持续聆听中"
+                        else data.get("message", ""),
                         "listening": self._voice_ready and not self._update_pause(),
                         "user_paused": self._user_paused,
+                        **self._wake_state(),
                     },
                 )
 
@@ -187,6 +213,7 @@ class AudioController:
                     tts_model_loaded=True,
                     listening=self._voice_ready and not self._update_pause(),
                     user_paused=self._user_paused,
+                    **self._wake_state(),
                 )
             elif name == "error":
                 self._send("audio.error", component="tts", **data)
@@ -229,6 +256,7 @@ class AudioController:
                     message=self._listening_message(),
                     listening=self._voice_ready and not paused,
                     user_paused=self._user_paused,
+                    **self._wake_state(),
                 )
 
         self._resume_timer = threading.Timer(self.echo_seconds, finish)
@@ -260,6 +288,7 @@ class AudioController:
                         message=self._listening_message(),
                         listening=self._voice_ready and not paused,
                         user_paused=self._user_paused,
+                        **self._wake_state(),
                     )
                 elif action == "speak":
                     text = command.get("text")
@@ -290,6 +319,7 @@ class AudioController:
                     if self._speaking:
                         self._speaking.clear()
                         self._schedule_resume()
+                    self._send_listening_status()
                 elif action == "prewarm":
                     self.tts.prewarm()
                 elif action == "expect_input":
@@ -302,6 +332,7 @@ class AudioController:
                         if type(seconds) not in (int, float) or not 1 <= seconds <= 60:
                             raise ValueError("等待回答时长应位于 1–60 秒")
                         self.voice.arm_followup(seconds)
+                    self._send_listening_status()
                 elif action == "discard_input":
                     self._reply_after_playback.clear()
                     self._followup_generation += 1
@@ -311,6 +342,7 @@ class AudioController:
                         id=request_id,
                         generation=self.voice.capture_generation,
                     )
+                    self._send_listening_status()
                 elif action == "shutdown":
                     self._send("audio.ack", id=request_id, command=action)
                     return False

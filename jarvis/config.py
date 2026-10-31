@@ -10,6 +10,9 @@ from .paths import load_environment, preferences_path, resource_root, user_data_
 
 
 ROOT = resource_root()
+MAX_TOOL_CALLS = 1000
+MAX_TOOL_ROUNDS = MAX_TOOL_CALLS + 1
+MAX_MODEL_CALLS = MAX_TOOL_CALLS * 3 + 1
 
 
 def project_path(value: str) -> Path:
@@ -26,14 +29,14 @@ class Settings:
     brave_api_key: str = ""
     workspace: Path = field(default_factory=lambda: user_data_dir() / "workspace")
     data_dir: Path = field(default_factory=user_data_dir)
-    max_tool_rounds: int = 8
+    max_tool_rounds: int = MAX_TOOL_ROUNDS
     orchestrator: str = "maf"
     instance_token: str = ""
     instance_id: str = field(default_factory=lambda: uuid4().hex)
     max_pending_tasks: int = 3
     task_timeout: float = 300.0
-    max_model_calls: int = 12
-    max_tool_calls: int = 24
+    max_model_calls: int = MAX_MODEL_CALLS
+    max_tool_calls: int = MAX_TOOL_CALLS
 
     @property
     def configured(self) -> bool:
@@ -55,7 +58,11 @@ class Settings:
             else data_dir / "workspace",
             data_dir=data_dir,
             max_tool_rounds=max(
-                1, min(20, int(os.getenv("JARVIS_MAX_TOOL_ROUNDS", "8")))
+                1,
+                min(
+                    MAX_TOOL_ROUNDS,
+                    int(os.getenv("JARVIS_MAX_TOOL_ROUNDS", str(MAX_TOOL_ROUNDS))),
+                ),
             ),
             orchestrator=os.getenv("JARVIS_ORCHESTRATOR", "maf").lower().strip(),
             instance_token=os.getenv("JARVIS_INSTANCE_TOKEN", ""),
@@ -67,10 +74,18 @@ class Settings:
                 1.0, min(3600.0, float(os.getenv("JARVIS_TASK_TIMEOUT", "300")))
             ),
             max_model_calls=max(
-                1, min(100, int(os.getenv("JARVIS_MAX_MODEL_CALLS", "12")))
+                1,
+                min(
+                    MAX_MODEL_CALLS,
+                    int(os.getenv("JARVIS_MAX_MODEL_CALLS", str(MAX_MODEL_CALLS))),
+                ),
             ),
             max_tool_calls=max(
-                1, min(100, int(os.getenv("JARVIS_MAX_TOOL_CALLS", "24")))
+                1,
+                min(
+                    MAX_TOOL_CALLS,
+                    int(os.getenv("JARVIS_MAX_TOOL_CALLS", str(MAX_TOOL_CALLS))),
+                ),
             ),
         )
 
@@ -101,6 +116,7 @@ PREFERENCE_KEYS = frozenset(
         "JARVIS_DESKTOP_PORT",
         "UI_SPEECH_ENABLED",
         "UI_AUTO_FULLSCREEN",
+        "UI_TILE_ALWAYS_ON_TOP",
         "UI_TILE_X",
         "UI_TILE_Y",
     }

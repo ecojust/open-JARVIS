@@ -15,6 +15,7 @@ from typing import Any
 
 import httpx
 
+from .config import MAX_MODEL_CALLS, MAX_TOOL_CALLS, MAX_TOOL_ROUNDS
 from .provider_options import chat_completion_body_options
 from .tool_output import model_tool_result
 
@@ -112,8 +113,8 @@ PERSONAL_TOOLS = frozenset(
 
 @dataclass
 class _Budget:
-    model_limit: int = 12
-    tool_limit: int = 24
+    model_limit: int = MAX_MODEL_CALLS
+    tool_limit: int = MAX_TOOL_CALLS
     model_calls: int = 0
     tool_calls: int = 0
     successes: int = 0
@@ -137,14 +138,14 @@ class _Budget:
         # One shared OpenAI client, SDK retries disabled: every actual HTTP call
         # (including requests initiated by delegated agents) passes this hook.
         if self.model_calls >= self.model_limit:
-            self.exceeded = "模型请求预算已用尽"
+            self.exceeded = f"本轮模型请求预算已用尽（已调用 {self.model_calls}/{self.model_limit} 次）。已完成的操作和产物保留，可在当前对话继续剩余工作"
             raise BudgetExceeded(self.exceeded)
         self.model_calls += 1
         await self.usage(model_calls_delta=1)
 
     async def tool(self):
         if self.tool_calls >= self.tool_limit:
-            self.exceeded = "工具调用预算已用尽"
+            self.exceeded = f"本轮工具调用预算已用尽（已调用 {self.tool_calls}/{self.tool_limit} 次）。已完成的操作和产物保留，可在当前对话继续剩余工作"
             raise BudgetExceeded(self.exceeded)
         self.tool_calls += 1
         await self.usage(tool_calls_delta=1)
@@ -281,8 +282,13 @@ async def run_maf(settings, store, registry, message: str):
 
     events: asyncio.Queue = asyncio.Queue(maxsize=64)
     budget = _Budget(
-        model_limit=max(0, min(100, getattr(settings, "max_model_calls", 12))),
-        tool_limit=max(0, min(100, getattr(settings, "max_tool_calls", 24))),
+        model_limit=max(
+            0,
+            min(MAX_MODEL_CALLS, getattr(settings, "max_model_calls", MAX_MODEL_CALLS)),
+        ),
+        tool_limit=max(
+            0, min(MAX_TOOL_CALLS, getattr(settings, "max_tool_calls", MAX_TOOL_CALLS))
+        ),
     )
     tool_lock = asyncio.Lock()
     consumer_closed = asyncio.Event()
@@ -389,7 +395,7 @@ async def run_maf(settings, store, registry, message: str):
                             middleware=[AuditFunctions()],
                             function_invocation_configuration={
                                 "max_iterations": max(
-                                    1, min(20, settings.max_tool_rounds)
+                                    1, min(MAX_TOOL_ROUNDS, settings.max_tool_rounds)
                                 ),
                                 "max_function_calls": max(1, budget.tool_limit),
                                 "max_duration_seconds": timeout,
@@ -459,7 +465,7 @@ async def run_maf(settings, store, registry, message: str):
         except Exception as exc:
             error = budget.exceeded or _safe_error(exc)
             if budget.exceeded:
-                error += "，本轮已停止。已完成的操作保留，请缩小任务范围后继续。"
+                error += "。本轮已停止。"
             final = _result(
                 error,
                 error,

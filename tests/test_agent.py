@@ -81,7 +81,45 @@ class AgentTests(unittest.IsolatedAsyncioTestCase):
         ) as complete:
             output = [event async for event in agent.run("测试任务")]
         self.assertEqual(complete.await_count, 1)
-        self.assertIn("尚不能确认整个任务完成", output[-1][1]["content"])
+        self.assertIn("1 轮执行上限", output[-1][1]["content"])
+        self.assertIn("当前对话继续剩余工作", output[-1][1]["content"])
+
+    async def test_native_default_allows_more_than_old_24_tools_and_small_limit_stops(
+        self,
+    ):
+        calls = [
+            {
+                "id": f"clock-{index}",
+                "type": "function",
+                "function": {"name": "current_time", "arguments": "{}"},
+            }
+            for index in range(32)
+        ]
+        replies = [
+            {"tool_calls": calls[:16]},
+            {"tool_calls": calls[16:]},
+            {"content": "完成32次工具调用"},
+        ]
+        with patch.object(
+            self.agent, "_completion", new=AsyncMock(side_effect=replies)
+        ) as complete:
+            output = [event async for event in self.agent.run("测试任务")]
+        self.assertEqual(complete.await_count, 3)
+        self.assertEqual(sum(event == "tool_result" for event, _ in output), 32)
+        self.assertEqual(output[-1][1]["status"], "succeeded")
+        limited = Agent(
+            replace(self.settings, max_tool_calls=2), self.store, self.registry
+        )
+        with patch.object(
+            limited,
+            "_completion",
+            new=AsyncMock(return_value={"tool_calls": calls[:16]}),
+        ) as complete:
+            output = [event async for event in limited.run("测试任务")]
+        self.assertEqual(complete.await_count, 1)
+        self.assertEqual(sum(event == "tool_result" for event, _ in output), 2)
+        self.assertEqual(output[-1][1]["status"], "partially_succeeded")
+        self.assertIn("2/2", output[-1][1]["content"])
 
     async def test_protocol_uses_configured_model_and_function_tools(self):
         seen = []

@@ -424,6 +424,56 @@ class MAFIntegrationTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("预算", events[-1][1]["content"])
         self.assertEqual(events[-1][1]["status"], "partially_succeeded")
 
+    async def test_real_maf_provider_receives_1000_tool_configuration_without_old_clamps(
+        self,
+    ):
+        from agent_framework_openai import OpenAIChatCompletionClient
+        from jarvis.orchestration import BudgetExceeded
+
+        budgets, provider_configs = [], []
+        original_budget = _Budget
+
+        def budget(**kwargs):
+            budgets.append(kwargs)
+            return original_budget(**kwargs)
+
+        def provider(**kwargs):
+            provider_configs.append(kwargs["function_invocation_configuration"])
+            return OpenAIChatCompletionClient(**kwargs)
+
+        server, settings = self.setup_model(
+            [final("已完成配置检查")],
+            max_tool_calls=1000,
+            max_tool_rounds=1001,
+            max_model_calls=3001,
+        )
+        with (
+            patch("jarvis.orchestration._Budget", side_effect=budget),
+            patch(
+                "agent_framework_openai.OpenAIChatCompletionClient",
+                side_effect=provider,
+            ),
+        ):
+            output = [
+                event
+                async for event in run_maf(
+                    settings, self.store, self.registry, "检查配置"
+                )
+            ]
+        self.assertEqual(output[-1][1]["status"], "succeeded")
+        self.assertEqual(len(server.requests), 1)
+        self.assertEqual(budgets, [{"tool_limit": 1000, "model_limit": 3001}])
+        self.assertEqual(provider_configs[0]["max_function_calls"], 1000)
+        self.assertEqual(provider_configs[0]["max_iterations"], 1001)
+        small = original_budget(tool_limit=2)
+        await small.tool()
+        await small.tool()
+        with self.assertRaises(BudgetExceeded):
+            await small.tool()
+        self.assertEqual(small.tool_calls, 2)
+        self.assertIn("2/2", small.exceeded)
+        self.assertIn("当前对话", small.exceeded)
+
     async def test_awaiting_input_uses_structured_final_protocol(self):
         server, settings = self.setup_model(
             [final("要分析哪个文件？", "awaiting_input")]

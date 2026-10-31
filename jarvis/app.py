@@ -9,6 +9,7 @@ import json
 import mimetypes
 from pathlib import Path
 import shutil
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
@@ -229,9 +230,31 @@ def create_app(settings: Settings | None = None, *, agent_factory=Agent) -> Fast
         return {"tasks": app.state.store.list_tasks(limit, session_id=session_id)}
 
     @app.get("/api/tasks/{task_id}")
-    async def get_task(task_id: str):
+    async def get_task(task_id: str, view: Literal["full", "summary"] = "full"):
         require_task(task_id)
-        return app.state.tasks.details(task_id)
+        return app.state.tasks.details(task_id, summary=view == "summary")
+
+    @app.get("/api/tasks/{task_id}/steps")
+    async def task_steps(
+        task_id: str,
+        offset: int = Query(0, ge=0),
+        limit: int = Query(100, ge=1, le=200),
+    ):
+        task = require_task(task_id)
+        return {
+            "task_id": task_id,
+            "run_id": task_id,
+            "session_id": task["session_id"],
+            **app.state.store.step_page(task_id, offset, limit),
+        }
+
+    @app.get("/api/tasks/{task_id}/steps/{step_id}")
+    async def task_step(task_id: str, step_id: str):
+        task = require_task(task_id)
+        step = app.state.store.get_step(task_id, step_id)
+        if step is None:
+            raise HTTPException(404, "找不到该轮次的工具调用。")
+        return {**step, "run_id": task_id, "session_id": task["session_id"]}
 
     @app.post("/api/tasks/{task_id}/input", status_code=202)
     async def provide_input(task_id: str, payload: InputRequest):

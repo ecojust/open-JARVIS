@@ -420,10 +420,8 @@ class TaskManager:
                                 speech_text=data.get("speech_text") or text[:300],
                             )
                         else:
-                            steps = self.store.list_steps(task_id)
-                            failures = [
-                                step for step in steps if step["status"] == "failed"
-                            ]
+                            counts = self.store.step_counts(task_id)
+                            failures = counts.get("failed", 0)
                             status = data.get("status")
                             if status not in {
                                 "succeeded",
@@ -433,10 +431,7 @@ class TaskManager:
                                 status = (
                                     (
                                         "partially_succeeded"
-                                        if any(
-                                            step["status"] == "succeeded"
-                                            for step in steps
-                                        )
+                                        if counts.get("succeeded", 0)
                                         else "failed"
                                     )
                                     if failures
@@ -448,9 +443,7 @@ class TaskManager:
                             if failures and status == "succeeded":
                                 status = (
                                     "partially_succeeded"
-                                    if any(
-                                        step["status"] == "succeeded" for step in steps
-                                    )
+                                    if counts.get("succeeded", 0)
                                     else "failed"
                                 )
                             self._finish(
@@ -574,9 +567,7 @@ class TaskManager:
             return False
 
     def _finish_error(self, task_id, text):
-        successes = any(
-            step["status"] == "succeeded" for step in self.store.list_steps(task_id)
-        )
+        successes = self.store.step_counts(task_id).get("succeeded", 0)
         self.store.add_message("assistant", text, task_id)
         self.store.add_event(task_id, "agent.error", {"message": text})
         self._finish(
@@ -594,7 +585,7 @@ class TaskManager:
         artifacts = self.store.list_artifacts(task_id)
         if status == "failed" and any(not item.get("hidden") for item in artifacts):
             status = "partially_succeeded"
-        steps = self.store.list_steps(task_id)
+        steps = self.store.step_summaries(task_id)
         data = {
             "status": status,
             "display_text": text,
@@ -626,12 +617,18 @@ class TaskManager:
             error=error,
         )
 
-    def details(self, task_id):
+    def details(self, task_id, *, summary=False):
         task = self.require(task_id)
+        page = self.store.step_page(task_id, limit=100 if summary else 200)
         task.update(
             artifacts=self.store.list_artifacts(task_id),
-            steps=self.store.list_steps(task_id),
-            events=self.store.recent_events(task_id),
+            steps=page["steps"] if summary else self.store.list_steps(task_id),
+            steps_total=page["total"],
+            steps_has_more=page["has_more"],
+            steps_limit=page["limit"],
+            steps_event_id=page["snapshot_event_id"],
+            snapshot_event_id=page["snapshot_event_id"],
+            events=self.store.recent_events(task_id, summary=summary),
             messages=self.store.task_history(task_id),
         )
         task["cancel_requested"] = task_id in self._cancel_requested

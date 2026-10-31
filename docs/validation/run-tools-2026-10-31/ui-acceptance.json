@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "scope": "actual Qt, owned backend, HTTP/SSE, SQLite and two real demo file-tool runs; separately injected synthetic 1205-step audit fixture for pagination; no external model or audio hardware",
+  "checks": {
+    "real_file_tool_written": true,
+    "details_are_explicitly_opened": true,
+    "real_success_parameters_and_result": true,
+    "separate_run_real_failure": true,
+    "durable_sse_start_and_outcome": true,
+    "history_second_page_from_real_http": true,
+    "last_fixture_page_and_failed_detail": true,
+    "agent_reply_remains_opt_in": true,
+    "backend_and_controller_restart_restores_history": true,
+    "same_session_distinct_real_runs": true
+  },
+  "screenshots": [
+    "real-tool-success.png",
+    "real-tool-failure.png",
+    "synthetic-audit-last-page.png"
+  ],
+  "fixture": {
+    "steps": 1205,
+    "actual_tools_executed_by_fixture": 0,
+    "rows_in_ui_at_once": 100,
+    "last_page_rows": 5
+  },
+  "elapsed_seconds": 2.076
+}

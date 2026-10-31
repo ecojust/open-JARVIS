@@ -1,0 +1,42 @@
+{
+  "passed": true,
+  "conditions": {
+    "system": "Linux",
+    "architecture": "x86_64",
+    "python": "3.12.14",
+    "isolated_user_data": true,
+    "real_qapplication": true,
+    "real_backend_process": true,
+    "real_audio_worker_process": true,
+    "task_mode": "deterministic demo command",
+    "microphone_opened": false,
+    "tts_playback_enabled": false,
+    "speech_models_loaded": false,
+    "cloud_model_used": false,
+    "packaged_application_tested": false,
+    "platform_hardware_acceptance": false,
+    "qt": "6.12.0",
+    "qt_platform": "offscreen",
+    "supervised_timeout_seconds": 15,
+    "temporary_data_removed": true
+  },
+  "checks": {
+    "only_tile_initially": true,
+    "owned_children_started": true,
+    "backend_identity_verified": true,
+    "real_api_and_sse": true,
+    "real_file_created": true,
+    "maximized_matching_result": true,
+    "no_webengine_loaded": true,
+    "first_quit_exited": true,
+    "owned_children_stopped": true,
+    "backend_listener_closed": true
+  },
+  "timings_seconds": {
+    "backend_ready": 0.668,
+    "result_visible": 0.822,
+    "quit_and_cleanup": 0.172,
+    "worker_total": 0.995,
+    "supervised_total": 1.06
+  }
+}

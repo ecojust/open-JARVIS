@@ -69,6 +69,8 @@ class VoiceService:
         from .paths import load_environment
 
         load_environment()
+        self.wake_word = os.getenv("JARVIS_WAKE_WORD", "贾维斯").strip()
+        self._wake_engaged = False
         self.on_event = on_event
         self.inference_lock = inference_lock or threading.Lock()
         self._stop = threading.Event()
@@ -160,6 +162,15 @@ class VoiceService:
         """Identify audio captured before a pause or device discontinuity."""
         return self._snapshot()[0]
 
+    @property
+    def wake_required(self):
+        with self._lock:
+            return (
+                bool(self.wake_word)
+                and not self._wake_engaged
+                and (time.monotonic() >= self._followup_until)
+            )
+
     def _publish_level(self, payload, generation):
         if payload is None:
             return
@@ -195,12 +206,29 @@ class VoiceService:
         """Manual pause ends a conversation; echo/session pauses do not."""
         with self._lock:
             self._wake_epoch += 1
+            self._wake_engaged = False
             self._followup_until = 0.0
         self._decode_wake.set()
 
-    def _accept_transcript(self, gate, text):
-        command, armed = gate.accept(text)
+    def _expire_followup(self):
+        # Reuse the decoder's bounded idle wait instead of another timer thread.
         with self._lock:
+            if not self._followup_until or time.monotonic() < self._followup_until:
+                return
+            self._followup_until = 0.0
+            changed = bool(self.wake_word) and not self._wake_engaged
+        if changed:
+            self._emit("status", message="持续聆听中", listening=True)
+
+    def _accept_transcript(self, gate, text, *, generation=None, wake_epoch=None):
+        with self._lock:
+            if (
+                generation is not None
+                and (generation != self._generation or self._paused.is_set())
+            ) or (wake_epoch is not None and wake_epoch != self._wake_epoch):
+                return None, False
+            command, armed = gate.accept(text)
+            self._wake_engaged = gate.engaged
             if command:
                 self._followup_until = 0.0
             elif not armed and text.strip() and time.monotonic() < self._followup_until:
@@ -429,10 +457,11 @@ class VoiceService:
     def _decode(self, recognizer):
         import numpy as np
 
-        gate = WakeWordGate(os.getenv("JARVIS_WAKE_WORD", "贾维斯"))
+        gate = WakeWordGate(self.wake_word)
         previous_wake_epoch = -1
         last_preview = None
         while not self._stop.is_set() and not self._capture_done.is_set():
+            self._expire_followup()
             job = self._decode_job()
             if job is None:
                 self._decode_wake.wait(timeout=0.5)
@@ -468,8 +497,14 @@ class VoiceService:
                 if not self._current_job(generation, utterance_id, final):
                     continue
                 if final:
-                    command, armed = self._accept_transcript(gate, stream.result.text)
+                    command, armed = self._accept_transcript(
+                        gate,
+                        stream.result.text,
+                        generation=generation,
+                        wake_epoch=wake_epoch,
+                    )
                     if command:
+                        self._emit("status", message="持续聆听中", listening=True)
                         self._emit(
                             "transcript",
                             text=command,
@@ -488,7 +523,11 @@ class VoiceService:
                             "status",
                             message="我在，请说任务；暂停前可以连续对话。"
                             if armed
-                            else "持续聆听中",
+                            else (
+                                f"已收音，但还未唤醒。请先说“{self.wake_word}”，再说任务。"
+                                if self.wake_required
+                                else "持续聆听中"
+                            ),
                             listening=True,
                         )
                 else:

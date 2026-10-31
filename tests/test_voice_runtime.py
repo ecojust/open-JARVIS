@@ -75,6 +75,15 @@ class _FakeSamples:
 
 
 class VoiceServiceTests(unittest.TestCase):
+    def setUp(self):
+        # Keep the default wake word independent of developer machine settings.
+        environment = patch.dict(
+            "os.environ",
+            {"JARVIS_WAKE_WORD": "贾维斯"},
+        )
+        environment.start()
+        self.addCleanup(environment.stop)
+
     def test_decoder_keeps_wake_across_echo_and_session_reset_until_manual_pause(self):
         events = []
         changed = threading.Condition()

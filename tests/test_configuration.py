@@ -173,9 +173,50 @@ class ConfigurationTests(unittest.TestCase):
                 settings.workspace, Path(directory).resolve() / "workspace"
             )
             self.assertEqual(settings.data_dir, Path(directory).resolve())
-            self.assertEqual(settings.max_model_calls, 100)
+            self.assertEqual(settings.max_model_calls, 999)
+            self.assertEqual(settings.max_tool_calls, 1000)
+            self.assertEqual(settings.max_tool_rounds, 1001)
             self.assertEqual(settings.instance_token, "session-token")
             self.assertEqual(settings.orchestrator, "maf")
+
+    def test_run_budgets_default_to_1000_tools_and_preserve_lower_explicit_limits(self):
+        self.assertEqual(Settings().max_tool_calls, 1000)
+        self.assertEqual(Settings().max_tool_rounds, 1001)
+        self.assertEqual(Settings().max_model_calls, 3001)
+        self.assertEqual(Settings().task_timeout, 300)
+        with tempfile.TemporaryDirectory() as directory:
+            for values, expected in (
+                ({}, (1000, 1001, 3001)),
+                (
+                    {
+                        "JARVIS_MAX_TOOL_CALLS": "3",
+                        "JARVIS_MAX_TOOL_ROUNDS": "4",
+                        "JARVIS_MAX_MODEL_CALLS": "5",
+                    },
+                    (3, 4, 5),
+                ),
+                (
+                    {
+                        "JARVIS_MAX_TOOL_CALLS": "99999",
+                        "JARVIS_MAX_TOOL_ROUNDS": "99999",
+                        "JARVIS_MAX_MODEL_CALLS": "99999",
+                    },
+                    (1000, 1001, 3001),
+                ),
+            ):
+                with patch.dict(
+                    os.environ, {"JARVIS_DATA_DIR": directory, **values}, clear=True
+                ):
+                    settings = Settings.from_env()
+                    self.assertEqual(
+                        (
+                            settings.max_tool_calls,
+                            settings.max_tool_rounds,
+                            settings.max_model_calls,
+                        ),
+                        expected,
+                    )
+                    self.assertEqual(settings.task_timeout, 300)
 
 
 if __name__ == "__main__":

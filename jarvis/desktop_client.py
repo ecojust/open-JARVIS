@@ -392,6 +392,8 @@ class DesktopController(QObject):
         self.pending_settings = False
         self.user_paused = False
         self.listening = False
+        self.wake_required = False
+        self.wake_word = ""
         self.speech_enabled = _boolean(
             os.getenv(
                 "UI_SPEECH_ENABLED", self.preferences.get("UI_SPEECH_ENABLED", True)
@@ -400,6 +402,12 @@ class DesktopController(QObject):
         self.auto_fullscreen = _boolean(
             os.getenv(
                 "UI_AUTO_FULLSCREEN", self.preferences.get("UI_AUTO_FULLSCREEN", True)
+            )
+        )
+        self.tile_always_on_top = _boolean(
+            os.getenv(
+                "UI_TILE_ALWAYS_ON_TOP",
+                self.preferences.get("UI_TILE_ALWAYS_ON_TOP", True),
             )
         )
         self.speaking = False
@@ -468,7 +476,7 @@ class DesktopController(QObject):
         self.audio.started.connect(self._audio_started)
         self.audio.errorOccurred.connect(self._audio_process_error)
         self.audio.finished.connect(self._audio_finished)
-        self.tile = VoiceTile(self)
+        self.tile = VoiceTile(self, always_on_top=self.tile_always_on_top)
         self._restore_tile_position()
         self.tile.show()
         if settings_error:
@@ -641,7 +649,7 @@ class DesktopController(QObject):
         if data.get("active_session_id") and self.active_session_id is None:
             self._activate_session_local(data["active_session_id"])
         if self.configured:
-            self.last_status = "任务模型已配置。说“贾维斯”开始对话，之后可连续交谈。"
+            self.last_status = "任务模型已配置，语音就绪后可开始对话。"
         else:
             self.last_status = "演示模式：请在设置中配置任务模型。也可先输入 /analyze example-sales.csv 验证流程。"
         self._render_status()
@@ -739,6 +747,9 @@ class DesktopController(QObject):
     def handle_audio_event(self, event, data):
         if self.closing:
             return
+        if event in {"audio.ready", "audio.status"} and "wake_required" in data:
+            self.wake_required = data["wake_required"] is True
+            self.wake_word = str(data.get("wake_word", ""))
         if event == "stt.discarded":
             if (
                 data.get("id") == self._voice_reset_id
@@ -775,6 +786,7 @@ class DesktopController(QObject):
                 self.listening = bool(data["listening"])
             if not self.speaking and not self._active_tasks():
                 self.last_status = str(data.get("message", "持续聆听中"))
+                self._render_status()
         elif event in {"stt.started", "stt.partial", "stt.final", "stt.cancelled"}:
             self._handle_transcript(event, data)
         elif event == "tts.started":
@@ -958,6 +970,11 @@ class DesktopController(QObject):
                 ):
                     self.results.input.setPlainText(draft.get("base", ""))
                 self._voice_draft = None
+            if data.get("reason") == "not_addressed" and self.wake_required:
+                self.notify(
+                    f"已收音，但还未唤醒。请先说“{self.wake_word}”，"
+                    f"或说“{self.wake_word}，帮我……”再安排任务。"
+                )
             return
         if identifier not in self._voice_captures:
             if len(self._voice_captures) >= 64:
@@ -1271,7 +1288,7 @@ class DesktopController(QObject):
         if self.client and self.ready:
             self.client.request(
                 "GET",
-                "/api/tasks/" + quote(str(task_id), safe=""),
+                "/api/tasks/" + quote(str(task_id), safe="") + "?view=summary",
                 callback=callback or self._update_task,
                 error=self.notify,
             )
@@ -1286,6 +1303,60 @@ class DesktopController(QObject):
         if self.results and self.results.isVisible() and self.selected_task == task_id:
             self.results.render_task(self.tasks[task_id])
         self.update_tile()
+
+    def load_run_steps(self, run_id, offset, revision):
+        window = self.results
+        if not self.ready or self.client is None or window is None:
+            return
+        panel = window.tool_calls
+        if panel.run_id != run_id:
+            return
+
+        def ready(payload):
+            if self.results is window and panel.run_id == run_id:
+                panel.receive_page(payload, revision)
+
+        def failed(message):
+            if self.results is window and panel.run_id == run_id:
+                panel.page_error(message, revision)
+
+        self.client.request(
+            "GET",
+            "/api/tasks/"
+            + quote(str(run_id), safe="")
+            + "/steps?"
+            + urlencode({"offset": offset, "limit": 100}),
+            callback=ready,
+            error=failed,
+            max_response_bytes=512 * 1024,
+        )
+
+    def load_run_step_detail(self, run_id, step_id, revision):
+        window = self.results
+        if not self.ready or self.client is None or window is None:
+            return
+        panel = window.tool_calls
+        if panel.run_id != run_id:
+            return
+
+        def ready(payload):
+            if self.results is window and panel.run_id == run_id:
+                panel.receive_detail(payload, revision)
+
+        def failed(message):
+            if self.results is window and panel.run_id == run_id:
+                panel.detail_error(message, revision)
+
+        self.client.request(
+            "GET",
+            "/api/tasks/"
+            + quote(str(run_id), safe="")
+            + "/steps/"
+            + quote(str(step_id), safe=""),
+            callback=ready,
+            error=failed,
+            max_response_bytes=2 * 1024 * 1024,
+        )
 
     def _trim_task_details(self):
         """The database owns history; retain heavy details only for active views."""
@@ -1513,7 +1584,24 @@ class DesktopController(QObject):
             self.results.input.setPlainText(
                 self._drafts.get(self.active_session_id, "")
             )
+        self._render_voice_hint()
         return self.results
+
+    def _render_voice_hint(self):
+        if self.results is None:
+            return
+        waiting = self.listening and self.wake_required and not self.user_paused
+        self.results.input.setPlaceholderText(
+            f"先说“{self.wake_word}”唤醒，再说任务；也可直接输入文字。"
+            if waiting
+            else "输入或说出你的想法，说完后会自动发送。"
+        )
+        if not self._voice_draft and not self._pending_submissions:
+            hint = self.results.input_hint
+            if waiting:
+                hint.setText("语音需先唤醒 · Enter 发送文字 · Shift + Enter 换行")
+            elif hint.text().startswith("语音需先唤醒"):
+                hint.setText("Enter 发送 · Shift + Enter 换行 · 语音自动发送")
 
     def show_results(self):
         window = self._ensure_results()
@@ -1600,6 +1688,7 @@ class DesktopController(QObject):
     def update_tile(self):
         if self.closing:
             return
+        self._render_voice_hint()
         count = len(self._active_tasks())
         if self.errors:
             caption = "查看提示"
@@ -1613,6 +1702,8 @@ class DesktopController(QObject):
             caption = "执行任务" + (f" · {count}" if count > 1 else "")
         elif self.awaiting_task:
             caption = "等待补充"
+        elif self.listening and self.wake_required:
+            caption = "等待唤醒"
         elif not self.configured:
             caption = "演示模式"
         elif self.listening:
@@ -1833,8 +1924,10 @@ class DesktopController(QObject):
                 values[key] = os.environ[key]
         values["UI_SPEECH_ENABLED"] = self.speech_enabled
         values["UI_AUTO_FULLSCREEN"] = self.auto_fullscreen
+        values["UI_TILE_ALWAYS_ON_TOP"] = self.tile_always_on_top
         # Settings and inline downloads outlive the disposable results window.
         dialog = SettingsDialog(values, self.tile)
+        dialog.initial_values = dialog.values()
         self.settings_dialog = dialog
         dialog.model_download_requested.connect(self.download_model)
         dialog.model_cancel_requested.connect(self.cancel_model_download)
@@ -1851,8 +1944,15 @@ class DesktopController(QObject):
             dialog.deleteLater()
             return
         values = dialog.values()
+        restart_required = any(
+            value != dialog.initial_values.get(key)
+            for key, value in values.items()
+            if not key.startswith("UI_")
+        )
         url = QUrl(str(values.get("OPENAI_BASE_URL", "")))
-        if url.scheme() not in {"http", "https"} or not url.host():
+        if restart_required and (
+            url.scheme() not in {"http", "https"} or not url.host()
+        ):
             self.notify("模型接口地址必须是有效的 HTTP(S) 地址，配置未保存。")
             dialog.deleteLater()
             return
@@ -1863,14 +1963,22 @@ class DesktopController(QObject):
             dialog.deleteLater()
             return
         self.preferences.update(values)
+        was_speech_enabled = self.speech_enabled
         self.speech_enabled = bool(values.get("UI_SPEECH_ENABLED", True))
         self.auto_fullscreen = bool(values.get("UI_AUTO_FULLSCREEN", True))
-        self.pending_settings = True
-        if not self.speech_enabled:
+        self.tile_always_on_top = bool(values.get("UI_TILE_ALWAYS_ON_TOP", True))
+        self.tile.set_always_on_top(self.tile_always_on_top)
+        self.pending_settings = self.pending_settings or restart_required
+        if was_speech_enabled and not self.speech_enabled:
             self.stop_speaking()
-        self.notify("设置已保存，现有任务和播报结束后会应用。")
+        self.notify(
+            "界面设置已应用；服务配置将在现有任务和播报结束后应用。"
+            if restart_required
+            else "设置已保存并立即应用。"
+        )
         dialog.deleteLater()
-        self._maybe_apply_settings()
+        if restart_required:
+            self._maybe_apply_settings()
 
     def _maybe_apply_settings(self):
         if not self.pending_settings or self.closing or self._restarting:

@@ -57,6 +57,45 @@ class SessionUITests(unittest.TestCase):
     def posts(self):
         return [call for call in self.c.client.calls if call[0] == "POST"]
 
+    def test_wake_wait_is_visible_and_explains_ignored_speech(self):
+        window = self.c._ensure_results()
+        window.show()
+        self.c.handle_audio_event(
+            "audio.ready",
+            {
+                "listening": True,
+                "wake_required": True,
+                "wake_word": "贾维斯",
+            },
+        )
+        self.assertEqual(self.c.tile.caption, "等待唤醒")
+        self.assertIn("先说“贾维斯”", window.input.placeholderText())
+        self.assertIn("语音需先唤醒", window.input_hint.text())
+        self.c.handle_audio_event(
+            "stt.cancelled",
+            {
+                "utterance_id": "not-awake",
+                "generation": 1,
+                "reason": "not_addressed",
+            },
+        )
+        self.assertIn("还未唤醒", self.c.last_status)
+        self.assertIn("请先说", self.c.last_status)
+        self.assertFalse(self.posts())
+        self.c.handle_audio_event(
+            "audio.status",
+            {
+                "listening": True,
+                "wake_required": False,
+                "wake_word": "贾维斯",
+                "message": "正在聆听，说完后会自动发送。",
+            },
+        )
+        self.assertEqual(self.c.tile.caption, "正在聆听")
+        self.assertNotIn("先说", window.input.placeholderText())
+        self.speech("final", "继续安排任务", "after-waking")
+        self.assertEqual(self.posts()[-1][2]["message"], "继续安排任务")
+
     def test_partial_in_input_then_final_auto_sends_once_with_same_session(self):
         window = self.c._ensure_results()
         window.input.setPlainText("尚未发送的手写草稿")

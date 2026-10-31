@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections import deque
 import math
 from pathlib import Path
+import sys
 
 from PySide6.QtCore import QEvent, QRect, QSize, Qt, QUrl, Signal
 from PySide6.QtGui import (
@@ -166,12 +167,18 @@ def _format_size(value) -> str:
 class VoiceTile(QWidget):
     """Compact voice bar, painted only when input or state actually changes."""
 
-    def __init__(self, controller):
+    def __init__(self, controller, *, always_on_top=True):
+        window_type = (
+            Qt.WindowType.Window
+            if sys.platform == "darwin" and not always_on_top
+            else Qt.WindowType.Tool
+        )
+        flags = window_type | Qt.WindowType.FramelessWindowHint
+        if always_on_top:
+            flags |= Qt.WindowType.WindowStaysOnTopHint
         super().__init__(
             None,
-            Qt.WindowType.Tool
-            | Qt.WindowType.FramelessWindowHint
-            | Qt.WindowType.WindowStaysOnTopHint,
+            flags,
         )
         self.controller = controller
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -264,6 +271,36 @@ class VoiceTile(QWidget):
             self.move(
                 area.right() - self.width() - 20, area.bottom() - self.height() - 20
             )
+
+    def set_always_on_top(self, enabled: bool):
+        enabled = bool(enabled)
+        flags = self.windowFlags()
+        if sys.platform == "darwin":
+            # Qt.Tool is an NSPanel on macOS and floats above normal windows
+            # even without WindowStaysOnTopHint. Opt out of that native type.
+            flags = (flags & ~Qt.WindowType.WindowType_Mask) | (
+                Qt.WindowType.Tool if enabled else Qt.WindowType.Window
+            )
+        if enabled:
+            flags |= Qt.WindowType.WindowStaysOnTopHint
+        else:
+            flags &= ~Qt.WindowType.WindowStaysOnTopHint
+        if flags == self.windowFlags():
+            return
+        geometry = self.geometry()
+        visible = self.isVisible()
+        without_activation = self.testAttribute(
+            Qt.WidgetAttribute.WA_ShowWithoutActivating
+        )
+        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
+        self.setWindowFlags(flags)
+        self.setGeometry(geometry)
+        if visible:
+            self.show()
+            self.setGeometry(geometry)
+        self.setAttribute(
+            Qt.WidgetAttribute.WA_ShowWithoutActivating, without_activation
+        )
 
     def _redraw_if_visible(self):
         if self.isVisible():
@@ -791,6 +828,12 @@ class ResultsWindow(QMainWindow):
         self.artifacts_area.hide()
         surface_layout.addWidget(self.artifacts_area)
         report_layout.addWidget(surface, 1)
+        from .run_tools_ui import RunToolsWidget
+
+        self.tool_calls = RunToolsWidget()
+        self.tool_calls.page_requested.connect(controller.load_run_steps)
+        self.tool_calls.detail_requested.connect(controller.load_run_step_detail)
+        report_layout.addWidget(self.tool_calls)
         self.events_toggle = QPushButton("查看执行记录")
         self.events_toggle.setObjectName("quiet")
         self.events_toggle.setAccessibleName("展开或收起执行记录")
@@ -874,6 +917,7 @@ class ResultsWindow(QMainWindow):
 
     def reset_conversation(self):
         self.task_id = None
+        self.tool_calls.bind_task({})
         self.tasks.clear()
         self.title.setText("把下一件事交给 JARVIS")
         self.task_state.setText("新对话 · 等待你的第一句话")
@@ -961,6 +1005,7 @@ class ResultsWindow(QMainWindow):
         incoming_id = task.get("task_id", task.get("id"))
         changed = incoming_id != self.task_id
         self.task_id = incoming_id
+        self.tool_calls.bind_task(task)
         # Details may arrive after the session's run list. Keep its selection
         # aligned without dispatching a second fetch through selection signals.
         current = self.tasks.currentItem()
@@ -1197,6 +1242,7 @@ class ResultsWindow(QMainWindow):
         task_id = envelope.get("task_id")
         if task_id and self.task_id and task_id != self.task_id:
             return
+        self.tool_calls.append_event(envelope)
         event_id = envelope.get("event_id")
         if event_id is not None and event_id in self._event_ids:
             return
@@ -1289,7 +1335,7 @@ class SettingsDialog(QDialog):
         heading.setObjectName("heading")
         layout.addWidget(heading)
         description = QLabel(
-            "设置保存到本机。服务配置需要重新启动本地服务后生效；执行中的任务结束后再应用。"
+            "设置保存到本机。界面选项立即生效；模型和语音配置在现有任务、播报结束后应用。"
         )
         description.setWordWrap(True)
         description.setObjectName("muted")
@@ -1365,6 +1411,11 @@ class SettingsDialog(QDialog):
         self.fullscreen = QCheckBox("任务结束后自动最大化展示结果")
         self.fullscreen.setChecked(bool(preferences.get("UI_AUTO_FULLSCREEN", True)))
         form.addRow("结果窗口", self.fullscreen)
+        self.always_on_top = QCheckBox("桌面语音条始终置顶")
+        self.always_on_top.setChecked(
+            bool(preferences.get("UI_TILE_ALWAYS_ON_TOP", True))
+        )
+        form.addRow("桌面语音条", self.always_on_top)
         content_layout.addLayout(form)
         content_layout.addStretch(1)
         hint = QLabel(
@@ -1489,4 +1540,5 @@ class SettingsDialog(QDialog):
         result.update({key: field.text().strip() for key, field in self.fields.items()})
         result["UI_SPEECH_ENABLED"] = self.speech.isChecked()
         result["UI_AUTO_FULLSCREEN"] = self.fullscreen.isChecked()
+        result["UI_TILE_ALWAYS_ON_TOP"] = self.always_on_top.isChecked()
         return result

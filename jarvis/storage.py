@@ -62,6 +62,7 @@ class Store:
                     created_at TEXT NOT NULL, updated_at TEXT NOT NULL
                 );
                 CREATE INDEX IF NOT EXISTS steps_task_id ON steps(task_id, created_at);
+                CREATE INDEX IF NOT EXISTS steps_task_sequence ON steps(task_id);
                 CREATE TABLE IF NOT EXISTS artifacts (
                     artifact_id TEXT PRIMARY KEY, task_id TEXT NOT NULL, path TEXT NOT NULL,
                     size INTEGER NOT NULL, media_type TEXT NOT NULL, created_at TEXT NOT NULL,
@@ -575,10 +576,17 @@ class Store:
             args.append(max(1, min(limit, 500)))
             return [self._event(row) for row in db.execute(query, args)]
 
-    def recent_events(self, task_id: str, limit: int = 100) -> list[dict]:
+    def recent_events(
+        self, task_id: str, limit: int = 100, *, summary=False
+    ) -> list[dict]:
         with self._connection() as db:
+            fields = (
+                "event_id,task_id,step_id,timestamp,type,session_id,json_object('name',json_extract(data,'$.name'),'status',json_extract(data,'$.status'),'message',substr(json_extract(data,'$.message'),1,500),'elapsed_seconds',json_extract(data,'$.elapsed_seconds')) AS data"
+                if summary
+                else "*"
+            )
             rows = db.execute(
-                "SELECT * FROM events WHERE task_id=? ORDER BY event_id DESC LIMIT ?",
+                f"SELECT {fields} FROM events WHERE task_id=? ORDER BY event_id DESC LIMIT ?",
                 (task_id, max(1, min(limit, 500))),
             ).fetchall()
             return [self._event(row) for row in reversed(rows)]
@@ -626,20 +634,84 @@ class Store:
                 step_id,
             )
 
-    def list_steps(self, task_id: str) -> list[dict]:
+    @staticmethod
+    def _step(row):
+        if row is None:
+            return None
+        item = dict(row)
+        item["arguments"] = json.loads(item["arguments"])
+        item["result"] = (
+            json.loads(item["result"]) if item["result"] is not None else None
+        )
+        return item
+
+    def get_step(self, task_id: str, step_id: str) -> dict | None:
         with self._connection() as db:
-            result = []
-            for row in db.execute(
-                "SELECT * FROM steps WHERE task_id=? ORDER BY created_at,step_id LIMIT 200",
-                (task_id,),
-            ):
-                item = dict(row)
-                item["arguments"] = json.loads(item["arguments"])
-                item["result"] = (
-                    json.loads(item["result"]) if item["result"] is not None else None
+            return self._step(
+                db.execute(
+                    "SELECT rowid AS sequence,* FROM steps WHERE task_id=? AND step_id=?",
+                    (task_id, step_id),
+                ).fetchone()
+            )
+
+    def step_summaries(self, task_id: str) -> list[dict]:
+        """Complete audit facts, without loading tool arguments or output JSON."""
+        with self._connection() as db:
+            return [
+                dict(row)
+                for row in db.execute(
+                    "SELECT step_id,status FROM steps WHERE task_id=? ORDER BY rowid",
+                    (task_id,),
                 )
-                result.append(item)
-            return result
+            ]
+
+    def step_counts(self, task_id: str) -> dict:
+        with self._connection() as db:
+            return {
+                row["status"]: row["count"]
+                for row in db.execute(
+                    "SELECT status,COUNT(*) AS count FROM steps WHERE task_id=? GROUP BY status",
+                    (task_id,),
+                )
+            }
+
+    def step_page(self, task_id: str, offset: int = 0, limit: int = 100) -> dict:
+        offset, limit = max(0, offset), max(1, min(200, limit))
+        with self._connection() as db:
+            db.execute("BEGIN")
+            total = db.execute(
+                "SELECT COUNT(*) FROM steps WHERE task_id=?", (task_id,)
+            ).fetchone()[0]
+            steps = [
+                dict(row)
+                for row in db.execute(
+                    "SELECT rowid AS sequence,step_id,task_id,name,status,created_at,updated_at FROM steps WHERE task_id=? ORDER BY rowid LIMIT ? OFFSET ?",
+                    (task_id, limit, offset),
+                )
+            ]
+            snapshot_event_id = db.execute(
+                "SELECT COALESCE(MAX(event_id),0) FROM events WHERE task_id=?",
+                (task_id,),
+            ).fetchone()[0]
+        return {
+            "steps": steps,
+            "offset": offset,
+            "limit": limit,
+            "total": total,
+            "has_more": offset + len(steps) < total,
+            "snapshot_event_id": snapshot_event_id,
+        }
+
+    def list_steps(self, task_id: str) -> list[dict]:
+        """Legacy detailed first page; execution decisions use step_summaries."""
+        with self._connection() as db:
+            return [
+                self._step(row)
+                for row in db.execute(
+                    "SELECT * FROM steps WHERE task_id=? ORDER BY rowid LIMIT 200",
+                    (task_id,),
+                )
+            ]
 
     @staticmethod
     def _artifact(row):
