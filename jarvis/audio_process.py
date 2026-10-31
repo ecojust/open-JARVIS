@@ -7,6 +7,7 @@ model diagnostics go to stderr, including writes directly to file descriptor 1.
 from __future__ import annotations
 
 import json
+import math
 import os
 import sys
 import threading
@@ -35,6 +36,7 @@ class AudioController:
         self._resume_generation = 0
         self._followup_generation = 0
         self._resume_timer = None
+        self._last_level = {"level": 0.0, "speech": False, "listening": False}
         self.echo_seconds = max(0, echo_seconds)
         inference_lock = threading.Lock()
         self.voice = voice_factory(self._voice_event, inference_lock=inference_lock)
@@ -56,7 +58,19 @@ class AudioController:
             or self._closed
         )
         self.voice.set_paused(paused)
+        if paused:
+            self._send_level(listening=False)
         return paused
+
+    def _send_level(self, *, level=0.0, speech=False, listening=False):
+        """A tiny transient snapshot; silence produces no repeated IPC traffic."""
+        if not listening or not speech:
+            level, speech = 0.0, False
+        payload = {"level": level, "speech": speech, "listening": listening}
+        if level == 0 and payload == self._last_level:
+            return
+        self._last_level = payload
+        self._send("audio.level", **payload)
 
     def _listening_message(self):
         if self._user_paused:
@@ -69,11 +83,32 @@ class AudioController:
         with self._lock:
             if self._closed:
                 return
-            if name == "transcript":
+            if name == "level":
+                generation = data.get("generation")
+                current = getattr(self.voice, "capture_generation", generation)
+                if generation != current:
+                    return
+                listening = (
+                    self._voice_ready
+                    and data.get("listening") is True
+                    and not self._update_pause()
+                )
+                level = data.get("level", 0.0)
+                if type(level) not in (int, float) or (
+                    type(level) is float and not math.isfinite(level)
+                ):
+                    level = 0.0
+                self._send_level(
+                    level=max(0.0, min(1.0, level)),
+                    speech=data.get("speech") is True and level > 0,
+                    listening=listening,
+                )
+            elif name == "transcript":
                 if not self._update_pause():
                     self._send("stt.final", text=data["text"])
             elif name == "error":
                 self._voice_ready = False
+                self._send_level(listening=False)
                 self._send(
                     "audio.error",
                     component="stt",

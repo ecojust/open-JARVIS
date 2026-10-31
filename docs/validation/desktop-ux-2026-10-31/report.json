@@ -1,0 +1,21 @@
+{
+  "microphone_tested": false,
+  "speaker_tested": false,
+  "macos_spaces_tested": false,
+  "waveform_source": "actual PCM decoded from committed Kokoro narration",
+  "model_download_test": "real GUI buttons / real worker processes / existing weight hashes; no new network download",
+  "checks": {
+    "bar_only_on_start": true,
+    "real_pcm_vad_wave_and_reset": true,
+    "settings_model_button": true,
+    "verified_models_defer_reload_until_idle": true,
+    "real_backend_result_maximized_not_fullscreen": true,
+    "model_reload_requested_after_idle": true
+  },
+  "bar_size": [
+    320,
+    72
+  ],
+  "meter_event_count": 45,
+  "passed": true
+}

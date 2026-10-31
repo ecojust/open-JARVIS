@@ -7,12 +7,14 @@ belong to the controller; these widgets render bounded snapshots.
 from __future__ import annotations
 
 from collections import deque
+import math
 from pathlib import Path
 
-from PySide6.QtCore import QRect, QSize, Qt, QUrl, Signal
+from PySide6.QtCore import QEvent, QRect, QSize, Qt, QUrl, Signal
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
+    QIcon,
     QKeySequence,
     QPainter,
     QPen,
@@ -116,7 +118,7 @@ def _format_size(value) -> str:
 
 
 class VoiceTile(QWidget):
-    """Small static native window. Logo decoded/scaled once, not per frame."""
+    """Compact voice bar, painted only when input or state actually changes."""
 
     def __init__(self, controller):
         super().__init__(
@@ -127,24 +129,48 @@ class VoiceTile(QWidget):
         )
         self.controller = controller
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(128, 128)
-        self.setAccessibleName("JARVIS 生肖羊语音方块")
+        self.setFixedSize(320, 72)
+        self.setAccessibleName("JARVIS 生肖羊语音条")
         self.setCursor(Qt.CursorShape.OpenHandCursor)
         self.setStyleSheet(STYLE)
         self.caption = "正在启动"
         self.detail = "正在准备本地助理"
         self.error = False
+        self.listening = False
+        self.audio_level = 0.0
+        self._levels = deque([0.0] * 24, maxlen=24)
         self._drag_offset = None
         self._drag_start = None
         self._dragged = False
         ratio = max(1.0, self.devicePixelRatioF())
         pixmap = QPixmap(str(_asset("assets/branding/open-jarvis-sheep.png")))
         self.logo = pixmap.scaled(
-            QSize(round(96 * ratio), round(96 * ratio)),
+            QSize(round(56 * ratio), round(56 * ratio)),
             Qt.AspectRatioMode.KeepAspectRatio,
             Qt.TransformationMode.SmoothTransformation,
         )
         self.logo.setDevicePixelRatio(ratio)
+        self.expand_button = QPushButton(self)
+        icon = QPixmap(round(20 * ratio), round(20 * ratio))
+        icon.fill(Qt.GlobalColor.transparent)
+        icon.setDevicePixelRatio(ratio)
+        arrow = QPainter(icon)
+        arrow.setRenderHint(QPainter.RenderHint.Antialiasing)
+        arrow.setPen(QPen(QColor("#dce9fa"), 1.8))
+        arrow.drawLine(4, 16, 16, 4)
+        arrow.drawLine(8, 4, 16, 4)
+        arrow.drawLine(16, 4, 16, 12)
+        arrow.end()
+        self.expand_button.setIcon(QIcon(icon))
+        self.expand_button.setIconSize(QSize(20, 20))
+        self.expand_button.setGeometry(260, 14, 48, 44)
+        self.expand_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.expand_button.setAccessibleName("展开 JARVIS 任务与结果")
+        self.expand_button.setToolTip("查看任务与结果")
+        self.expand_button.setStyleSheet("QPushButton { padding: 0; }")
+        self.expand_button.clicked.connect(controller.show_results)
+        self.expand_button.installEventFilter(self)
+        self.setToolTip(self.detail + "\n点击查看结果 · 拖动移动 · 右键更多操作")
         screen = QApplication.primaryScreen()
         if screen:
             area = screen.availableGeometry()
@@ -152,47 +178,103 @@ class VoiceTile(QWidget):
                 area.right() - self.width() - 20, area.bottom() - self.height() - 20
             )
 
+    def _redraw_if_visible(self):
+        if self.isVisible():
+            self.update()
+
     def set_state(self, caption: str, detail: str, *, error: bool = False):
         current = (caption, detail, error)
         if current == (self.caption, self.detail, self.error):
             return
         self.caption, self.detail, self.error = current
-        self.setToolTip(detail + "\n左键查看结果 · 拖动移动 · 右键更多操作")
-        self.update()
+        if error:
+            self.reset_audio_level()
+        self.setToolTip(detail + "\n点击查看结果 · 拖动移动 · 右键更多操作")
+        self._redraw_if_visible()
+
+    def set_listening(self, listening: bool):
+        """The controller supplies the real microphone state, not task status."""
+        listening = bool(listening)
+        if self.listening == listening:
+            return
+        self.listening = listening
+        if not listening:
+            self.reset_audio_level()
+        self._redraw_if_visible()
+
+    def set_audio_level(self, level: float, speech: bool = True):
+        """Append a real, normalized microphone level; no synthetic animation."""
+        try:
+            level = float(level)
+        except (TypeError, ValueError):
+            level = 0.0
+        if (
+            not math.isfinite(level)
+            or not speech
+            or not self.listening
+            or self.error
+            or not self.isVisible()
+        ):
+            level = 0.0
+        level = round(max(0.0, min(1.0, level)) * 32) / 32
+        if not level:
+            self.reset_audio_level()
+            return
+        before = tuple(self._levels)
+        self.audio_level = level
+        self._levels.append(level)
+        if tuple(self._levels) != before:
+            self._redraw_if_visible()
+
+    def reset_audio_level(self):
+        """Pause, silence, errors and hidden windows have a static baseline."""
+        if not self.audio_level and not any(self._levels):
+            return
+        self.audio_level = 0.0
+        self._levels.clear()
+        self._levels.extend([0.0] * 24)
+        self._redraw_if_visible()
+
+    def hideEvent(self, event):
+        self.reset_audio_level()
+        super().hideEvent(event)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setPen(QPen(QColor("#d99c4e" if self.error else "#335887"), 1))
         painter.setBrush(QColor(11, 20, 34, 246))
-        painter.drawRoundedRect(1, 1, 126, 126, 17, 17)
+        painter.drawRoundedRect(1, 1, 318, 70, 16, 16)
         if not self.logo.isNull():
-            painter.drawPixmap(QRect(16, 6, 96, 96), self.logo)
+            painter.drawPixmap(QRect(8, 8, 56, 56), self.logo)
         else:
             painter.setPen(QColor("#b4cfff"))
-            painter.drawText(
-                QRect(16, 8, 96, 88), Qt.AlignmentFlag.AlignCenter, "JARVIS"
-            )
+            painter.drawText(QRect(8, 8, 56, 56), Qt.AlignmentFlag.AlignCenter, "J")
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor("#edb263" if self.error else "#5fa0ff"))
-        painter.drawEllipse(13, 108, 6, 6)
+        color = "#edb263" if self.error else "#5fa0ff" if self.listening else "#69809c"
+        painter.setBrush(QColor(color))
+        painter.drawEllipse(77, 17, 5, 5)
         painter.setPen(QColor("#dce9fa"))
         font = painter.font()
         font.setPointSize(9)
         painter.setFont(font)
         text = painter.fontMetrics().elidedText(
-            self.caption, Qt.TextElideMode.ElideRight, 94
+            self.caption, Qt.TextElideMode.ElideRight, 158
         )
-        painter.drawText(QRect(23, 100, 95, 22), Qt.AlignmentFlag.AlignVCenter, text)
+        painter.drawText(QRect(89, 9, 158, 22), Qt.AlignmentFlag.AlignVCenter, text)
+        painter.setPen(Qt.PenStyle.NoPen)
+        for index, level in enumerate(self._levels):
+            height = 2 + round(20 * level)
+            painter.setBrush(QColor("#72b4ff" if level else "#3c526e"))
+            painter.drawRoundedRect(77 + index * 7, 49 - height // 2, 3, height, 1, 1)
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self._drag_start = event.globalPosition().toPoint()
-            self._drag_offset = self._drag_start - self.pos()
-            self._dragged = False
-            self.setCursor(Qt.CursorShape.ClosedHandCursor)
+    def _begin_drag(self, event):
+        self._drag_start = event.globalPosition().toPoint()
+        self._drag_offset = self._drag_start - self.pos()
+        self._dragged = False
+        self.setCursor(Qt.CursorShape.ClosedHandCursor)
 
-    def mouseMoveEvent(self, event):
+    def _move_drag(self, event):
         if (
             self._drag_offset is not None
             and event.buttons() & Qt.MouseButton.LeftButton
@@ -204,17 +286,52 @@ class VoiceTile(QWidget):
                 self._dragged = True
             if self._dragged:
                 self.move(point - self._drag_offset)
+        return self._dragged
+
+    def _finish_drag(self):
+        click = self._drag_offset is not None and not self._dragged
+        moved = self._dragged
+        self._drag_offset = None
+        self._drag_start = None
+        self._dragged = False
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
+        if moved:
+            self.controller.save_tile_position(self.x(), self.y())
+        return click, moved
+
+    def eventFilter(self, watched, event):
+        if watched is self.expand_button:
+            kind = event.type()
+            if (
+                kind == QEvent.Type.MouseButtonPress
+                and event.button() == Qt.MouseButton.LeftButton
+            ):
+                self._begin_drag(event)
+            elif kind == QEvent.Type.MouseMove and self._move_drag(event):
+                self.expand_button.setDown(False)
+                return True
+            elif (
+                kind == QEvent.Type.MouseButtonRelease
+                and event.button() == Qt.MouseButton.LeftButton
+            ):
+                _, moved = self._finish_drag()
+                if moved:
+                    self.expand_button.setDown(False)
+                    return True
+        return super().eventFilter(watched, event)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._begin_drag(event)
+
+    def mouseMoveEvent(self, event):
+        self._move_drag(event)
 
     def mouseReleaseEvent(self, event):
         if event.button() != Qt.MouseButton.LeftButton:
             return
-        click = self._drag_offset is not None and not self._dragged
-        moved = self._dragged
-        self._drag_offset = None
-        self.setCursor(Qt.CursorShape.OpenHandCursor)
-        if moved:
-            self.controller.save_tile_position(self.x(), self.y())
-        elif click:
+        click, _ = self._finish_drag()
+        if click:
             self.controller.show_results()
 
     def contextMenuEvent(self, event):
@@ -232,6 +349,7 @@ class VoiceTile(QWidget):
         menu.addSeparator()
         menu.addAction("查看任务与结果", self.controller.show_results)
         menu.addAction("设置", self.controller.show_settings)
+        menu.addAction("语音模型管理", self.controller.show_models)
         models = menu.addMenu("下载语音模型")
         models.addAction(
             "SenseVoice 语音识别", lambda: self.controller.download_model("stt")
@@ -708,7 +826,11 @@ class ResultsWindow(QMainWindow):
             self._sync_events()
 
     def show_result(self):
-        self.showFullScreen()
+        # Native maximization keeps macOS in the current desktop Space.
+        # Never request Qt's full-screen state when opening a result.
+        if self.isFullScreen():
+            self.showNormal()
+        self.showMaximized()
         self.raise_()
         self.activateWindow()
 
@@ -719,6 +841,8 @@ class ResultsWindow(QMainWindow):
 
 class SettingsDialog(QDialog):
     """Settings are passed back to controller; this widget does not save secrets."""
+
+    models_requested = Signal()
 
     def __init__(self, preferences: dict, parent=None):
         super().__init__(parent)
@@ -775,13 +899,16 @@ class SettingsDialog(QDialog):
         self.speech = QCheckBox("朗读任务结果")
         self.speech.setChecked(bool(preferences.get("UI_SPEECH_ENABLED", True)))
         form.addRow("语音反馈", self.speech)
-        self.fullscreen = QCheckBox("任务结束后自动全屏展示结果")
+        self.fullscreen = QCheckBox("任务结束后自动最大化展示结果")
         self.fullscreen.setChecked(bool(preferences.get("UI_AUTO_FULLSCREEN", True)))
         form.addRow("结果窗口", self.fullscreen)
         layout.addLayout(form)
+        self.models_button = QPushButton("下载与管理语音模型")
+        self.models_button.clicked.connect(self.models_requested.emit)
+        layout.addWidget(self.models_button)
         layout.addStretch(1)
         hint = QLabel(
-            "本地识别使用 SenseVoice，中文播报使用 Kokoro。可在语音方块右键菜单中下载模型。"
+            "本地识别使用 SenseVoice，中文播报使用 Kokoro。点击上方按钮下载安装，完成后自动加载。"
         )
         hint.setWordWrap(True)
         hint.setObjectName("muted")

@@ -416,6 +416,7 @@ class DesktopController(QObject):
         self.errors = {}
         self.results = None
         self.settings_dialog = None
+        self.model_dialog = None
         self.client = None
         self.token = ""
         self.instance_id = ""
@@ -427,6 +428,8 @@ class DesktopController(QObject):
         self._start_time = 0.0
         self._last_task_refresh = 0.0
         self._downloads = {}
+        self._model_states = {}
+        self._download_cancelled = set()
         self._preview_generation = 0
         self._media_directory = None
         self._media_paths = {}
@@ -712,6 +715,21 @@ class DesktopController(QObject):
 
     def handle_audio_event(self, event, data):
         if self.closing:
+            return
+        if event == "audio.level":
+            receiving = (
+                self.listening
+                and bool(data.get("listening"))
+                and not self.user_paused
+                and not self.speaking
+                and not any(
+                    key in self.errors for key in ("audio", "stt", "microphone")
+                )
+            )
+            self.tile.set_listening(receiving)
+            self.tile.set_audio_level(
+                data.get("level", 0.0), speech=receiving and bool(data.get("speech"))
+            )
             return
         if event == "audio.ready":
             self.listening = bool(data.get("listening", True))
@@ -1189,6 +1207,12 @@ class DesktopController(QObject):
         else:
             caption = "准备语音"
         self.tile.set_state(caption, self._status_text(), error=bool(self.errors))
+        self.tile.set_listening(
+            self.listening
+            and not self.user_paused
+            and not self.speaking
+            and not any(key in self.errors for key in ("audio", "stt", "microphone"))
+        )
 
     def cancel_task(self, task_id):
         if task_id and self.ready:
@@ -1393,6 +1417,7 @@ class DesktopController(QObject):
             self.results if self.results and self.results.isVisible() else self.tile,
         )
         self.settings_dialog = dialog
+        dialog.models_requested.connect(self.show_models)
         dialog.finished.connect(lambda result: self._settings_finished(dialog, result))
         dialog.open()
 
@@ -1467,50 +1492,166 @@ class DesktopController(QObject):
         self._playback_id = None
         self.start_backend()
 
+    def _model_status(self, kind):
+        from .model_catalog import model_status
+
+        try:
+            status = model_status(kind)
+            return {**status, "phase": status.get("state", "missing")}
+        except (OSError, ValueError) as exc:
+            return {"phase": "incompatible", "message": str(exc)[:500]}
+
+    def _set_model_state(self, model_kind, **values):
+        self._model_states.setdefault(model_kind, {}).update(values)
+        if self.model_dialog:
+            self.model_dialog.update_model(model_kind, self._model_states[model_kind])
+
+    def show_models(self):
+        from .model_manager_ui import ModelManagerDialog
+
+        if self.closing:
+            return
+        if not self.model_dialog:
+            # The bar lives for the whole application; a settings/results
+            # window may be discarded while a download is still running.
+            self.model_dialog = ModelManagerDialog(self.tile)
+            self.model_dialog.download_requested.connect(self.download_model)
+            self.model_dialog.cancel_requested.connect(self.cancel_model_download)
+            self.model_dialog.finished.connect(self._models_closed)
+        for kind in ("stt", "tts"):
+            if kind not in self._downloads:
+                # Metadata and file sizes only; expensive verification belongs
+                # to the separate installer process, never the GUI thread.
+                self._set_model_state(kind, **self._model_status(kind))
+            self.model_dialog.update_model(kind, self._model_states[kind])
+        self.model_dialog.show()
+        self.model_dialog.raise_()
+        self.model_dialog.activateWindow()
+
+    def _models_closed(self, result):
+        dialog, self.model_dialog = self.model_dialog, None
+        if dialog:
+            dialog.deleteLater()
+
+    def cancel_model_download(self, kind):
+        process = self._downloads.get(kind)
+        if process is None:
+            return
+        self._download_cancelled.add(kind)
+        self._set_model_state(kind, phase="cancelling", message="正在停止下载…")
+        process.terminate()
+
+        def force_stop():
+            if (
+                self._downloads.get(kind) is process
+                and process.state() != QProcess.ProcessState.NotRunning
+            ):
+                process.kill()
+
+        QTimer.singleShot(1500, force_stop)
+
     def download_model(self, kind):
-        if kind not in {"stt", "tts"} or kind in self._downloads:
+        if kind not in {"stt", "tts"} or self.closing:
+            return
+        self.show_models()
+        if kind in self._downloads:
             return
         process = self._process_factory(self)
         self._downloads[kind] = process
-        process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
+        self._download_cancelled.discard(kind)
+        self.errors.pop("download." + kind, None)
+        process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
         output = bytearray()
+        outcome = {"completed": False, "error": ""}
+        self._set_model_state(
+            kind, phase="checking", message="正在检查已下载模型…", completed_bytes=0
+        )
 
         def progress():
+            if self._downloads.get(kind) is not process:
+                process.readAllStandardOutput()
+                return
             output.extend(bytes(process.readAllStandardOutput()))
-            if len(output) > 6000:
-                del output[:-6000]
-            lines = output.decode("utf-8", errors="replace").strip().splitlines()
-            if lines:
-                self.notify("语音模型下载：" + lines[-1][:500])
+            if len(output) > 256 * 1024:
+                output.clear()
+                outcome["error"] = "下载进程返回了异常数据，请重试。"
+                self.cancel_model_download(kind)
+                return
+            while b"\n" in output:
+                line, _, rest = output.partition(b"\n")
+                output[:] = rest
+                try:
+                    item = json.loads(line)
+                    data = item.get("data", {})
+                    event = item.get("event")
+                    if not isinstance(data, dict) or data.get("kind") != kind:
+                        continue
+                except (ValueError, AttributeError, UnicodeError):
+                    continue
+                if kind in self._download_cancelled or self.closing:
+                    continue
+                if event == "download.completed":
+                    outcome["completed"] = True
+                    # Do not enable a second install until this process exits.
+                    self._set_model_state(kind, **{**data, "phase": "installing"})
+                elif event == "download.error":
+                    outcome["error"] = str(data.get("message", "下载失败"))[:800]
+                elif event == "download.progress":
+                    self._set_model_state(kind, **data)
 
         def finished(code, status):
+            if self._downloads.get(kind) is not process:
+                return
             progress()
             self._downloads.pop(kind, None)
             process.deleteLater()
+            cancelled = kind in self._download_cancelled
+            self._download_cancelled.discard(kind)
             if self.closing:
                 return
-            if code != 0:
-                self.notify(
-                    "语音模型下载失败，请检查网络或在设置中指定已下载的模型目录。",
-                    "download",
+            if cancelled:
+                self._set_model_state(
+                    kind,
+                    phase="cancelled",
+                    message="下载已取消，可点击重试。已有模型仍保留。",
                 )
+                self._maybe_apply_settings()
                 return
-            self.errors.pop("download", None)
-            self.notify("语音模型已安装，正在等待当前任务结束后重新加载。")
+            checked = self._model_status(kind)
+            if code != 0 or not outcome["completed"] or checked["phase"] != "ready":
+                message = (
+                    outcome["error"]
+                    or (checked.get("message") if checked["phase"] != "ready" else None)
+                    or "模型下载未完成，请检查网络后点击重试。"
+                )
+                self._set_model_state(kind, phase="failed", message=message)
+                self.notify(message, "download." + kind)
+                self._maybe_apply_settings()
+                return
+            self._set_model_state(kind, **checked)
+            self.errors.pop("download." + kind, None)
+            self.notify("语音模型已就绪，当前任务结束后会自动加载。")
             self.pending_settings = True
             self._maybe_apply_settings()
 
         process.readyReadStandardOutput.connect(progress)
+        # Native libraries may log to stderr; drain it without leaking paths or
+        # allowing unbounded QProcess buffering. UI uses structured messages.
+        process.readyReadStandardError.connect(lambda: process.readAllStandardError())
         process.finished.connect(finished)
 
         def start_error(reason):
-            if reason == QProcess.ProcessError.FailedToStart:
+            if (
+                reason == QProcess.ProcessError.FailedToStart
+                and self._downloads.get(kind) is process
+            ):
                 self._downloads.pop(kind, None)
                 process.deleteLater()
-            self.notify("无法启动模型下载进程，请检查运行依赖。", "download")
+                message = "无法启动模型下载，请重新安装最新版客户端后重试。"
+                self._set_model_state(kind, phase="failed", message=message)
+                self.notify(message, "download." + kind)
 
         process.errorOccurred.connect(start_error)
-        self.notify("正在下载语音模型，可继续使用文字任务。")
         self._launch(process, "download-stt" if kind == "stt" else "download-tts")
 
     def request_quit(self):
@@ -1548,6 +1689,8 @@ class DesktopController(QObject):
                 process.waitForFinished(300)
         if self.results:
             self.results.hide()
+        if self.model_dialog:
+            self.model_dialog.close()
         self.tile.hide()
         if self._media_directory is not None:
             self._media_directory.cleanup()

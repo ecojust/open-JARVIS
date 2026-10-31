@@ -4,7 +4,6 @@ import argparse
 import hashlib
 import shutil
 import tarfile
-import tempfile
 from pathlib import Path, PurePosixPath
 
 import httpx
@@ -31,10 +30,9 @@ REQUIRED_FILES = (
 
 
 def model_ready(directory: Path) -> bool:
-    return all(
-        (directory / name).is_file() and (directory / name).stat().st_size > 0
-        for name in REQUIRED_FILES
-    )
+    from .model_catalog import inspect_directory
+
+    return inspect_directory("tts", Path(directory))["state"] == "ready"
 
 
 def verify_archive(archive: Path) -> None:
@@ -92,55 +90,106 @@ def safe_extract(archive: Path, destination: Path) -> Path:
     return destination / MODEL_NAME
 
 
-def download(directory: Path, archive: Path | None = None) -> None:
-    directory = directory.resolve()
-    if model_ready(directory):
-        print(f"Kokoro 模型已存在：{directory}", flush=True)
-        return
-    if directory.exists() and any(directory.iterdir()):
-        raise ValueError(
-            f"{directory} 已有不完整的文件。请移走旧文件或使用其他模型目录"
-        )
-    directory.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(
-        prefix=".jarvis-kokoro-", dir=directory.parent
-    ) as temporary:
-        temporary = Path(temporary)
-        if archive is None:
-            archive = temporary / "model.tar.bz2"
-            print("正在下载 Kokoro v1.1 多语言语音模型（约 348 MiB）…", flush=True)
-            with httpx.Client(
-                follow_redirects=True, timeout=httpx.Timeout(90, connect=30)
-            ) as client:
-                with client.stream("GET", MODEL_URL) as response:
-                    response.raise_for_status()
-                    size = 0
-                    previous = -1
-                    with archive.open("wb") as output:
-                        for chunk in response.iter_bytes(1024 * 1024):
-                            size += len(chunk)
-                            if size > MODEL_SIZE + 1024:
-                                raise ValueError("模型压缩包大小异常")
-                            output.write(chunk)
-                            progress = size // (20 * 1024 * 1024)
-                            if progress != previous:
-                                print(
-                                    f"  {size / 1024 / 1024:.0f} / 348 MiB", flush=True
+def download(directory: Path, archive: Path | None = None, *, progress=None) -> None:
+    from .model_catalog import (
+        MANIFEST_NAME,
+        Progress,
+        inspect_directory,
+        installation_lock,
+        publish_directory,
+        staging_directory,
+        verify_installed,
+        write_manifest,
+    )
+
+    directory = Path(directory).resolve()
+    report = Progress("tts", directory, progress)
+    try:
+        with installation_lock(directory):
+            report("checking", message="正在检查中文播报模型", force=True)
+            status = inspect_directory("tts", directory)
+            if status["state"] == "incompatible":
+                raise ValueError(status["message"])
+            if status["state"] == "ready" and verify_installed(
+                "tts", directory, report
+            ):
+                if not (directory / MANIFEST_NAME).is_file():
+                    write_manifest(
+                        "tts",
+                        directory,
+                        provenance="legacy-local-import",
+                        progress=report,
+                        revision=status["version"],
+                    )
+                report(
+                    "ready",
+                    completed_bytes=MODEL_SIZE,
+                    total_bytes=MODEL_SIZE,
+                    message=status["message"],
+                    verification="legacy-local-import"
+                    if status["verification"] == "legacy-compatible"
+                    else status["verification"],
+                    force=True,
+                )
+                return
+            with staging_directory(directory, "tts") as temporary:
+                temporary = Path(temporary)
+                if archive is None:
+                    archive = temporary / "model.tar.bz2"
+                    with httpx.Client(
+                        follow_redirects=True, timeout=httpx.Timeout(90, connect=30)
+                    ) as client:
+                        with client.stream("GET", MODEL_URL) as response:
+                            response.raise_for_status()
+                            size = 0
+                            with archive.open("xb") as output:
+                                for chunk in response.iter_bytes(1024 * 1024):
+                                    size += len(chunk)
+                                    if size > MODEL_SIZE:
+                                        raise ValueError("模型压缩包大小异常")
+                                    output.write(chunk)
+                                    report(
+                                        "downloading",
+                                        completed_bytes=size,
+                                        total_bytes=MODEL_SIZE,
+                                        message="正在下载中文播报模型",
+                                    )
+                            if size != MODEL_SIZE:
+                                raise ValueError(
+                                    "模型压缩包未下载完整，请在模型管理中重试。"
                                 )
-                                previous = progress
-        print("正在校验模型并解压…", flush=True)
-        verify_archive(archive)
-        unpacked = safe_extract(archive, temporary / "unpacked")
-        if not model_ready(unpacked):
-            raise ValueError("模型压缩包缺少必要文件")
-        if directory.exists():
-            directory.rmdir()  # Only an empty destination may be replaced.
-        unpacked.rename(directory)
-    print(f"本地语音模型就绪：{directory}", flush=True)
+                archive = Path(archive)
+                report("verifying", message="正在校验官方模型压缩包", force=True)
+                verify_archive(archive)
+                report("installing", message="正在解压模型", force=True)
+                unpacked = safe_extract(archive, temporary / "unpacked")
+                if not model_ready(unpacked):
+                    raise ValueError("模型压缩包缺少必要文件")
+                write_manifest(
+                    "tts",
+                    unpacked,
+                    provenance="official-archive-sha256:" + MODEL_SHA256,
+                    progress=report,
+                )
+                report("installing", message="正在启用已校验模型", force=True)
+                backup = publish_directory(unpacked, directory)
+            report(
+                "ready",
+                completed_bytes=MODEL_SIZE,
+                total_bytes=MODEL_SIZE,
+                message="中文播报模型下载完成，已校验并保存",
+                force=True,
+                retained_directory=str(backup) if backup else None,
+                verification="official-archive-sha256",
+            )
+    except (httpx.HTTPError, OSError, ValueError, tarfile.TarError) as exc:
+        report("failed", message=str(exc), force=True)
+        raise
 
 
 def main() -> None:
-    from .paths import load_environment, model_dir
+    from .paths import load_environment
+    from .model_catalog import download_directory
 
     load_environment()
     parser = argparse.ArgumentParser(description="下载并校验 Kokoro v1.1 中文语音模型")
@@ -149,12 +198,12 @@ def main() -> None:
     )
     parser.add_argument("--directory", type=Path, help="模型安装目录")
     args = parser.parse_args()
-    directory = args.directory or model_dir("kokoro")
+    directory = args.directory or download_directory("tts")
     try:
         download(directory, args.archive)
     except (httpx.HTTPError, OSError, ValueError, tarfile.TarError) as exc:
         raise SystemExit(
-            f"语音模型安装失败：{exc}\n请重试 python -m jarvis.download_tts_model"
+            f"语音模型安装失败：{exc}。请在客户端模型管理中重试。"
         ) from exc
 
 

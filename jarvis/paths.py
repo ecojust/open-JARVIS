@@ -102,9 +102,16 @@ def model_dir(kind: str) -> Path:
     explicit = os.getenv(variable, "").strip()
     if explicit:
         base = user_data_dir() if getattr(sys, "frozen", False) else resource_root()
-        return _absolute(explicit, base)
-    # Reuse development downloads, but never put user data in an app bundle.
-    development = resource_root() / "models" / kind
-    if not getattr(sys, "frozen", False) and development.is_dir():
-        return development
-    return user_data_dir() / "models" / kind
+        from .model_catalog import recover_if_needed
+
+        selected = _absolute(explicit, base)
+        recover_if_needed(selected)
+        return selected
+    # Application updates keep model revisions in user data. Existing source
+    # and unversioned downloads remain readable without moving large weights.
+    from .model_catalog import select_default_directory
+
+    development = (
+        None if getattr(sys, "frozen", False) else resource_root() / "models" / kind
+    )
+    return select_default_directory(kind, development)

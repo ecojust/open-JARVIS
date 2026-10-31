@@ -81,6 +81,70 @@ class AudioControllerTests(unittest.TestCase):
         self.addCleanup(controller.close)
         return controller, events, changed
 
+    def test_real_level_protocol_clears_on_pause_playback_error_and_drops_stale(self):
+        controller, events, resumed = self.make()
+        controller.voice.capture_generation = 0
+        controller.start()
+
+        def send_level(level=0.7, generation=0):
+            controller.voice.event(
+                "level",
+                {
+                    "level": level,
+                    "speech": True,
+                    "listening": True,
+                    "generation": generation,
+                },
+            )
+
+        send_level()
+        self.assertEqual(
+            events[-1],
+            ("audio.level", {"level": 0.7, "speech": True, "listening": True}),
+        )
+        controller.handle({"command": "pause"})
+        zeros = [data for name, data in events if name == "audio.level"]
+        self.assertEqual(zeros[-1], {"level": 0.0, "speech": False, "listening": False})
+        count = len(zeros)
+        send_level()
+        self.assertEqual(len([x for x in events if x[0] == "audio.level"]), count)
+
+        controller.handle({"command": "resume"})
+        controller.voice.capture_generation = 2
+        send_level(generation=0)
+        self.assertEqual(len([x for x in events if x[0] == "audio.level"]), count)
+        send_level(generation=2)
+        self.assertTrue(events[-1][1]["speech"])
+        controller.handle({"command": "speak", "text": "回复", "playback_id": "p"})
+        self.assertEqual([d for n, d in events if n == "audio.level"][-1]["level"], 0)
+        send_level(generation=2)
+        self.assertFalse([d for n, d in events if n == "audio.level"][-1]["listening"])
+        resumed.clear()
+        controller.tts.event("finished", {"playback_id": "p"})
+        self.assertTrue(resumed.wait(1))
+        send_level(generation=2)
+        self.assertTrue(events[-1][1]["speech"])
+        controller.voice.event("error", {"message": "input disconnected"})
+        self.assertEqual(
+            [d for n, d in events if n == "audio.level"][-1],
+            {"level": 0.0, "speech": False, "listening": False},
+        )
+        count = len(events)
+        controller.close()
+        send_level(generation=2)
+        self.assertEqual(len(events), count)
+
+    def test_invalid_level_values_never_leave_finite_protocol_range(self):
+        controller, events, _ = self.make()
+        controller.start()
+        for level in (float("nan"), float("inf"), "1", True, -1, 2, 10**500):
+            controller.voice.event(
+                "level", {"level": level, "speech": True, "listening": True}
+            )
+        levels = [data["level"] for name, data in events if name == "audio.level"]
+        self.assertTrue(levels)
+        self.assertTrue(all(0 <= level <= 1 for level in levels))
+
     def test_user_pause_survives_tts_completion_and_stale_finish_cannot_resume(self):
         controller, events, resumed = self.make()
         controller.start()

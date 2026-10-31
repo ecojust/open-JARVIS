@@ -124,7 +124,9 @@ def _font_self_test() -> dict:
 
         resource = "assets/fonts/NotoSansSC-Regular.otf"
         font_path = asset_path(resource)
-        metadata = json.loads(asset_path("assets/fonts/source.json").read_text(encoding="utf-8"))
+        metadata = json.loads(
+            asset_path("assets/fonts/source.json").read_text(encoding="utf-8")
+        )
         digest = hashlib.sha256()
         with font_path.open("rb") as handle:
             for chunk in iter(lambda: handle.read(1024 * 1024), b""):
@@ -269,7 +271,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--port", type=int, default=None)
     parser.add_argument("--archive", help="使用已下载的 Kokoro 模型压缩包")
     arguments = parser.parse_args(argv)
-    from .paths import load_environment, model_dir
+    from .paths import load_environment
 
     load_environment()
     if arguments.role == "self-test":
@@ -299,15 +301,18 @@ def main(argv: list[str] | None = None) -> int:
         return audio_main() or 0
     if arguments.role == "download-stt":
         from .download_model import download
+        from .model_catalog import download_directory
 
-        download(model_dir("sensevoice"))
+        download(download_directory("stt"))
         return 0
     if arguments.role == "download-tts":
         from pathlib import Path
         from .download_tts_model import download
+        from .model_catalog import download_directory
 
         download(
-            model_dir("kokoro"), Path(arguments.archive) if arguments.archive else None
+            download_directory("tts"),
+            Path(arguments.archive) if arguments.archive else None,
         )
         return 0
     return 2

@@ -80,7 +80,7 @@ def build_tts_engine(directory: Path | str | None = None):
     directory = Path(directory)
     if not model_ready(directory):
         raise ValueError(
-            "缺少完整 Kokoro 模型。请运行 python -m jarvis.download_tts_model，或从方块右键菜单下载语音模型。"
+            "Kokoro 语音模型缺失或不兼容。请打开客户端「设置 → 下载与管理语音模型」下载或校验。"
         )
     import sherpa_onnx
 

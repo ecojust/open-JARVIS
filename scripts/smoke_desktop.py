@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Repeatable native desktop → real backend → SSE → file → fullscreen smoke.
+"""Repeatable native desktop → real backend → SSE → file → maximized smoke.
 
 Run ``python scripts/smoke_desktop.py`` after installing desktop requirements.
 The default Qt platform is offscreen so this can run on all three CI targets.
@@ -106,7 +106,7 @@ def _worker(directory: Path, port: int) -> int:
                 report["error"] = str(error)
             quitting_at = time.monotonic()
             quit_requests += 1
-            # Must work on the FIRST quit even when results are fullscreen.
+            # Must work on the FIRST quit even when results are maximized.
             controller.request_quit()
 
         def deadline():
@@ -158,13 +158,14 @@ def _worker(directory: Path, port: int) -> int:
                     assert controller.client.last_event_id > 0
                     assert controller.results is not None
                     assert controller.results.isVisible()
-                    assert controller.results.isFullScreen()
+                    assert controller.results.isMaximized()
+                    assert not controller.results.isFullScreen()
                     assert controller.results.task_id == observed_task
                     report["checks"].update(
                         {
                             "real_api_and_sse": True,
                             "real_file_created": True,
-                            "fullscreen_matching_result": True,
+                            "maximized_matching_result": True,
                             "no_webengine_loaded": not any(
                                 name.startswith("PySide6.QtWebEngine")
                                 for name in sys.modules
@@ -205,7 +206,7 @@ def _worker(directory: Path, port: int) -> int:
             "backend_identity_verified",
             "real_api_and_sse",
             "real_file_created",
-            "fullscreen_matching_result",
+            "maximized_matching_result",
             "no_webengine_loaded",
             "first_quit_exited",
             "owned_children_stopped",

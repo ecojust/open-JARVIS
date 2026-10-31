@@ -326,7 +326,7 @@ def worker(args):
         "checks": {},
         "limitations": [
             "Six explicit scripted plans exercise real tools; no language-model key is configured and free-form model planning is not verified.",
-            "Offscreen native Qt verifies fullscreen state and actual-file content previews, not physical monitor behavior or Office pixel-perfect rendering.",
+            "Offscreen native Qt verifies maximized state and actual-file content previews, not physical monitor behavior or Office pixel-perfect rendering.",
             "The schedule is an anonymous example with stated constraints; user-specific staffing rules were not supplied.",
             "The MP4 contains real local Kokoro narration; actual loudspeaker output and external-player launch are not part of this headless run.",
         ],
@@ -407,6 +407,9 @@ def worker(args):
             "mode": MODE,
             "elapsed_seconds": round(time.monotonic() - state["case_started"], 3),
             "visible": bool(window and window.isVisible()),
+            "maximized": bool(
+                window and window.isMaximized() and not window.isFullScreen()
+            ),
             "fullscreen": bool(window and window.isFullScreen()),
             "window_size": [window.width(), window.height()] if window else None,
             "screen_size": (
@@ -468,9 +471,10 @@ def worker(args):
             "preview_tab_selected": bool(
                 window and window.content_tabs.currentWidget() is window.preview
             ),
-            "fullscreen_matching_task": bool(
+            "maximized_matching_task": bool(
                 window
-                and window.isFullScreen()
+                and window.isMaximized()
+                and not window.isFullScreen()
                 and window.isVisible()
                 and window.task_id == task_id
             ),
@@ -621,7 +625,7 @@ def worker(args):
                             state["preview_ready_since"] = time.monotonic()
                         if time.monotonic() - state["preview_ready_since"] < 0.25:
                             # Let native layout/resize events settle so the
-                            # screenshot and fullscreen check see the final UI.
+                            # screenshot and maximized check see the final UI.
                             QTimer.singleShot(50, poll)
                             return
                         state["detail_pending"] = True

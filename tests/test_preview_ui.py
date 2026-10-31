@@ -79,14 +79,17 @@ class ArtifactPreviewTests(unittest.TestCase):
             **extra,
         }
 
-    def test_completion_automatically_previews_actual_artifact_in_fullscreen(self):
+    def test_completion_automatically_previews_actual_artifact_in_maximized_window(
+        self,
+    ):
         task = self.task("word", "国际形势", ".docx")
         task["artifacts"].append(
             {"artifact_id": "hidden", "path": "report.preview.json", "hidden": True}
         )
         self.controller._queue_notification(task)
         window = self.controller.results
-        self.assertTrue(window.isFullScreen())
+        self.assertTrue(window.isMaximized())
+        self.assertFalse(window.isFullScreen())
         self.assertEqual(window.content_tabs.currentWidget(), window.preview)
         request = next(
             call
@@ -336,7 +339,7 @@ class ArtifactPreviewTests(unittest.TestCase):
                     self.assertEqual(preview.notes.toPlainText(), "实际讲稿")
         preview.deleteLater()
 
-    def test_video_cover_and_many_long_artifacts_keep_small_screen_fullscreen(self):
+    def test_video_cover_and_many_long_artifacts_keep_small_screen_maximized(self):
         long_name = "最近金融趋势总结与宏观风险讲解用于发布B站的完整演示视频.mp4"
         task = self.task("video-small-screen", long_name[:-4], ".mp4")
         task["artifacts"] += [
@@ -352,7 +355,8 @@ class ArtifactPreviewTests(unittest.TestCase):
         self.controller._queue_notification(task)
         window = self.controller.results
         QTest.qWait(50)
-        self.assertTrue(window.isFullScreen())
+        self.assertTrue(window.isMaximized())
+        self.assertFalse(window.isFullScreen())
         screen_size = window.screen().geometry().size()
         image = QImage(960, 540, QImage.Format.Format_RGB32)
         image.fill(QColor("#173763"))
@@ -379,9 +383,10 @@ class ArtifactPreviewTests(unittest.TestCase):
             }
         )
         # Process the asynchronous layout pass after the real PNG is decoded;
-        # calling showFullScreen again here would hide the original regression.
+        # calling showMaximized again here would hide the original regression.
         QTest.qWait(250)
-        self.assertTrue(window.isFullScreen())
+        self.assertTrue(window.isMaximized())
+        self.assertFalse(window.isFullScreen())
         self.assertLessEqual(window.width(), screen_size.width())
         self.assertLessEqual(window.height(), screen_size.height())
         self.assertFalse(window.preview.poster.pixmap().isNull())

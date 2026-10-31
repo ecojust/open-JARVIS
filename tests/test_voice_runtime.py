@@ -1,11 +1,14 @@
 """Voice control tests without microphones, native packages, or model downloads."""
 
 import threading
+import struct
+from pathlib import Path
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
 from jarvis.voice_runtime import VoiceService, WakeWordGate
+from jarvis.audio_meter import SpeechMeter
 
 
 class WakeWordGateTests(unittest.TestCase):
@@ -63,6 +66,124 @@ class _FakeSamples:
 
 
 class VoiceServiceTests(unittest.TestCase):
+    def test_capture_callback_only_queues_pcm_and_consumer_reuses_one_vad_decision(
+        self,
+    ):
+        events = []
+        decisions = []
+        pcm = struct.pack("<480h", *([3000, -3000] * 240))
+
+        def on_event(name, data):
+            events.append((name, data))
+            if name == "level" and data["speech"]:
+                service._stop.set()
+
+        service = VoiceService(on_event)
+
+        class InputStream:
+            def __init__(self, **kwargs):
+                self.callback = kwargs["callback"]
+
+            def __enter__(self):
+                self.callback(pcm, 480, None, False)
+                self_callback_levels = [name for name, _ in events if name == "level"]
+                if self_callback_levels:
+                    raise AssertionError("capture callback performed metering")
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+        class Vad:
+            def __init__(self, mode):
+                pass
+
+            def is_speech(self, frame, rate):
+                decisions.append((frame, rate))
+                return True
+
+        # Simulated microphone/model boundaries make this deterministic. The
+        # production capture consumer still reads actual int16 bytes and RMS.
+        # Keep NumPy outside the module patch so its native extension is not
+        # removed and re-imported by later tests.
+        __import__("numpy")
+        with (
+            patch("jarvis.paths.model_dir", return_value=Path("unused-test-model")),
+            patch.dict(
+                "sys.modules",
+                {
+                    "sounddevice": SimpleNamespace(RawInputStream=InputStream),
+                    "sherpa_onnx": SimpleNamespace(
+                        OfflineRecognizer=SimpleNamespace(
+                            from_sense_voice=lambda **kwargs: object()
+                        )
+                    ),
+                    "webrtcvad": SimpleNamespace(Vad=Vad),
+                    "jarvis.model_catalog": SimpleNamespace(
+                        inspect_directory=lambda *args: {"state": "ready"}
+                    ),
+                },
+            ),
+        ):
+            service._run()
+            service.stop()
+        self.assertFalse([data for name, data in events if name == "error"])
+        self.assertEqual(decisions, [(pcm, 16000)])
+        levels = [data for name, data in events if name == "level" and data["speech"]]
+        self.assertEqual(len(levels), 1)
+        self.assertGreater(levels[0]["level"], 0)
+        self.assertNotIn("pcm", levels[0])
+
+    def test_meter_uses_real_pcm_and_discards_frames_across_pause_and_input_gap(self):
+        events = []
+        now = [10.0]
+        service = VoiceService(lambda name, data: events.append((name, data)))
+        service._meter = SpeechMeter(clock=lambda: now[0])
+        quiet = struct.pack("<480h", *([800, -800] * 240))
+        loud = struct.pack("<480h", *([8000, -8000] * 240))
+        service._meter_frame(quiet, True, 0)
+        first = events[-1][1]
+        self.assertGreater(first["level"], 0)
+        now[0] += 0.1
+        service._meter_frame(loud, True, 0)
+        self.assertGreater(events[-1][1]["level"], first["level"])
+        self.assertEqual(events[-1][1]["generation"], 0)
+
+        service.set_paused(True)
+        self.assertEqual(events[-1][1]["level"], 0)
+        self.assertFalse(events[-1][1]["listening"])
+        old_count = len(events)
+        service._meter_frame(loud, True, 0)
+        self.assertEqual(len(events), old_count)
+        service.set_paused(False)
+        now[0] += 0.1
+        service._meter_frame(loud, True, 0)
+        self.assertEqual(len(events), old_count)
+        service._meter_frame(loud, True, service.capture_generation)
+        self.assertTrue(events[-1][1]["speech"])
+
+        # A device overflow increments the same generation and resets the
+        # segmenter/meter in the consumer; old queued frames cannot reanimate.
+        prior_generation = service.capture_generation
+        with service._lock:
+            service._generation += 1
+        service._reset_level(listening=True)
+        self.assertEqual(events[-1][1]["level"], 0)
+        self.assertTrue(events[-1][1]["listening"])
+        now[0] += 0.1
+        old_count = len(events)
+        service._meter_frame(loud, True, prior_generation)
+        self.assertEqual(len(events), old_count)
+        service._meter_frame(loud, True, service.capture_generation)
+        service.stop()
+        self.assertEqual(events[-1][1]["level"], 0)
+        self.assertFalse(events[-1][1]["listening"])
+        old_count = len(events)
+        service._meter_frame(loud, True, service.capture_generation)
+        self.assertEqual(len(events), old_count)
+        self.assertTrue(all(name == "level" for name, _ in events))
+        self.assertTrue(all("pcm" not in data for _, data in events))
+
     def test_followup_accepts_one_plain_answer_and_pause_cancels_it(self):
         service = VoiceService(lambda *args: None)
         gate = WakeWordGate()

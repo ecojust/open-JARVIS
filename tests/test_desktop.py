@@ -148,7 +148,7 @@ class DesktopTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_quit_with_fullscreen_results_exits_first_time(self):
+    def test_quit_with_maximized_results_exits_first_time(self):
         code = """
 import time
 from PySide6.QtCore import QTimer
@@ -195,10 +195,12 @@ assert time.monotonic()-started<1, time.monotonic()-started
         self.assertTrue(self.controller.tile.isVisible())
         self.assertFalse(self.controller.tile.logo.isNull())
         self.assertIsNone(self.controller.results)
+
         self.controller.show_results()
         self.app.processEvents()
         self.assertTrue(self.controller.results.isVisible())
-        self.assertTrue(self.controller.results.isFullScreen())
+        self.assertTrue(self.controller.results.isMaximized())
+        self.assertFalse(self.controller.results.isFullScreen())
         self.assertFalse(
             any(name.startswith("PySide6.QtWebEngine") for name in sys.modules)
         )
@@ -208,6 +210,23 @@ assert time.monotonic()-started<1, time.monotonic()-started
         self.assertFalse(self.controller.closing)
         self.controller._discard_hidden_results()
         self.assertIsNone(self.controller.results)
+
+    def test_expand_button_and_reopen_use_maximized_state_without_fullscreen(self):
+        self.controller.tile.expand_button.click()
+        self.app.processEvents()
+        window = self.controller.results
+        self.assertTrue(window.isMaximized())
+        self.assertFalse(window.isFullScreen())
+        # Even a previously fullscreen window must leave that state when the
+        # user returns through the desktop bar.
+        window.showFullScreen()
+        self.app.processEvents()
+        window.hide()
+        self.controller.tile.expand_button.click()
+        self.app.processEvents()
+        self.assertTrue(window.isVisible())
+        self.assertTrue(window.isMaximized())
+        self.assertFalse(window.isFullScreen())
 
     def test_rejected_submission_keeps_native_editor_draft(self):
         self.controller.show_results()
