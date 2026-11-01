@@ -48,3 +48,9 @@ python scripts/acceptance_run_tools_ui.py --output /tmp/jarvis-run-tool-evidence
 本地完整 390 项测试及 Ruff 通过。[30 次启动测量](performance.json)中，Linux offscreen 语音条启动 P95 238.09 ms、RSS P95 75.86 MiB；相较 alpha.10 同环境 228.90 ms 增加约 4.0%。此范围不含后端或模型，不代表三端常驻性能预算已达标。
 
 [桌面生命周期检查](desktop-smoke.json)使用真实 Qt、后台及音频子进程，完成 API/SSE、实际写文件、匹配结果最大化与退出清理；没有打开物理麦克风、播放语音或调用云模型。
+
+## 三端原生安装包
+
+源码 `b26fd5b740fc14302bc707109899fb87119bee3f` 的 [原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41220819046) 与 [alpha.11 构建](https://github.com/ecojust/open-JARVIS/actions/runs/41220818906) 均首次通过。三个平台完成测试、桌面与真实后台冒烟，再执行冻结程序自检和实际 MAF 委派、中文文件写入、回答返回检查。
+
+[native-build.json](native-build.json) 保留实际运行时间、全部 job/step 结果和三份候选产物身份。上轮开发环境断开只中断了本地监控，GitHub 上的三端构建继续完成；2026-11-01 恢复后复核成功结果，复用原构建发布，没有重新构建或替换源码。

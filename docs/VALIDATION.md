@@ -1,6 +1,6 @@
 # 开发预览验证记录
 
-日期：2026-10-31。此记录区分已经执行的检查与发布前仍需完成的验收。
+更新日期：2026-11-01。此记录区分已经执行的检查与发布前仍需完成的验收；各项证据保留实际执行日期。
 
 ## 每轮工具记录、1000 次预算与唤醒反馈（alpha.11）
 
@@ -10,7 +10,7 @@
 
 [唤醒反馈完整证据](validation/wake-feedback-2026-10-31/README.md)使用真实 Qt、独立音频 QProcess、VAD/SenseVoice、HTTP/SSE 与 SQLite，仅将音频输入设备替换为录音回放。无唤醒时 0 个 run，界面说明先说「贾维斯」；带唤醒时 4 次 partial 进入输入框、1 次 final 自动提交同 session 的 1 个 run。新增暂停竞态、补充窗口到期与状态同步检查；没有增加常驻计时线程或语音模型实例。
 
-本地 **390 项测试通过**，Ruff 通过。[每轮工具界面验收](validation/run-tools-2026-10-31/README.md)覆盖真实工具成功/失败与历史分页；[置顶开关验证](validation/tile-settings-2026-10-31/README.md)覆盖即时应用、持久化和 macOS 窗口类型。原生构建与公开安装包信息在本轮完成后补充。真实麦克风/扬声器、生产模型自由任务、签名和干净系统安装仍不在上述验证范围内。
+本地 **390 项测试通过**，Ruff 通过。[每轮工具界面验收](validation/run-tools-2026-10-31/README.md)覆盖真实工具成功/失败与历史分页；[置顶开关验证](validation/tile-settings-2026-10-31/README.md)覆盖即时应用、持久化和 macOS 窗口类型。源码 `b26fd5b740fc14302bc707109899fb87119bee3f` 的 [三端原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41220819046) 与 [安装包构建](https://github.com/ecojust/open-JARVIS/actions/runs/41220818906) 均成功，三个冻结程序均完成实际 MAF 任务检查；[原生构建记录](validation/run-tools-2026-10-31/native-build.json)保留原始运行和产物身份。真实麦克风/扬声器、生产模型自由任务、签名和干净系统安装仍不在上述验证范围内。
 
 ## 连续 session、语音输入与工具（alpha.10）
 

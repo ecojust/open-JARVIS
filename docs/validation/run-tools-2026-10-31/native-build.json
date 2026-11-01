@@ -1,0 +1,967 @@
+{
+  "recorded_at": "2026-11-01T05:36:41.734102+00:00",
+  "source_sha": "b26fd5b740fc14302bc707109899fb87119bee3f",
+  "scope": "GitHub API native CI, build job/step and artifact metadata only. No artifacts downloaded or installers executed in this development environment.",
+  "runs": {
+    "native_ci": {
+      "id": 41220819046,
+      "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41220819046",
+      "head_sha": "b26fd5b740fc14302bc707109899fb87119bee3f",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "path": ".github/workflows/ci.yml",
+      "created_at": "2026-10-31T16:40:32Z",
+      "updated_at": "2026-10-31T16:45:08Z",
+      "jobs": [
+        {
+          "id": 124594797296,
+          "name": "test (macos-15-intel, macos-x64, x64)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-31T16:40:37Z",
+          "completed_at": "2026-10-31T16:45:08Z",
+          "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41220819046/job/124594797296",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-31T16:40:40Z",
+              "completed_at": "2026-10-31T16:40:43Z"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-31T16:40:43Z",
+              "completed_at": "2026-10-31T16:40:47Z"
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-31T16:40:47Z",
+              "completed_at": "2026-10-31T16:41:01Z"
+            },
+            {
+              "name": "Verify native architecture",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-31T16:41:01Z",
+              "completed_at": "2026-10-31T16:41:01Z"
+            },
+            {
+              "name": "Install application and build dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-31T16:41:01Z",
+              "completed_at": "2026-10-31T16:42:16Z"
+            },
+            {
+              "name": "Test deterministic logic and native UI without hardware",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-31T16:42:16Z",
+              "completed_at": "2026-10-31T16:44:12Z"
+            },
+            {
+              "name": "Runtime self-test",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-31T16:44:12Z",
+              "completed_at": "2026-10-31T16:44:55Z"
+            },
+            {
+              "name": "Native desktop and real backend lifecycle smoke",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-10-31T16:44:55Z",
+              "completed_at": "2026-10-31T16:45:00Z"
+            },
+            {
+              "name": "Preserve desktop smoke evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9,
+              "started_at": "2026-10-31T16:45:00Z",
+              "completed_at": "2026-10-31T16:45:02Z"
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17,
+              "started_at": "2026-10-31T16:45:02Z",
+              "completed_at": "2026-10-31T16:45:02Z"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18,
+              "started_at": "2026-10-31T16:45:02Z",
+              "completed_at": "2026-10-31T16:45:04Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19,
+              "started_at": "2026-10-31T16:45:04Z",
+              "completed_at": "2026-10-31T16:45:06Z"
+            }
+          ]
+        },
+        {
+          "id": 124594797540,
+          "name": "test (windows-2022, windows-x64, x64)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-31T16:40:37Z",
+          "completed_at": "2026-10-31T16:43:06Z",
+          "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41220819046/job/124594797540",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-31T16:40:38Z",
+              "completed_at": "2026-10-31T16:40:39Z"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-31T16:40:39Z",
+              "completed_at": "2026-10-31T16:40:45Z"
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-31T16:40:45Z",
+              "completed_at": "2026-10-31T16:40:53Z"
+            },
+            {
+              "name": "Verify native architecture",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-31T16:40:53Z",
+              "completed_at": "2026-10-31T16:40:54Z"
+            },
+            {
+              "name": "Install application and build dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-31T16:40:54Z",
+              "completed_at": "2026-10-31T16:41:38Z"
+            },
+            {
+              "name": "Test deterministic logic and native UI without hardware",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-31T16:41:38Z",
+              "completed_at": "2026-10-31T16:42:53Z"
+            },
+            {
+              "name": "Runtime self-test",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-31T16:42:53Z",
+              "completed_at": "2026-10-31T16:42:56Z"
+            },
+            {
+              "name": "Native desktop and real backend lifecycle smoke",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-10-31T16:42:56Z",
+              "completed_at": "2026-10-31T16:43:01Z"
+            },
+            {
+              "name": "Preserve desktop smoke evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9,
+              "started_at": "2026-10-31T16:43:01Z",
+              "completed_at": "2026-10-31T16:43:03Z"
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17,
+              "started_at": "2026-10-31T16:43:03Z",
+              "completed_at": "2026-10-31T16:43:03Z"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18,
+              "started_at": "2026-10-31T16:43:03Z",
+              "completed_at": "2026-10-31T16:43:04Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19,
+              "started_at": "2026-10-31T16:43:04Z",
+              "completed_at": "2026-10-31T16:43:04Z"
+            }
+          ]
+        },
+        {
+          "id": 124594797873,
+          "name": "test (macos-15, macos-arm64, arm64)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-31T16:40:37Z",
+          "completed_at": "2026-10-31T16:42:50Z",
+          "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41220819046/job/124594797873",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-31T16:40:38Z",
+              "completed_at": "2026-10-31T16:40:39Z"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-31T16:40:39Z",
+              "completed_at": "2026-10-31T16:40:41Z"
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-31T16:40:41Z",
+              "completed_at": "2026-10-31T16:40:46Z"
+            },
+            {
+              "name": "Verify native architecture",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-31T16:40:46Z",
+              "completed_at": "2026-10-31T16:40:47Z"
+            },
+            {
+              "name": "Install application and build dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-31T16:40:47Z",
+              "completed_at": "2026-10-31T16:41:04Z"
+            },
+            {
+              "name": "Test deterministic logic and native UI without hardware",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-31T16:41:04Z",
+              "completed_at": "2026-10-31T16:42:05Z"
+            },
+            {
+              "name": "Runtime self-test",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-31T16:42:05Z",
+              "completed_at": "2026-10-31T16:42:42Z"
+            },
+            {
+              "name": "Native desktop and real backend lifecycle smoke",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-10-31T16:42:42Z",
+              "completed_at": "2026-10-31T16:42:44Z"
+            },
+            {
+              "name": "Preserve desktop smoke evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9,
+              "started_at": "2026-10-31T16:42:44Z",
+              "completed_at": "2026-10-31T16:42:46Z"
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17,
+              "started_at": "2026-10-31T16:42:46Z",
+              "completed_at": "2026-10-31T16:42:46Z"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18,
+              "started_at": "2026-10-31T16:42:46Z",
+              "completed_at": "2026-10-31T16:42:47Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19,
+              "started_at": "2026-10-31T16:42:47Z",
+              "completed_at": "2026-10-31T16:42:48Z"
+            }
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "id": 13050260940,
+          "name": "desktop-smoke-macos-x64",
+          "size_in_bytes": 665,
+          "digest": "sha256:51307bfb2c7604c867b2b850c069d041eca6e70a2a235a9f6510b773520533ee",
+          "expired": false,
+          "created_at": "2026-10-31T16:45:02Z",
+          "expires_at": "2026-11-14T16:45:00Z"
+        },
+        {
+          "id": 13049638639,
+          "name": "desktop-smoke-windows-x64",
+          "size_in_bytes": 671,
+          "digest": "sha256:f442e1c1807a3eb86b2891db17ae4431ce2ba4e3dc260857ac89d74f3c0f2a21",
+          "expired": false,
+          "created_at": "2026-10-31T16:43:02Z",
+          "expires_at": "2026-11-14T16:43:01Z"
+        },
+        {
+          "id": 13049628647,
+          "name": "desktop-smoke-macos-arm64",
+          "size_in_bytes": 657,
+          "digest": "sha256:d087d4470871de0519b8bb5a14d64dc4244b1d006b8f5e9773479b7965a5ddcc",
+          "expired": false,
+          "created_at": "2026-10-31T16:42:46Z",
+          "expires_at": "2026-11-14T16:42:45Z"
+        }
+      ]
+    },
+    "native_build": {
+      "id": 41220818906,
+      "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41220818906",
+      "head_sha": "b26fd5b740fc14302bc707109899fb87119bee3f",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "event": "workflow_dispatch",
+      "path": ".github/workflows/release.yml",
+      "created_at": "2026-10-31T16:40:32Z",
+      "updated_at": "2026-10-31T16:45:01Z",
+      "jobs": [
+        {
+          "id": 124594799113,
+          "name": "build (macos-15, macos-arm64, arm64)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-31T16:40:37Z",
+          "completed_at": "2026-10-31T16:43:27Z",
+          "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41220818906/job/124594799113",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-31T16:40:38Z",
+              "completed_at": "2026-10-31T16:40:39Z"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-31T16:40:39Z",
+              "completed_at": "2026-10-31T16:40:42Z"
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-31T16:40:42Z",
+              "completed_at": "2026-10-31T16:40:49Z"
+            },
+            {
+              "name": "Verify native architecture",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-31T16:40:49Z",
+              "completed_at": "2026-10-31T16:40:49Z"
+            },
+            {
+              "name": "Install build dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-31T16:40:49Z",
+              "completed_at": "2026-10-31T16:41:05Z"
+            },
+            {
+              "name": "Run deterministic validation",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-31T16:41:05Z",
+              "completed_at": "2026-10-31T16:42:12Z"
+            },
+            {
+              "name": "Native desktop and real backend lifecycle smoke",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-31T16:42:12Z",
+              "completed_at": "2026-10-31T16:42:14Z"
+            },
+            {
+              "name": "Preserve desktop smoke evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-10-31T16:42:14Z",
+              "completed_at": "2026-10-31T16:42:16Z"
+            },
+            {
+              "name": "Prepare macOS signing keychain",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9,
+              "started_at": "2026-10-31T16:42:16Z",
+              "completed_at": "2026-10-31T16:42:16Z"
+            },
+            {
+              "name": "Prepare Windows signing certificate",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10,
+              "started_at": "2026-10-31T16:42:16Z",
+              "completed_at": "2026-10-31T16:42:16Z"
+            },
+            {
+              "name": "Build signed candidate",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 11,
+              "started_at": "2026-10-31T16:42:16Z",
+              "completed_at": "2026-10-31T16:42:16Z"
+            },
+            {
+              "name": "Build explicitly unsigned test candidate",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12,
+              "started_at": "2026-10-31T16:42:16Z",
+              "completed_at": "2026-10-31T16:43:16Z"
+            },
+            {
+              "name": "Preserve candidate and verification metadata",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13,
+              "started_at": "2026-10-31T16:43:16Z",
+              "completed_at": "2026-10-31T16:43:22Z"
+            },
+            {
+              "name": "Preserve frozen runtime diagnostic",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14,
+              "started_at": "2026-10-31T16:43:22Z",
+              "completed_at": "2026-10-31T16:43:23Z"
+            },
+            {
+              "name": "Remove temporary signing material",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 15,
+              "started_at": "2026-10-31T16:43:23Z",
+              "completed_at": "2026-10-31T16:43:23Z"
+            },
+            {
+              "name": "Remove Windows certificate and private key",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 16,
+              "started_at": "2026-10-31T16:43:23Z",
+              "completed_at": "2026-10-31T16:43:23Z"
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 31,
+              "started_at": "2026-10-31T16:43:23Z",
+              "completed_at": "2026-10-31T16:43:24Z"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 32,
+              "started_at": "2026-10-31T16:43:24Z",
+              "completed_at": "2026-10-31T16:43:24Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 33,
+              "started_at": "2026-10-31T16:43:24Z",
+              "completed_at": "2026-10-31T16:43:25Z"
+            }
+          ]
+        },
+        {
+          "id": 124594799292,
+          "name": "build (macos-15-intel, macos-x64, x64)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-31T16:40:36Z",
+          "completed_at": "2026-10-31T16:45:00Z",
+          "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41220818906/job/124594799292",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-31T16:40:37Z",
+              "completed_at": "2026-10-31T16:40:39Z"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-31T16:40:39Z",
+              "completed_at": "2026-10-31T16:40:41Z"
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-31T16:40:41Z",
+              "completed_at": "2026-10-31T16:40:48Z"
+            },
+            {
+              "name": "Verify native architecture",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-31T16:40:48Z",
+              "completed_at": "2026-10-31T16:40:48Z"
+            },
+            {
+              "name": "Install build dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-31T16:40:48Z",
+              "completed_at": "2026-10-31T16:41:13Z"
+            },
+            {
+              "name": "Run deterministic validation",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-31T16:41:13Z",
+              "completed_at": "2026-10-31T16:42:26Z"
+            },
+            {
+              "name": "Native desktop and real backend lifecycle smoke",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-31T16:42:26Z",
+              "completed_at": "2026-10-31T16:42:28Z"
+            },
+            {
+              "name": "Preserve desktop smoke evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-10-31T16:42:28Z",
+              "completed_at": "2026-10-31T16:42:29Z"
+            },
+            {
+              "name": "Prepare macOS signing keychain",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9,
+              "started_at": "2026-10-31T16:42:29Z",
+              "completed_at": "2026-10-31T16:42:29Z"
+            },
+            {
+              "name": "Prepare Windows signing certificate",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10,
+              "started_at": "2026-10-31T16:42:29Z",
+              "completed_at": "2026-10-31T16:42:29Z"
+            },
+            {
+              "name": "Build signed candidate",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 11,
+              "started_at": "2026-10-31T16:42:29Z",
+              "completed_at": "2026-10-31T16:42:29Z"
+            },
+            {
+              "name": "Build explicitly unsigned test candidate",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12,
+              "started_at": "2026-10-31T16:42:29Z",
+              "completed_at": "2026-10-31T16:44:49Z"
+            },
+            {
+              "name": "Preserve candidate and verification metadata",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13,
+              "started_at": "2026-10-31T16:44:49Z",
+              "completed_at": "2026-10-31T16:44:56Z"
+            },
+            {
+              "name": "Preserve frozen runtime diagnostic",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14,
+              "started_at": "2026-10-31T16:44:56Z",
+              "completed_at": "2026-10-31T16:44:57Z"
+            },
+            {
+              "name": "Remove temporary signing material",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 15,
+              "started_at": "2026-10-31T16:44:57Z",
+              "completed_at": "2026-10-31T16:44:57Z"
+            },
+            {
+              "name": "Remove Windows certificate and private key",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 16,
+              "started_at": "2026-10-31T16:44:57Z",
+              "completed_at": "2026-10-31T16:44:57Z"
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 31,
+              "started_at": "2026-10-31T16:44:57Z",
+              "completed_at": "2026-10-31T16:44:58Z"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 32,
+              "started_at": "2026-10-31T16:44:58Z",
+              "completed_at": "2026-10-31T16:44:58Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 33,
+              "started_at": "2026-10-31T16:44:58Z",
+              "completed_at": "2026-10-31T16:44:58Z"
+            }
+          ]
+        },
+        {
+          "id": 124594799400,
+          "name": "build (windows-2022, windows-x64, x64)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-31T16:40:37Z",
+          "completed_at": "2026-10-31T16:43:59Z",
+          "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41220818906/job/124594799400",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-31T16:40:38Z",
+              "completed_at": "2026-10-31T16:40:39Z"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-31T16:40:39Z",
+              "completed_at": "2026-10-31T16:40:46Z"
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-31T16:40:46Z",
+              "completed_at": "2026-10-31T16:40:51Z"
+            },
+            {
+              "name": "Verify native architecture",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-31T16:40:51Z",
+              "completed_at": "2026-10-31T16:40:51Z"
+            },
+            {
+              "name": "Install build dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-31T16:40:51Z",
+              "completed_at": "2026-10-31T16:41:19Z"
+            },
+            {
+              "name": "Run deterministic validation",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-31T16:41:19Z",
+              "completed_at": "2026-10-31T16:42:10Z"
+            },
+            {
+              "name": "Native desktop and real backend lifecycle smoke",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-31T16:42:10Z",
+              "completed_at": "2026-10-31T16:42:14Z"
+            },
+            {
+              "name": "Preserve desktop smoke evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-10-31T16:42:14Z",
+              "completed_at": "2026-10-31T16:42:15Z"
+            },
+            {
+              "name": "Prepare macOS signing keychain",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9,
+              "started_at": "2026-10-31T16:42:15Z",
+              "completed_at": "2026-10-31T16:42:15Z"
+            },
+            {
+              "name": "Prepare Windows signing certificate",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10,
+              "started_at": "2026-10-31T16:42:15Z",
+              "completed_at": "2026-10-31T16:42:15Z"
+            },
+            {
+              "name": "Build signed candidate",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 11,
+              "started_at": "2026-10-31T16:42:15Z",
+              "completed_at": "2026-10-31T16:42:15Z"
+            },
+            {
+              "name": "Build explicitly unsigned test candidate",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12,
+              "started_at": "2026-10-31T16:42:15Z",
+              "completed_at": "2026-10-31T16:43:52Z"
+            },
+            {
+              "name": "Preserve candidate and verification metadata",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13,
+              "started_at": "2026-10-31T16:43:52Z",
+              "completed_at": "2026-10-31T16:43:55Z"
+            },
+            {
+              "name": "Preserve frozen runtime diagnostic",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14,
+              "started_at": "2026-10-31T16:43:55Z",
+              "completed_at": "2026-10-31T16:43:56Z"
+            },
+            {
+              "name": "Remove temporary signing material",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 15,
+              "started_at": "2026-10-31T16:43:56Z",
+              "completed_at": "2026-10-31T16:43:56Z"
+            },
+            {
+              "name": "Remove Windows certificate and private key",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 16,
+              "started_at": "2026-10-31T16:43:56Z",
+              "completed_at": "2026-10-31T16:43:56Z"
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 31,
+              "started_at": "2026-10-31T16:43:56Z",
+              "completed_at": "2026-10-31T16:43:56Z"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 32,
+              "started_at": "2026-10-31T16:43:56Z",
+              "completed_at": "2026-10-31T16:43:58Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 33,
+              "started_at": "2026-10-31T16:43:58Z",
+              "completed_at": "2026-10-31T16:43:58Z"
+            }
+          ]
+        },
+        {
+          "id": 124595843964,
+          "name": "draft",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-10-31T16:45:01Z",
+          "completed_at": "2026-10-31T16:45:01Z",
+          "html_url": "https://github.com/ecojust/open-JARVIS/actions/runs/41220818906/job/124595843964",
+          "steps": []
+        }
+      ],
+      "artifacts": [
+        {
+          "id": 13050520119,
+          "name": "frozen-self-test-macos-arm64",
+          "size_in_bytes": 1195,
+          "digest": "sha256:c084d3decf29916bacf9c0c0a45c144caff8ac1fafa206177bfd8f92dbf71c86",
+          "expired": false,
+          "created_at": "2026-10-31T16:43:23Z",
+          "expires_at": "2026-11-14T16:43:22Z"
+        },
+        {
+          "id": 13050410360,
+          "name": "frozen-self-test-windows-x64",
+          "size_in_bytes": 1224,
+          "digest": "sha256:c0bfcef929f9b0181455fb66a96c8d9baaa3b178c46d31ee3aec42e6de814959",
+          "expired": false,
+          "created_at": "2026-10-31T16:43:56Z",
+          "expires_at": "2026-11-14T16:43:55Z"
+        },
+        {
+          "id": 13050365734,
+          "name": "candidate-macos-x64",
+          "size_in_bytes": 140376577,
+          "digest": "sha256:e69f9541f718aab6a3eada31ccc5e5be8de3fa01c08dac05b967855d29e4902f",
+          "expired": false,
+          "created_at": "2026-10-31T16:44:56Z",
+          "expires_at": "2026-11-14T16:44:50Z"
+        },
+        {
+          "id": 13050320498,
+          "name": "desktop-smoke-windows-x64",
+          "size_in_bytes": 675,
+          "digest": "sha256:f5cf28992fc9d654f955fec7213ec4c5c588b4bea64feebe03226ec4b0889fda",
+          "expired": false,
+          "created_at": "2026-10-31T16:42:15Z",
+          "expires_at": "2026-11-14T16:42:14Z"
+        },
+        {
+          "id": 13050295943,
+          "name": "frozen-self-test-macos-x64",
+          "size_in_bytes": 1193,
+          "digest": "sha256:3ee9ed8c4ba74ba5386ddd17cf85ada69ee3d76ca6891643f142007127e401f0",
+          "expired": false,
+          "created_at": "2026-10-31T16:44:57Z",
+          "expires_at": "2026-11-14T16:44:57Z"
+        },
+        {
+          "id": 13049598884,
+          "name": "desktop-smoke-macos-x64",
+          "size_in_bytes": 661,
+          "digest": "sha256:083c6efc64f9ec86650e024b4a704af7874617bbdeeced5c48f87070996c02c9",
+          "expired": false,
+          "created_at": "2026-10-31T16:42:29Z",
+          "expires_at": "2026-11-14T16:42:28Z"
+        },
+        {
+          "id": 13049549135,
+          "name": "candidate-macos-arm64",
+          "size_in_bytes": 127867519,
+          "digest": "sha256:77b45bfb5d9e83f03af2fb7ee6ed3b293a4bae45e6bbd9f57b5acf84f5ae5aff",
+          "expired": false,
+          "created_at": "2026-10-31T16:43:22Z",
+          "expires_at": "2026-11-14T16:43:17Z"
+        },
+        {
+          "id": 13049444682,
+          "name": "candidate-windows-x64",
+          "size_in_bytes": 109917629,
+          "digest": "sha256:f200ab1ef144bdceff694049add99c40c57fc939c0f1f4094cc71edc93618f22",
+          "expired": false,
+          "created_at": "2026-10-31T16:43:55Z",
+          "expires_at": "2026-11-14T16:43:52Z"
+        },
+        {
+          "id": 13049399553,
+          "name": "desktop-smoke-macos-arm64",
+          "size_in_bytes": 659,
+          "digest": "sha256:b7fdbf9c7e1011acd53c2456427bfb8ba7579ce4b763491c49d30386e30a747c",
+          "expired": false,
+          "created_at": "2026-10-31T16:42:16Z",
+          "expires_at": "2026-11-14T16:42:14Z"
+        }
+      ]
+    }
+  }
+}
