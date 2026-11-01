@@ -54,3 +54,17 @@ python scripts/acceptance_run_tools_ui.py --output /tmp/jarvis-run-tool-evidence
 源码 `b26fd5b740fc14302bc707109899fb87119bee3f` 的 [原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41220819046) 与 [alpha.11 构建](https://github.com/ecojust/open-JARVIS/actions/runs/41220818906) 均首次通过。三个平台完成测试、桌面与真实后台冒烟，再执行冻结程序自检和实际 MAF 委派、中文文件写入、回答返回检查。
 
 [native-build.json](native-build.json) 保留实际运行时间、全部 job/step 结果和三份候选产物身份。上轮开发环境断开只中断了本地监控，GitHub 上的三端构建继续完成；2026-11-01 恢复后复核成功结果，复用原构建发布，没有重新构建或替换源码。
+
+## 公开下载与附件核验
+
+[alpha.11 Release](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.11) 已于 `2026-11-01T05:37:38Z` 公开，`draft=false`、`prerelease=true`。[发布流程](https://github.com/ecojust/open-JARVIS/actions/runs/41277620933)核对全部安装器 SHA-256、完整矩阵和冻结 MAF 任务检查后上传 9 个附件。
+
+公开后匿名下载三份原始 manifest 与三份 SHA-256 文件，核对其内容摘要、安装器公开 digest 和源码 tag `b26fd5b740fc14302bc707109899fb87119bee3f`。这里没有重新下载或安装三端安装器；打包程序执行证据来自原生 runner。
+
+| 目标 | 构建清单 | 安装器字节数 |
+| --- | --- | --- |
+| macOS Intel | [manifest](open-JARVIS-0.1.0-alpha.11-macos-x64.manifest.json) | 144,561,721 |
+| macOS Apple Silicon | [manifest](open-JARVIS-0.1.0-alpha.11-macos-arm64.manifest.json) | 132,430,864 |
+| Windows x64 | [manifest](open-JARVIS-0.1.0-alpha.11-windows-x64-setup.manifest.json) | 110,440,498 |
+
+[release.json](release.json) 保存 Release ID、实际发布时间、源码提交及全部附件身份和摘要。

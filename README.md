@@ -10,7 +10,7 @@
 
 **实现原则：以性能作为第一性原则。** 常驻开销、交互延迟与资源可回收性是架构约束和发布门槛，从第一阶段测量；既有原型、框架和组件选择都必须接受验证。正确性、语音可用性和数据完整性仍须同时满足。
 
-> **当前版本：0.1.0 开发预览，2026-10-31。**
+> **当前版本：0.1.0-alpha.11 开发预览，2026-11-01。**
 > 已实现原生桌面、持久化任务、MAF 专业 Agent 编排及本地 STT/TTS 管线；下文保留整体架构和发布验收要求。三端原生 CI 与未签名安装包构建已通过；真实音频设备、签名安装和性能预算尚未完成验收，当前是公开预览版。详细证据见 [验证记录](docs/VALIDATION.md)。
 
 ## 桌面语音条与模型管理
@@ -19,7 +19,7 @@
 
 设置中的「桌面语音条始终置顶」控制小胶囊是否浮在其他窗口上方，默认开启。保存后立即生效并保留位置，重启沿用选择；只改此开关不会重启后台或重新加载语音模型，也不改变结果窗口的层级。
 
-[新版界面截图与续传验收](docs/validation/workbench-resume-2026-10-31/README.md)。本地 **390 项测试通过**；最新源码包含浅色工作空间、主动查看回复、后台播报、模型换源续传，以及加宽的设置页与 ⓘ 厂商帮助。下方 **alpha.10** 三端安装包包含这些功能、连续会话、输入框语音转写、工具目录和网页读取改进，保留下载进度与 MAF 修复；原生 CI 和打包后的实际 MAF 任务自检均通过。
+[新版界面截图与续传验收](docs/validation/workbench-resume-2026-10-31/README.md)。本地 **390 项测试通过**；最新源码包含浅色工作空间、主动查看回复、后台播报、模型换源续传，以及加宽的设置页与 ⓘ 厂商帮助。下方 **alpha.11** 三端安装包还包含每轮工具执行记录、1000 次工具上限、唤醒状态提示和语音条置顶开关，保留连续会话、语音转写、下载续传与 MAF 修复；原生 CI 和打包后的实际 MAF 任务自检均通过。
 
 ## 工作空间与后台播报
 
@@ -29,17 +29,17 @@
 
 ## 连续对话、语音转写与工具目录
 
-以下功能已包含在公开发布的 alpha.10 三端安装包中。
+以下功能已包含在公开发布的 alpha.11 三端安装包中。
 
 一段对话是一个持久化 **session**，每次输入到本轮回答是一个 **run**。左栏可以新建或切换对话，并查看其中各轮结果；日常发送、补充问题、暂停聆听和重启都不会自动新建 session。点击「新建对话」或完整说出「新建对话」才创建新会话，旧问答和产物记录继续保留。旧数据库会自动归档迁移。`run_id` 沿用 `task_id`，兼容已有文件和事件接口。
 
 默认先说一次「贾维斯」唤醒，之后可以连续接着说，直到点击暂停；恢复聆听后重新唤醒。TTS 暂停收音和切换对话不会要求每句话重复唤醒。语音临时识别文字直接出现在输入框，停顿约 900 ms 完成一句后自动发送最终文字。临时文字只作预览，可能纠错；不会在每次更新时发送。手动草稿保留，提交失败保留识别文字以便重试。切换对话会丢弃当前未发送语音，避免发入另一段对话。
 
-最新源码补充唤醒状态提示：尚未唤醒时，语音条显示「等待唤醒」，输入框提示先说「贾维斯」。声浪表示已经收音，不代表指令已经发送；可以说「贾维斯，帮我写一份报告」，也可以先说名字、看到唤醒提示后再说任务。[完整语音进程验收](docs/validation/wake-feedback-2026-10-31/README.md)覆盖未唤醒拦截和唤醒后自动发送。
+alpha.11 补充唤醒状态提示：尚未唤醒时，语音条显示「等待唤醒」，输入框提示先说「贾维斯」。声浪表示已经收音，不代表指令已经发送；可以说「贾维斯，帮我写一份报告」，也可以先说名字、看到唤醒提示后再说任务。[完整语音进程验收](docs/validation/wake-feedback-2026-10-31/README.md)覆盖未唤醒拦截和唤醒后自动发送。
 
 右上角扳手图标显示实际工具目录：中文说明、所属助手、用途和参数，按需加载，不启动模型。MAF 模式提供 18 个工作工具与 4 个专业助手委派入口；目录来自真实注册定义，跟随工具参数更新。
 
-最新源码还支持在每个 run 内查看工具调用与专业助手委派记录。各轮记录独立保存，切换对话或重启后仍可查看；参数与结果按需展开，默认工作区继续展示产物，完整 Agent 回答仍需主动点开。记录分页加载，避免长任务一次创建大量界面控件。
+alpha.11 支持在每个 run 内查看工具调用与专业助手委派记录。各轮记录独立保存，切换对话或重启后仍可查看；参数与结果按需展开，默认工作区继续展示产物，完整 Agent 回答仍需主动点开。记录分页加载，避免长任务一次创建大量界面控件。
 
 网页读取 `fetch_page` 默认输出 Markdown，可选择纯文本；处理中文编码、标题、正文及来源链接，支持重定向和有界压缩响应。长页面通过 `page_id` / `next_offset` 继续读取同一快照，模型上下文裁剪也保留续读信息。HTTP 拒绝、超时、需要登录或验证码会明确返回原因；不执行网页 JavaScript。
 
@@ -53,17 +53,17 @@
 
 ## 下载开发预览
 
-**v0.1.0-alpha.10，公开预览（未签名）**。从 [GitHub Releases](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.10) 直接下载对应平台安装器；同时提供 SHA-256 校验文件与构建清单。
+**v0.1.0-alpha.11，公开预览（未签名）**。从 [GitHub Releases](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.11) 直接下载对应平台安装器；同时提供 SHA-256 校验文件与构建清单。
 
-> 本版增加连续对话、语音转写自动发送、工具目录和网页读取改进，并保留 alpha.9 的 MAF 修复。升级完整客户端即可，无需安装 Python、MAF 或执行 pip；已有设置、历史任务与语音模型继续沿用。
+> 本版增加每轮工具执行记录、1000 次工具上限、唤醒状态提示和语音条置顶开关。升级完整客户端即可，无需安装 Python、MAF 或执行 pip；已有设置、对话、任务产物与语音模型继续沿用。
 
 | 平台 | 安装器 | 安装器大小 |
 | --- | --- | --- |
-| macOS Intel，macOS 14+ | [下载 Intel DMG](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.10/open-JARVIS-0.1.0-alpha.10-macos-x64.dmg) | 约 144.5 MB |
-| macOS Apple Silicon，macOS 14+ | [下载 Apple Silicon DMG](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.10/open-JARVIS-0.1.0-alpha.10-macos-arm64.dmg) | 约 132.4 MB |
-| Windows x64 | [下载 Windows EXE](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.10/open-JARVIS-0.1.0-alpha.10-windows-x64-setup.exe) | 约 110.4 MB |
+| macOS Intel，macOS 14+ | [下载 Intel DMG](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-macos-x64.dmg) | 约 144.6 MB |
+| macOS Apple Silicon，macOS 14+ | [下载 Apple Silicon DMG](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-macos-arm64.dmg) | 约 132.4 MB |
+| Windows x64 | [下载 Windows EXE](https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-windows-x64-setup.exe) | 约 110.4 MB |
 
-[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41218568950) · [安装包构建与自检](https://github.com/ecojust/open-JARVIS/actions/runs/41218568807) · [发布校验](https://github.com/ecojust/open-JARVIS/actions/runs/41219038905)。三个平台的打包程序均通过真实 MAF 委派、文件写入与中文回答检查，9 个附件全部校验后公开。[本版验证与截图](docs/validation/session-voice-2026-10-31/README.md)区分本地固定模型回复与生产模型验收。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。尚未完成签名/公证，系统可能显示安装安全提示。首次运行后通过语音条右键菜单配置任务模型、下载两个语音模型。
+[三端 CI 记录](https://github.com/ecojust/open-JARVIS/actions/runs/41220819046) · [安装包构建与自检](https://github.com/ecojust/open-JARVIS/actions/runs/41220818906) · [发布校验](https://github.com/ecojust/open-JARVIS/actions/runs/41277620933)。三个平台的打包程序均通过真实 MAF 委派、文件写入与中文回答检查，9 个附件全部校验后公开。[本版验证与截图](docs/validation/run-tools-2026-10-31/README.md)区分本地固定模型回复与生产模型验收。安装包包含 Python 及运行依赖，语音模型在安装后单独下载。尚未完成签名/公证，系统可能显示安装安全提示。首次运行后通过语音条右键菜单配置任务模型、下载两个语音模型。
 
 ## 源码运行
 
@@ -428,7 +428,7 @@ flowchart LR
 
 等待用户补充时结束本轮主动执行并释放槽位；补充输入创建关联的新 run，使用新一轮预算。等待超时独立配置，初始建议 24 小时后取消并保存原因。
 
-出现「工具调用预算已用尽」表示当前 run 已达到客户端配置的工具次数上限（alpha.10 默认 24 次，最新源码默认 1000 次，失败的工具执行也计入），并非模型 API 余额或套餐额度耗尽。当前轮停止后，已完成的文件与记录保留，但其余工作可能尚未完成。可以在同一对话继续安排剩余工作，新 run 使用新预算；可从该轮工具记录检查重复检索或失败重试。
+出现「工具调用预算已用尽」表示当前 run 已达到客户端配置的工具次数上限（alpha.10 默认 24 次，alpha.11 默认 1000 次，失败的工具执行也计入），并非模型 API 余额或套餐额度耗尽。当前轮停止后，已完成的文件与记录保留，但其余工作可能尚未完成。可以在同一对话继续安排剩余工作，新 run 使用新预算；可从该轮工具记录检查重复检索或失败重试。
 
 初版一个主任务执行、最多 3 个任务等待。工具操作顺序执行，写文件不并发。之后若要并行检索，应单独定义只读并行规则，继续共享全局预算。
 

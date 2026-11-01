@@ -1,0 +1,87 @@
+{
+  "release_id": 430385323,
+  "tag": "v0.1.0-alpha.11",
+  "source_commit": "b26fd5b740fc14302bc707109899fb87119bee3f",
+  "url": "https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.11",
+  "draft": false,
+  "prerelease": true,
+  "published_at": "2026-11-01T05:37:38Z",
+  "build_run_id": 41220818906,
+  "native_ci_run_id": 41220819046,
+  "promotion_run_id": 41277620933,
+  "verification": "Anonymous public release and exact lightweight tag verified. All six small manifests/checksum files downloaded and hashed against GitHub asset digests. Installer digests match manifest and checksum; original promotion verified the installer bytes. All three manifests contain successful frozen MAF delegation/file/answer roundtrips. Installers were not downloaded or installed in this development environment.",
+  "assets": [
+    {
+      "id": 697437641,
+      "name": "open-JARVIS-0.1.0-alpha.11-macos-arm64.dmg",
+      "size": 132430864,
+      "digest": "sha256:f55d140879e1f9d43f14bc7eca89e7b01cb2a5f5c9b54e79bcfb3df0a8f2cf04",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-macos-arm64.dmg"
+    },
+    {
+      "id": 697437655,
+      "name": "open-JARVIS-0.1.0-alpha.11-macos-arm64.dmg.sha256",
+      "size": 109,
+      "digest": "sha256:6ff0d662456b5dd5f17030f0e89a3370ecc4d1af6804e20bc85083558f0a7705",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-macos-arm64.dmg.sha256"
+    },
+    {
+      "id": 697437643,
+      "name": "open-JARVIS-0.1.0-alpha.11-macos-arm64.manifest.json",
+      "size": 3637,
+      "digest": "sha256:26d5cc324738ccd6f5a33b4e45611b86cb7f10c429c438e2da25b300a5ea5781",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-macos-arm64.manifest.json"
+    },
+    {
+      "id": 697437642,
+      "name": "open-JARVIS-0.1.0-alpha.11-macos-x64.dmg",
+      "size": 144561721,
+      "digest": "sha256:e19febd3756f2923ad94d367037f00f41c5a7991eeb557861ae7745a19f295b1",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-macos-x64.dmg"
+    },
+    {
+      "id": 697437645,
+      "name": "open-JARVIS-0.1.0-alpha.11-macos-x64.dmg.sha256",
+      "size": 107,
+      "digest": "sha256:b445932aab201acd9e36828366a448324ddeb9fbdfcd84e9e2b14347ec49727f",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-macos-x64.dmg.sha256"
+    },
+    {
+      "id": 697437644,
+      "name": "open-JARVIS-0.1.0-alpha.11-macos-x64.manifest.json",
+      "size": 3638,
+      "digest": "sha256:c9cd5f53ab130cd474f0e157c18888ef5f4fd41a36870ff7b9a24820ea889ea2",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-macos-x64.manifest.json"
+    },
+    {
+      "id": 697437658,
+      "name": "open-JARVIS-0.1.0-alpha.11-windows-x64-setup.exe",
+      "size": 110440498,
+      "digest": "sha256:9e4e3c3d6d590242f21dfc99c02b9215837e3071fc04ce868bf3d2956292eb06",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-windows-x64-setup.exe"
+    },
+    {
+      "id": 697437676,
+      "name": "open-JARVIS-0.1.0-alpha.11-windows-x64-setup.exe.sha256",
+      "size": 116,
+      "digest": "sha256:2293cc7767e62f4c08cffca865f67a6b06efbc9ca75d4d9e96097b889297a996",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-windows-x64-setup.exe.sha256"
+    },
+    {
+      "id": 697437656,
+      "name": "open-JARVIS-0.1.0-alpha.11-windows-x64-setup.manifest.json",
+      "size": 3818,
+      "digest": "sha256:9e83e7febe5b3eab8734c178fbe820856891a4195b864f2c5d2d5b28a9c920d5",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/ecojust/open-JARVIS/releases/download/v0.1.0-alpha.11/open-JARVIS-0.1.0-alpha.11-windows-x64-setup.manifest.json"
+    }
+  ]
+}

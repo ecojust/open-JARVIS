@@ -12,6 +12,8 @@
 
 本地 **390 项测试通过**，Ruff 通过。[每轮工具界面验收](validation/run-tools-2026-10-31/README.md)覆盖真实工具成功/失败与历史分页；[置顶开关验证](validation/tile-settings-2026-10-31/README.md)覆盖即时应用、持久化和 macOS 窗口类型。源码 `b26fd5b740fc14302bc707109899fb87119bee3f` 的 [三端原生 CI](https://github.com/ecojust/open-JARVIS/actions/runs/41220819046) 与 [安装包构建](https://github.com/ecojust/open-JARVIS/actions/runs/41220818906) 均成功，三个冻结程序均完成实际 MAF 任务检查；[原生构建记录](validation/run-tools-2026-10-31/native-build.json)保留原始运行和产物身份。真实麦克风/扬声器、生产模型自由任务、签名和干净系统安装仍不在上述验证范围内。
 
+已于 `2026-11-01T05:37:38Z` 公开发布 [v0.1.0-alpha.11](https://github.com/ecojust/open-JARVIS/releases/tag/v0.1.0-alpha.11)，9 个附件全部上传。[发布流程](https://github.com/ecojust/open-JARVIS/actions/runs/41277620933)复核原构建、三端清单及所有安装器 SHA-256；公开后匿名下载三份构建清单与三份校验文件，并核对附件摘要、三个冻结 MAF 检查及实际源码 tag。[发布元数据](validation/run-tools-2026-10-31/release.json)。
+
 ## 连续 session、语音输入与工具（alpha.10）
 
 本地 **362 项测试通过**，Ruff 通过。新增持久化对话与每输入一个 run，旧数据库迁移、重启恢复、历史/产物会话边界、排队未来输入隔离和补充新预算均通过检查。右上工具目录读取实际注册定义；默认唤醒一次可连续语音对话，临时识别在输入框预览，最终结果自动发送一次，切换会话有语音丢弃确认和 generation 校验。
